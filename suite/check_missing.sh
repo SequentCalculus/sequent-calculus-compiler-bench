@@ -1,7 +1,7 @@
 #!/bin/bash
-for dir in $(find suite -type d) 
+for dir in $(find ./ -type d) 
 do
-  if [ $dir = "suite" ]; then
+  if [ $dir = "./" ]; then
     continue
   fi 
   if [ !  $(find $dir -name "*.rs") ] ; then

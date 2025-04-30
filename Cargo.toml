@@ -1,0 +1,13 @@
+[workspace]
+members = [
+    "runner",
+    "report",
+    "testsuite",
+]
+
+resolver = "2"
+default-members = ["runner"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
