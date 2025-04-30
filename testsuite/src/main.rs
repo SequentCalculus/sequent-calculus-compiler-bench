@@ -1,11 +1,7 @@
-mod end_to_end_tests;
 mod errors;
-mod fun_tests;
-mod load_tests;
 
 use errors::Error;
-use fun_tests::TestResult;
-use load_tests::load_all;
+use lib::benchmark::Benchmark;
 
 fn setup() -> Result<(), Error> {
     let working_dir = std::env::current_dir()
@@ -18,13 +14,13 @@ fn setup() -> Result<(), Error> {
 fn main() -> Result<(), Error> {
     setup()?;
 
-    let tests = load_all()?;
-
-    println!("Running Fun tests");
-    let fun_results = fun_tests::run_tests(&tests);
-    TestResult::report(fun_results)?;
-
-    println!("Running end-to-end tests");
-    let compile_results = end_to_end_tests::run_tests(&tests.end_to_end_tests);
-    TestResult::report(compile_results)
+    let tests = Benchmark::load_all();
+    for test in tests {
+        test.compile_all();
+        let results = test.run_all().expect("Could not run benchmark");
+        for result in results {
+            assert_eq!(result.stdout, test.config.expected.as_bytes())
+        }
+    }
+    Ok(())
 }

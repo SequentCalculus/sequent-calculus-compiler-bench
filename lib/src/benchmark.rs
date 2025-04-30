@@ -38,6 +38,11 @@ impl BenchmarkLanguage {
                 cmd.arg(source_file);
                 cmd.arg("-o");
                 cmd.arg(out_file);
+                #[cfg(target_arch = "aarch64")]
+                cmd.arg("aarch64");
+                #[cfg(target_arch = "x86_64")]
+                cmd.arg("x86-64");
+
                 cmd
             }
             BenchmarkLanguage::Rust => {
@@ -130,6 +135,20 @@ impl Benchmark {
         source_path.set_extension(lang.ext());
         let out_path = self.bin_path(lang).unwrap();
         lang.compile_cmd(&source_path, &out_path).output().unwrap();
+    }
+
+    pub fn run_all(&self) -> Option<Vec<std::process::Output>> {
+        let mut results = vec![];
+        for lang in self.languages.iter() {
+            let res = self.run(lang)?;
+            results.push(res);
+        }
+        Some(results)
+    }
+
+    pub fn run(&self, lang: &BenchmarkLanguage) -> Option<std::process::Output> {
+        let bin_path = self.bin_path(lang).unwrap();
+        Command::new(bin_path).output().ok()
     }
 
     pub fn run_hyperfine_all(&self) {
