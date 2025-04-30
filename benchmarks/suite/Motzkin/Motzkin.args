@@ -1,0 +1,5 @@
+args = ["4", "21"]
+test_args = ["1", "10"]
+expected = "2188"
+runs = 10
+suite = "Folklore to Fact"
