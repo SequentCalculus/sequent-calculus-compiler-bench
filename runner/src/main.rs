@@ -1,6 +1,7 @@
 use clap::Parser;
+use lib::benchmark::Benchmark;
 
-#[derive(clap::Args)]
+#[derive(clap::Parser)]
 pub struct Args {
     #[arg(short, long, value_name = "NAME")]
     name: Option<String>,
@@ -14,4 +15,16 @@ pub struct Args {
 
 fn main() -> miette::Result<()> {
     let args = Args::parse();
+    let benchmarks;
+    if let Some(name) = args.name {
+        benchmarks = vec![Benchmark::new(&name).expect("Could not load benchmark {name}")];
+    } else {
+        benchmarks = Benchmark::load_all();
+    }
+
+    for benchmark in benchmarks {
+        benchmark.compile_all();
+        benchmark.run_hyperfine_all();
+    }
+    Ok(())
 }

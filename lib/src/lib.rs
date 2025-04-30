@@ -1,3 +1,3 @@
-mod benchmark;
+pub mod benchmark;
 mod config;
 mod paths;

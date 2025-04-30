@@ -99,17 +99,25 @@ impl Benchmark {
         Some(path)
     }
 
-    pub fn compile(&self, lang: &BenchmarkLanguage) -> Option<PathBuf> {
+    pub fn compile_all(&self) {
+        for lang in self.languages.iter() {
+            self.compile(lang)
+        }
+    }
+
+    pub fn compile(&self, lang: &BenchmarkLanguage) {
         if !self.languages.contains(lang) {
-            return None;
+            return;
         }
         let mut source_path = self.base_path.clone();
         source_path.set_extension(lang.ext());
-        let out_path = self.bin_path(lang)?;
-        if lang.compile_cmd(&source_path, &out_path).output().is_ok() {
-            Some(out_path)
-        } else {
-            None
+        let out_path = self.bin_path(lang).unwrap();
+        lang.compile_cmd(&source_path, &out_path).output().unwrap();
+    }
+
+    pub fn run_hyperfine_all(&self) {
+        for lang in self.languages.iter() {
+            self.run_hyperfine(lang);
         }
     }
 

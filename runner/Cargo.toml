@@ -8,6 +8,7 @@ name = "bench"
 path = "src/main.rs"
 
 [dependencies]
+lib = { path="../lib" }
 # CLI
 clap = { version = "4", features = ["derive"] }
 miette = { workspace = true, features = ["fancy"] }
