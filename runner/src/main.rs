@@ -23,6 +23,9 @@ fn main() -> miette::Result<()> {
     }
 
     for benchmark in benchmarks {
+        if args.skip_existing && benchmark.results_exist() {
+            continue;
+        }
         benchmark.compile_all();
         benchmark.run_hyperfine_all();
     }

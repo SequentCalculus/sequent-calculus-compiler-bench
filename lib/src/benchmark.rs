@@ -99,6 +99,16 @@ impl Benchmark {
         Some(path)
     }
 
+    pub fn results_exist(&self) -> bool {
+        for lang in self.languages.iter() {
+            let out_path = self.result_path(lang).unwrap();
+            if !out_path.exists() {
+                return false;
+            }
+        }
+        true
+    }
+
     pub fn compile_all(&self) {
         for lang in self.languages.iter() {
             self.compile(lang)
