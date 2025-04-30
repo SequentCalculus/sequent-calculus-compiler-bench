@@ -11,7 +11,6 @@ path = "src/main.rs"
 lib = { path="../lib" }
 # CLI
 clap = { version = "4", features = ["derive"] }
-miette = { workspace = true, features = ["fancy"] }
 # Benchmark Config
 basic-toml = { version = "0.1.9" }
 serde = { version = "1.0.217" }

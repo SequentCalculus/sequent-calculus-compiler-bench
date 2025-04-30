@@ -1,3 +1,4 @@
+use super::benchmark::BenchmarkLanguage;
 use std::{fmt, path::PathBuf};
 
 #[derive(Debug)]
@@ -28,6 +29,26 @@ pub enum Error {
     },
     DirIsFile {
         path: PathBuf,
+    },
+    UnknownLanguage {
+        bench: String,
+        lang: String,
+        tried: String,
+    },
+    Compile {
+        bench: String,
+        lang: String,
+        msg: String,
+    },
+    Run {
+        bench: String,
+        lang: String,
+        msg: String,
+    },
+    Hyperfine {
+        bench: String,
+        lang: String,
+        msg: String,
     },
 }
 
@@ -67,6 +88,38 @@ impl Error {
             msg: err.to_string(),
         }
     }
+
+    pub fn unknown_lang(name: &str, tried: &str, lang: &BenchmarkLanguage) -> Error {
+        Error::UnknownLanguage {
+            bench: name.to_owned(),
+            tried: tried.to_owned(),
+            lang: lang.to_string(),
+        }
+    }
+
+    pub fn compile<T: std::error::Error>(name: &str, lang: &BenchmarkLanguage, err: T) -> Error {
+        Error::Compile {
+            bench: name.to_owned(),
+            lang: lang.to_string(),
+            msg: err.to_string(),
+        }
+    }
+
+    pub fn run<T: std::error::Error>(name: &str, lang: &BenchmarkLanguage, err: T) -> Error {
+        Error::Run {
+            bench: name.to_owned(),
+            lang: lang.to_string(),
+            msg: err.to_string(),
+        }
+    }
+
+    pub fn hyperfine<T: std::error::Error>(name: &str, lang: &BenchmarkLanguage, err: T) -> Error {
+        Error::Hyperfine {
+            bench: name.to_owned(),
+            lang: lang.to_string(),
+            msg: err.to_string(),
+        }
+    }
 }
 
 impl fmt::Display for Error {
@@ -87,6 +140,19 @@ impl fmt::Display for Error {
                 write!(f, "Could not parse toml of {path:?}\n\t{msg}")
             }
             Error::DirIsFile { path } => write!(f, "{path:?} is a file, should be a directoty"),
+            Error::UnknownLanguage { bench, lang, tried } => {
+                write!(
+                    f,
+                    "Could not {tried}, {lang} does not exist for benchmark {bench}"
+                )
+            }
+            Error::Compile { bench, lang, msg } => {
+                write!(f, "Could not compile {bench} ({lang}): {msg}")
+            }
+            Error::Run { bench, lang, msg } => write!(f, "Could not run {bench} ({lang}): {msg}"),
+            Error::Hyperfine { bench, lang, msg } => {
+                write!(f, "Could not run hyperfine for {bench} ({lang}): {msg}")
+            }
         }
     }
 }

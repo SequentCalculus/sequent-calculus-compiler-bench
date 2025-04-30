@@ -4,8 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-# CLI
-miette = { workspace = true, features = ["fancy"] }
 # Benchmark Config
 basic-toml = { version = "0.1.9" }
 serde = { version = "1.0.217", features=["derive"]}
