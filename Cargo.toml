@@ -3,6 +3,7 @@ members = [
     "runner",
     "report",
     "testsuite",
+    "lib"
 ]
 
 resolver = "2"

@@ -4,18 +4,6 @@ use std::path::PathBuf;
 
 const DEFAULT_HEAP_SIZE: usize = 512;
 
-#[derive(clap::Args)]
-pub struct Args {
-    #[arg(short, long, value_name = "NAME")]
-    name: Option<String>,
-    /// Optional heap size in MB, default is 512
-    #[arg(long)]
-    heap_size: Option<usize>,
-    ///Optional skip benchmarks with existing results
-    #[arg(long, short)]
-    skip_existing: bool,
-}
-
 pub fn exec(cmd: Args) -> miette::Result<()> {
     let mut driver = Driver::new();
     let mut benchmarks = Benchmark::load(cmd.name);
