@@ -1,6 +1,6 @@
 use super::{
     config::Config,
-    paths::{BIN_PATH, HYPERFINE_PATH, SUITE_PATH},
+    paths::{BIN_PATH, HYPERFINE_PATH, REPORTS_PATH, SUITE_PATH},
 };
 use std::{
     fs::{create_dir_all, read_dir},
@@ -96,6 +96,13 @@ impl Benchmark {
         create_dir_all(HYPERFINE_PATH).ok()?;
         let mut path = PathBuf::from(HYPERFINE_PATH).join(self.name.clone() + "_" + lang.ext());
         path.set_extension("csv");
+        Some(path)
+    }
+
+    pub fn report_path(&self, lang: &BenchmarkLanguage) -> Option<PathBuf> {
+        create_dir_all(REPORTS_PATH).ok()?;
+        let mut path = PathBuf::from(REPORTS_PATH).join(self.name.clone() + "_" + lang.ext());
+        path.set_extension("png");
         Some(path)
     }
 
