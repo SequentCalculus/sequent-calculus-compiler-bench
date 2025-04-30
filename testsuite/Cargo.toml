@@ -1,0 +1,15 @@
+[package]
+name = "testsuite"
+version = "0.1.0"
+edition = "2021"
+
+autobins = false
+
+[[test]]
+name = "testsuite"
+path = "src/main.rs"
+harness = false
+
+[dependencies]
+basic-toml = { version = "0.1.9" }
+serde = { version = "1.0.217" }
