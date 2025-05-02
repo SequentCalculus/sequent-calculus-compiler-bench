@@ -47,7 +47,7 @@ fn main() -> Result<(), Error> {
     let mut num_fail = 0;
     for test in tests {
         test.compile_all()?;
-        let results = test.run_all()?;
+        let results = test.run_all(true)?;
         for result in results {
             let res_str = str::from_utf8(&result.stdout).expect("Could not read output");
             let res = TestResult::from_eq(&res_str, &test.config.expected);

@@ -165,19 +165,27 @@ impl Benchmark {
         Ok(())
     }
 
-    pub fn run_all(&self) -> Result<Vec<std::process::Output>, Error> {
+    pub fn run_all(&self, test: bool) -> Result<Vec<std::process::Output>, Error> {
         let mut results = vec![];
         for lang in self.languages.iter() {
-            let res = self.run(lang)?;
+            let res = self.run(lang, test)?;
             results.push(res);
         }
         Ok(results)
     }
 
-    pub fn run(&self, lang: &BenchmarkLanguage) -> Result<std::process::Output, Error> {
+    pub fn run(&self, lang: &BenchmarkLanguage, test: bool) -> Result<std::process::Output, Error> {
         let bin_path = self.bin_path(lang).unwrap();
-        Command::new(bin_path)
-            .output()
+        let mut cmd = Command::new(bin_path);
+        let args = if test {
+            &self.config.test_args
+        } else {
+            &self.config.args
+        };
+        for arg in args {
+            cmd.arg(arg);
+        }
+        cmd.output()
             .map_err(|err| Error::run(&self.name, lang, err))
     }
 

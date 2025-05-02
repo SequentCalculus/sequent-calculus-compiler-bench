@@ -5,6 +5,7 @@ pub struct Config {
     pub args: Vec<String>,
     pub runs: u32,
     pub heap_size: Option<usize>,
+    pub test_args: Vec<String>,
     pub expected: String,
     pub suite: String,
 }
@@ -16,6 +17,7 @@ impl Default for Config {
             args: vec![],
             runs: 10,
             heap_size: None,
+            test_args: vec![],
             expected: "".to_owned(),
             suite: "custom".to_owned(),
         }
