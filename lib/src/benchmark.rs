@@ -52,6 +52,8 @@ impl BenchmarkLanguage {
                 cmd.arg(source_file);
                 cmd.arg("-o");
                 cmd.arg(out_file);
+                cmd.arg("-C");
+                cmd.arg("opt-level=3");
                 cmd
             }
         }
