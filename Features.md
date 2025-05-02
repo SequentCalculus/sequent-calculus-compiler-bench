@@ -1,3 +1,44 @@
+# Languages
+
+| Benchmark             | Sc | Rust | Notes |
+| Ack                   | ✔️ | ✔️   |
+| Fib                   | ✔️ | ✔️   |
+| MotzkinGoto           | ✔️ | N/A  | 
+| AckGoto               | ✔️ | N/A  | 
+| FibonacciRecursive    | ✔️ | ✔️   |
+| Nqueens               | ✔️ | ✔️   |
+| Boyer                 | ✔️ | ✔️   |
+| Fish                  | ✔️ | X    | Wrong Output |
+| Perm                  | ✔️ | ✔️   |
+| Gcd                   | ✔️ | X    | Wrong Output |
+| Primes                | ✔️ | ✔️   | 
+| Constraints           | ✔️ | X    | Stack Overflow |
+| Integer               | ✔️ | ✔️   | Needs Refactoring |
+| Sudan                 | ✔️ | ✔️   |
+| Cpstak                | ✔️ | ✔️   | 
+| IterateIncrement      | ✔️ | ✔️   |
+| SudanGoto             | ✔️ | N/A  |
+| Cryptarithm1          | ✔️ | X    | Stack Overflow |
+| Lcss                  | ✔️ | X    | Wrong Output |
+| SumRange              | ✔️ | ✔️   |
+| Deriv                 | ✔️ | ✔️   |
+| Life                  | ✔️ | ✔️   |
+| TailFib               | ✔️ | ✔️   |
+| Divrec                | ✔️ | ✔️   |
+| LookupTree            | ✔️ | ✔️   |
+| Tak                   | ✔️ | ✔️   |    
+| EraseUnused           | ✔️ | ✔️   |
+| MatchOptions          | ✔️ | ✔️   |
+| TakGoto               | ✔️ | N/A  |
+| Evenodd               | ✔️ | ✔️   |
+| Merge                 | ✔️ | ✔️   |
+| Takl                  | ✔️ | ✔️   |
+| EvenoddGoto           | ✔️ | N/A  | 
+| Minimax               | ✔️ | ✔️   | Needs Refactoring |
+| FactorialAccumulator  | ✔️ | ✔️   |
+| Motzkin               | ✔️ | X    | Wrong Output |
+
+
 # Nofib
 
 ## Progress 
