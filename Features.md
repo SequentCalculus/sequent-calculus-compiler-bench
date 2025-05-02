@@ -7,32 +7,32 @@
 | MotzkinGoto           | ✔️ | N/A  |       |
 | AckGoto               | ✔️ | N/A  |       |
 | FibonacciRecursive    | ✔️ | ✔️   |       |
-| Nqueens               | ✔️ | ✔️   |       |
+| Nqueens               | ✔️ | X    | stack Overflow with bench args      |
 | Boyer                 | ✔️ | ✔️   |       |
 | Fish                  | ✔️ | X    | Wrong Output |
 | Perm                  | ✔️ | ✔️   |       |
 | Gcd                   | ✔️ | X    | Wrong Output |
 | Primes                | ✔️ | ✔️   |       |
 | Constraints           | ✔️ | X    | Stack Overflow |
-| Integer               | ✔️ | ✔️   | Needs Refactoring |
+| Integer               | ✔️ | X    | Needs Refactoring, Stack Overflow |
 | Sudan                 | ✔️ | ✔️   |       |
-| Cpstak                | ✔️ | ✔️   |       |
+| Cpstak                | ✔️ | X    | Stack Overflow with bench args       |
 | IterateIncrement      | ✔️ | ✔️   |       |
 | SudanGoto             | ✔️ | N/A  |       |
 | Cryptarithm1          | ✔️ | X    | Stack Overflow |
 | Lcss                  | ✔️ | X    | Wrong Output |
-| SumRange              | ✔️ | ✔️   |       |
-| Deriv                 | ✔️ | ✔️   |       |
+| SumRange              | ✔️ | X    | Stack Overflow with bench args       |
+| Deriv                 | ✔️ | X    | Stack overflow with bench args       |
 | Life                  | ✔️ | ✔️   |       |
 | TailFib               | ✔️ | ✔️   |       |
 | Divrec                | ✔️ | ✔️   |       |
-| LookupTree            | ✔️ | ✔️   |       |
+| LookupTree            | ✔️ | ✔️   | Stack overflow with bench args |
 | Tak                   | ✔️ | ✔️   |       |
 | EraseUnused           | ✔️ | ✔️   |       |
 | MatchOptions          | ✔️ | ✔️   |       |
 | TakGoto               | ✔️ | N/A  |       |
 | Evenodd               | ✔️ | ✔️   |       |
-| Merge                 | ✔️ | ✔️   |       |
+| Merge                 | ✔️ | ✔️   | Stack overflow with bench args |
 | Takl                  | ✔️ | ✔️   |       |
 | EvenoddGoto           | ✔️ | N/A  |       |
 | Minimax               | ✔️ | ✔️   | Needs Refactoring |
