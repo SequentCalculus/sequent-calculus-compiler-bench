@@ -156,8 +156,9 @@ impl Benchmark {
         if !self.languages.contains(lang) {
             return Err(Error::unknown_lang(&self.name, "Compiling", lang));
         }
-        let mut source_path = self.base_path.clone();
+        let mut source_path = self.base_path.clone().join(&self.name);
         source_path.set_extension(lang.ext());
+
         let out_path = self.bin_path(lang)?;
         lang.compile_cmd(&source_path, &out_path)
             .output()
