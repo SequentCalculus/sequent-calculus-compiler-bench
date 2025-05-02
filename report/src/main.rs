@@ -1,5 +1,6 @@
 use lib::{
     benchmark::{Benchmark, BenchmarkLanguage},
+    errors::Error,
     paths::REPORTS_PATH,
 };
 use plotters::{
@@ -151,21 +152,21 @@ impl FromStr for BenchData {
     }
 }
 
-pub fn exec(cmd: Args) -> miette::Result<()> {
+pub fn exec(cmd: Args) -> Result<(), Error> {
     let examples;
     if let Some(name) = cmd.name {
-        examples = vec![Benchmark::new(&name).unwrap()];
+        examples = vec![Benchmark::new(&name)?];
     } else {
-        examples = Benchmark::load_all();
+        examples = Benchmark::load_all()?;
     }
     for example in examples {
-        if !example.results_exist() {
+        if !example.results_exist()? {
             println!("Skipping {}, no results found", example.name);
             continue;
         }
         let lang = BenchmarkLanguage::Sc;
         let results =
-            BenchResult::from_file(example.result_path(&lang), example.report_path(&lang));
+            BenchResult::from_file(example.result_path(&lang)?, example.report_path(&lang)?);
         results.generate_plot();
         println!("generated plot for {}", example.name);
     }
