@@ -88,14 +88,13 @@ impl Benchmark {
             let file_path = file
                 .map_err(|_| Error::path_access(&base_path, "Read file path"))?
                 .path();
-            let ext = file_path
-                .extension()
-                .ok_or(Error::path_access(&file_path, "Get File Extension"))?
-                .to_str()
-                .ok_or(Error::path_access(
+            let ext = match file_path.extension() {
+                None => continue,
+                Some(ext) => ext.to_str().ok_or(Error::path_access(
                     &file_path,
                     "Get File Extension (as string)",
-                ))?;
+                )),
+            }?;
             if ext == "args" {
                 continue;
             }
