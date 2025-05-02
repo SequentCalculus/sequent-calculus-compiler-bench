@@ -115,7 +115,6 @@ fn addj(j: i64, ls: List<i64>) -> List<List<i64>> {
 }
 
 fn perm_lscomp2(p2: List<List<i64>>, t1: List<List<i64>>, j: i64) -> List<List<i64>> {
-    //println!("perm lscomp2 of {p2:?}");
     match p2 {
         List::Nil => perm_lscomp1(t1, j),
         List::Cons(r, t2) => List::Cons(r, Rc::new(perm_lscomp2(Rc::unwrap_or_clone(t2), t1, j))),
@@ -123,7 +122,6 @@ fn perm_lscomp2(p2: List<List<i64>>, t1: List<List<i64>>, j: i64) -> List<List<i
 }
 
 fn perm_lscomp1(p1: List<List<i64>>, j: i64) -> List<List<i64>> {
-    println!("perm lscomp1 of {p1:?}");
     match p1 {
         List::Nil => List::Nil,
         List::Cons(pjs, t1) => perm_lscomp2(addj(j, pjs), Rc::unwrap_or_clone(t1), j),
@@ -131,7 +129,6 @@ fn perm_lscomp1(p1: List<List<i64>>, j: i64) -> List<List<i64>> {
 }
 
 fn permutations(ls: List<i64>) -> List<List<i64>> {
-    println!("calculating permutations of {ls:?}");
     match ls {
         List::Nil => List::Cons(List::Nil, Rc::new(List::Nil)),
         List::Cons(j, ls) => perm_lscomp1(permutations(Rc::unwrap_or_clone(ls)), j),
@@ -139,7 +136,6 @@ fn permutations(ls: List<i64>) -> List<List<i64>> {
 }
 
 fn test_cryptarithm_nofib(n: i64) -> List<List<List<i64>>> {
-    println!("testing {n}");
     List::from_iterator((1..=n).map(&|i| {
         let p0: List<i64> = List::from_iterator(0..=(9 + i)).take(10);
         permutations(p0).filter(&|l| condition(l))
@@ -148,9 +144,7 @@ fn test_cryptarithm_nofib(n: i64) -> List<List<List<i64>>> {
 
 fn main_loop(iters: u64, n: i64) -> i64 {
     let res = test_cryptarithm_nofib(n);
-    println!("got res {res:?}");
     if iters == 1 {
-        println!("{}", res.head().head().head());
         0
     } else {
         main_loop(iters - 1, n)
@@ -170,7 +164,5 @@ fn main() {
         .expect("Missing Argument n")
         .parse::<i64>()
         .expect("m must be a number");
-    println!("iters {iters}");
-    println!("n {n}");
     std::process::exit(main_loop(iters, n) as i32)
 }

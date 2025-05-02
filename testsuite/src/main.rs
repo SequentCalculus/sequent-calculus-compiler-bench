@@ -47,22 +47,26 @@ fn main() -> Result<(), Error> {
     let mut num_fail = 0;
     for test in tests {
         test.compile_all()?;
-        let results = test.run_all(true)?;
-        for result in results {
-            let res_str = str::from_utf8(&result.stdout).expect("Could not read output");
+        for lang in test.languages.iter() {
+            let result = test.run(lang, true)?;
+            let res_str = str::from_utf8(&result.stdout)
+                .expect("Could not read output")
+                .trim();
             let res = TestResult::from_eq(&res_str, &test.config.expected);
             if matches!(res, TestResult::Fail(_)) {
                 num_fail += 1;
             };
-            res.report(&test.name);
+            res.report(&format!("{} ({lang})", test.name));
         }
     }
     println!("");
     println!(
-        "Ran {} tests, {} success, {} fail",
+        "Ran {} tests, {} success, {}{} fail{}",
         num_tests,
         num_tests - num_fail,
-        num_fail
+        if num_fail > 0 { "\x1b[31m" } else { "" },
+        num_fail,
+        if num_fail > 0 { "\x1b[0m" } else { "" },
     );
     if num_fail != 0 {
         panic!("Not all tests ran successfully")
