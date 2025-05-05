@@ -56,6 +56,7 @@ fn main() -> Result<(), Error> {
                 Ok(_) => (),
                 Err(err) => {
                     report_format(TestResult::from_err(err));
+                    continue;
                 }
             };
             let result = match test.run(lang, true) {

@@ -13,38 +13,38 @@ enum Id {
     AND,
     APPEND,
     CONS,
-    CONSP,
+    _CONSP,
     DIFFERENCE,
-    DIVIDES,
+    _DIVIDES,
     EQUAL,
-    EVEN,
-    EXP,
+    _EVEN,
+    _EXP,
     F,
     FALSE,
     FOUR,
-    GCD,
-    GREATEREQP,
-    GREATERP,
+    _GCD,
+    _GREATEREQP,
+    _GREATERP,
     IF,
-    IFF,
+    _IFF,
     IMPLIES,
     LENGTH,
-    LESSEQP,
-    LESSP,
-    LISTP,
+    _LESSEQP,
+    _LESSP,
+    _LISTP,
     MEMBER,
     NIL,
-    NILP,
-    NLISTP,
+    _NILP,
+    _NLISTP,
     NOT,
-    ODD,
+    _ODD,
     ONE,
     OR,
     PLUS,
     QUOTIENT,
     REMAINDER,
     REVERSE,
-    SUB1,
+    _SUB1,
     TIMES,
     TRUE,
     TWO,
@@ -56,7 +56,7 @@ enum Id {
 enum Term<'a> {
     Var(Id),
     Fun(Id, Vec<Term<'a>>, &'a dyn Fn() -> Vec<(Term<'a>, Term<'a>)>),
-    ERROR,
+    _ERROR,
 }
 
 impl<'a> PartialEq for Term<'a> {
@@ -172,32 +172,32 @@ fn cons<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
     Term::Fun(Id::CONS, vec![a, b], &|| vec![])
 }
 
-fn consp<'a>(a: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::CONSP, vec![a], &|| {
-        vec![(consp(cons(x(), y())), boyer_true())]
+fn _consp<'a>(a: Term<'a>) -> Term<'a> {
+    Term::Fun(Id::_CONSP, vec![a], &|| {
+        vec![(_consp(cons(x(), y())), boyer_true())]
     })
 }
 
-fn difference<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
+fn d_ifference<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
     Term::Fun(Id::DIFFERENCE, vec![a, b], &|| {
         vec![
-            (difference(x(), x()), zero()),
-            (difference(plus(x(), y()), x()), y()),
-            (difference(plus(y(), x()), x()), y()),
+            (d_ifference(x(), x()), zero()),
+            (d_ifference(plus(x(), y()), x()), y()),
+            (d_ifference(plus(y(), x()), x()), y()),
             (
-                difference(plus(x(), y()), plus(x(), z())),
-                difference(y(), z()),
+                d_ifference(plus(x(), y()), plus(x(), z())),
+                d_ifference(y(), z()),
             ),
-            (difference(plus(y(), plus(x(), z())), x()), plus(y(), z())),
-            (difference(add1(plus(y(), z())), z()), add1(y())),
-            (difference(add1(add1(x())), two()), x()),
+            (d_ifference(plus(y(), plus(x(), z())), x()), plus(y(), z())),
+            (d_ifference(add1(plus(y(), z())), z()), add1(y())),
+            (d_ifference(add1(add1(x())), two()), x()),
         ]
     })
 }
 
-fn divides<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::DIVIDES, vec![a, b], &|| {
-        vec![(divides(x(), y()), zerop(remainder(y(), x())))]
+fn _divides<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
+    Term::Fun(Id::_DIVIDES, vec![a, b], &|| {
+        vec![(_divides(x(), y()), zerop(remainder(y(), x())))]
     })
 }
 
@@ -206,13 +206,13 @@ fn equal<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
         vec![
             (equal(plus(x(), y()), zero()), and_(zerop(x()), zerop(y()))),
             (equal(plus(x(), y()), plus(x(), z())), equal(y(), z())),
-            (equal(zero(), difference(x(), y())), not_(lessp(y(), z()))),
+            (equal(zero(), d_ifference(x(), y())), not_(lessp(y(), z()))),
             (
-                equal(x(), difference(x(), y())),
+                equal(x(), d_ifference(x(), y())),
                 or_(equal(x(), zero()), zerop(y())),
             ),
             (
-                equal(x(), difference(x(), y())),
+                equal(x(), d_ifference(x(), y())),
                 or_(equal(x(), zero()), zerop(y())),
             ),
             (equal(times(x(), y()), zero()), or_(zerop(x()), zerop(y()))),
@@ -230,7 +230,7 @@ fn equal<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
                 and_(equal(x(), one()), equal(y(), one())),
             ),
             (
-                equal(difference(x(), y()), difference(z(), y())),
+                equal(d_ifference(x(), y()), d_ifference(z(), y())),
                 if_(
                     lessp(x(), y()),
                     not_(lessp(y(), z())),
@@ -249,24 +249,27 @@ fn equal<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
     })
 }
 
-fn even_<'a>(a: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::EVEN, vec![a], &|| {
-        vec![(even_(x()), if_(zerop(x()), boyer_true(), odd_(sub1(x()))))]
+fn _even_<'a>(a: Term<'a>) -> Term<'a> {
+    Term::Fun(Id::_EVEN, vec![a], &|| {
+        vec![(
+            _even_(x()),
+            if_(zerop(x()), boyer_true(), _odd_(_sub1(x()))),
+        )]
     })
 }
 
-fn exp_<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::EXP, vec![a, b], &|| {
+fn _exp_<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
+    Term::Fun(Id::_EXP, vec![a, b], &|| {
         vec![
             (
-                exp_(x(), plus(y(), z())),
-                times(exp_(x(), y()), exp_(x(), z())),
+                _exp_(x(), plus(y(), z())),
+                times(_exp_(x(), y()), _exp_(x(), z())),
             ),
             (
-                exp_(x(), plus(y(), z())),
-                times(exp_(x(), y()), exp_(x(), z())),
+                _exp_(x(), plus(y(), z())),
+                times(_exp_(x(), y()), _exp_(x(), z())),
             ),
-            (exp_(x(), times(y(), z())), exp_(exp_(x(), y()), z())),
+            (_exp_(x(), times(y(), z())), _exp_(_exp_(x(), y()), z())),
         ]
     })
 }
@@ -275,21 +278,21 @@ fn f<'a>(a: Term<'a>) -> Term<'a> {
     Term::Fun(Id::F, vec![a], &|| vec![])
 }
 
-fn gcd_<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::GCD, vec![a, b], &|| {
+fn _gcd_<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
+    Term::Fun(Id::_GCD, vec![a, b], &|| {
         vec![
-            (gcd_(x(), y()), gcd_(y(), x())),
+            (_gcd_(x(), y()), _gcd_(y(), x())),
             (
-                gcd_(times(x(), z()), times(y(), z())),
-                times(z(), gcd_(x(), y())),
+                _gcd_(times(x(), z()), times(y(), z())),
+                times(z(), _gcd_(x(), y())),
             ),
         ]
     })
 }
 
-fn greatereqp<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::GREATEREQP, vec![a, b], &|| {
-        vec![(greatereqp(x(), y()), not_(lessp(x(), y())))]
+fn _greatereqp<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
+    Term::Fun(Id::_GREATEREQP, vec![a, b], &|| {
+        vec![(_greatereqp(x(), y()), not_(lessp(x(), y())))]
     })
 }
 
@@ -302,9 +305,9 @@ fn implies<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
     })
 }
 
-fn iff<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::IFF, vec![a, b], &|| {
-        vec![(iff(x(), y()), and_(implies(x(), y()), implies(y(), x())))]
+fn _iff<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
+    Term::Fun(Id::_IFF, vec![a, b], &|| {
+        vec![(_iff(x(), y()), and_(implies(x(), y()), implies(y(), x())))]
     })
 }
 
@@ -320,14 +323,14 @@ fn length_<'a>(a: Term<'a>) -> Term<'a> {
     })
 }
 
-fn lesseqp<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::LESSEQP, vec![a, b], &|| {
-        vec![(lesseqp(x(), y()), not_(lessp(y(), x())))]
+fn _lesseqp<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
+    Term::Fun(Id::_LESSEQP, vec![a, b], &|| {
+        vec![(_lesseqp(x(), y()), not_(lessp(y(), x())))]
     })
 }
 
 fn lessp<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::LESSP, vec![a, b], &|| {
+    Term::Fun(Id::_LESSP, vec![a, b], &|| {
         vec![
             (lessp(remainder(x(), y()), y()), not_(zerop(y()))),
             (
@@ -344,13 +347,15 @@ fn lessp<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
     })
 }
 
-fn nilp<'a>(a: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::NILP, vec![a], &|| vec![(nilp(x()), equal(x(), nil()))])
+fn _nilp<'a>(a: Term<'a>) -> Term<'a> {
+    Term::Fun(Id::_NILP, vec![a], &|| {
+        vec![(_nilp(x()), equal(x(), nil()))]
+    })
 }
 
-fn listp<'a>(a: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::LISTP, vec![a], &|| {
-        vec![(listp(x()), or_(nilp(x()), consp(x())))]
+fn _listp<'a>(a: Term<'a>) -> Term<'a> {
+    Term::Fun(Id::_LISTP, vec![a], &|| {
+        vec![(_listp(x()), or_(_nilp(x()), _consp(x())))]
     })
 }
 
@@ -366,14 +371,16 @@ fn member<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
     })
 }
 
-fn nlistp<'a>(a: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::NLISTP, vec![a], &|| {
-        vec![(nlistp(x()), not_(listp(x())))]
+fn _nlistp<'a>(a: Term<'a>) -> Term<'a> {
+    Term::Fun(Id::_NLISTP, vec![a], &|| {
+        vec![(_nlistp(x()), not_(_listp(x())))]
     })
 }
 
-fn odd_<'a>(a: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::ODD, vec![a], &|| vec![(odd_(x()), even_(sub1(x())))])
+fn _odd_<'a>(a: Term<'a>) -> Term<'a> {
+    Term::Fun(Id::_ODD, vec![a], &|| {
+        vec![(_odd_(x()), _even_(_sub1(x())))]
+    })
 }
 
 fn or_<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
@@ -430,8 +437,8 @@ fn reverse_<'a>(a: Term<'a>) -> Term<'a> {
     })
 }
 
-fn sub1<'a>(a: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::SUB1, vec![a], &|| vec![(sub1(add1(x())), x())])
+fn _sub1<'a>(a: Term<'a>) -> Term<'a> {
+    Term::Fun(Id::_SUB1, vec![a], &|| vec![(_sub1(add1(x())), x())])
 }
 
 fn times<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
@@ -443,8 +450,8 @@ fn times<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
             ),
             (times(times(x(), y()), z()), times(x(), times(y(), z()))),
             (
-                times(x(), difference(y(), z())),
-                difference(times(y(), x()), times(z(), x())),
+                times(x(), d_ifference(y(), z())),
+                d_ifference(times(y(), x()), times(z(), x())),
             ),
             (times(x(), add1(y())), plus(x(), times(x(), y()))),
         ]
@@ -527,7 +534,7 @@ fn rewrite<'a>(t: Term<'a>) -> Term<'a> {
             Term::Fun(f, args.into_iter().map(rewrite).collect(), lemmas),
             lemmas(),
         ),
-        Term::ERROR => Term::ERROR,
+        Term::_ERROR => Term::_ERROR,
     }
 }
 
@@ -598,7 +605,7 @@ fn apply_subst<'a>(subst: Vec<(Id, Term<'a>)>, t: Term<'a>) -> Term<'a> {
                 .collect(),
             ls,
         ),
-        Term::ERROR => Term::ERROR,
+        Term::_ERROR => Term::_ERROR,
     }
 }
 
@@ -611,7 +618,7 @@ fn test0<'a>(xxxx: Term<'a>) -> bool {
         (Id::X, f(plus(plus(a(), b()), plus(c(), zero())))),
         (Id::Y, f(times(times(a(), b()), plus(c(), d())))),
         (Id::Z, f(reverse_(append_(append_(a(), b()), nil())))),
-        (Id::U, equal(plus(a(), b()), difference(x(), y()))),
+        (Id::U, equal(plus(a(), b()), d_ifference(x(), y()))),
         (Id::W, lessp(remainder(a(), b()), member(a(), length_(b())))),
     ];
     let theorem = implies(

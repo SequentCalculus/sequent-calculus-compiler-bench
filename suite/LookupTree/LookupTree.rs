@@ -5,7 +5,7 @@ enum Tree<A> {
     Leaf(A),
     Node {
         left: Rc<Tree<A>>,
-        right: Rc<Tree<A>>,
+        _right: Rc<Tree<A>>,
     },
 }
 
@@ -15,7 +15,7 @@ impl<A> Tree<A> {
             let t = Tree::<u64>::create(i + 1, n);
             Tree::Node {
                 left: Rc::new(t.clone()),
-                right: Rc::new(t),
+                _right: Rc::new(t),
             }
         } else {
             Tree::Leaf(n)
@@ -28,7 +28,7 @@ impl<A> Tree<A> {
     {
         match self {
             Tree::Leaf(a) => a.clone(),
-            Tree::Node { left, right: _ } => left.lookup(),
+            Tree::Node { left, _right: _ } => left.lookup(),
         }
     }
 }

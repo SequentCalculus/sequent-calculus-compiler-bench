@@ -14,10 +14,6 @@ impl<A> List<A> {
         }
     }
 
-    fn is_empty(&self) -> bool {
-        matches!(self, List::Nil)
-    }
-
     fn tail(self) -> List<A>
     where
         A: Clone,

@@ -162,14 +162,14 @@ impl Player {
 #[derive(Debug, Clone)]
 struct RoseTree<A> {
     a: A,
-    as_: Rc<List<RoseTree<A>>>,
+    _as_: Rc<List<RoseTree<A>>>,
 }
 
 impl<A> RoseTree<A> {
     fn leaf(a: A) -> RoseTree<A> {
         RoseTree {
             a,
-            as_: Rc::new(List::Nil),
+            _as_: Rc::new(List::Nil),
         }
     }
 
@@ -318,11 +318,11 @@ fn minimax(p: Player, board: List<Option<Player>>) -> RoseTree<(List<Option<Play
         match p {
             Player::X => RoseTree {
                 a: (board, scores.max()),
-                as_: Rc::new(trees),
+                _as_: Rc::new(trees),
             },
             Player::O => RoseTree {
                 a: (board, scores.min()),
-                as_: Rc::new(trees),
+                _as_: Rc::new(trees),
             },
         }
     }
