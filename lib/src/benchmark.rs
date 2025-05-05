@@ -32,7 +32,7 @@ impl BenchmarkLanguage {
         }
     }
 
-    fn compile_cmd(&self, source_file: &PathBuf) -> Command {
+    fn compile_cmd(&self, source_file: &PathBuf, heap_size: Option<usize>) -> Command {
         match self {
             BenchmarkLanguage::Sc => {
                 let mut cmd = Command::new("grokking");
@@ -42,6 +42,10 @@ impl BenchmarkLanguage {
                 cmd.arg("x86-64");
                 #[cfg(target_arch = "aarch64")]
                 cmd.arg("aarch64");
+                if let Some(hs) = heap_size {
+                    cmd.arg("--heap-size");
+                    cmd.arg(format!("{}", hs));
+                }
                 cmd
             }
             BenchmarkLanguage::Rust => {
@@ -178,7 +182,7 @@ impl Benchmark {
         let mut source_path = self.base_path.clone().join(&self.name);
         source_path.set_extension(lang.ext());
 
-        let mut compile_cmd = lang.compile_cmd(&source_path);
+        let mut compile_cmd = lang.compile_cmd(&source_path, self.config.heap_size);
         compile_cmd
             .status()
             .map_err(|err| Error::compile(&self.name, lang, err))?
