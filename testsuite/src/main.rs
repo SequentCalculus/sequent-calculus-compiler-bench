@@ -22,6 +22,10 @@ impl TestResult {
         }
     }
 
+    pub fn from_err<T: std::error::Error>(err: T) -> TestResult {
+        TestResult::Fail(err.to_string())
+    }
+
     pub fn report(&self, test_name: &str) {
         print!("Test {test_name}.........");
         match self {
@@ -46,9 +50,22 @@ fn main() -> Result<(), Error> {
     let num_tests = tests.len();
     let mut num_fail = 0;
     for test in tests {
-        test.compile_all()?;
         for lang in test.languages.iter() {
-            let result = test.run(lang, true)?;
+            let report_format = |res: TestResult| res.report(&format!("{} ({lang})", test.name));
+            match test.compile(lang) {
+                Ok(_) => (),
+                Err(err) => {
+                    report_format(TestResult::from_err(err));
+                }
+            };
+            let result = match test.run(lang, true) {
+                Ok(res) => res,
+                Err(err) => {
+                    report_format(TestResult::from_err(err));
+                    num_fail += 1;
+                    continue;
+                }
+            };
             let res_str = str::from_utf8(&result.stdout)
                 .expect("Could not read output")
                 .trim();
@@ -56,7 +73,7 @@ fn main() -> Result<(), Error> {
             if matches!(res, TestResult::Fail(_)) {
                 num_fail += 1;
             };
-            res.report(&format!("{} ({lang})", test.name));
+            report_format(res);
         }
     }
     println!("");
