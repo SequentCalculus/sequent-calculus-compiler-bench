@@ -26,13 +26,13 @@
 | Life                  | ✔️ | ✔️   |       |
 | TailFib               | ✔️ | ✔️   |       |
 | Divrec                | ✔️ | ✔️   |       |
-| LookupTree            | ✔️ | ✔️   | Stack overflow with bench args |
+| LookupTree            | ✔️ | X    | Stack overflow with bench args |
 | Tak                   | ✔️ | ✔️   |       |
 | EraseUnused           | ✔️ | ✔️   |       |
 | MatchOptions          | ✔️ | ✔️   |       |
 | TakGoto               | ✔️ | N/A  |       |
 | Evenodd               | ✔️ | ✔️   |       |
-| Merge                 | ✔️ | ✔️   | Stack overflow with bench args |
+| Merge                 | ✔️ | X    | Stack overflow with bench args |
 | Takl                  | ✔️ | ✔️   |       |
 | EvenoddGoto           | ✔️ | N/A  |       |
 | Minimax               | ✔️ | ✔️   | Needs Refactoring |

@@ -85,7 +85,7 @@ def runbench(
   integerbench(jop, astart, astep, alim, astart, astep, alim)
 }
 
-def runalltests(astart: i64, astep: i64, alim: i64, bstart: i64, bstep: i64, blim: i64): List[Either[i64, Bool]] {
+def runalltests(astart: i64, astep: i64, alim: i64): List[Either[i64, Bool]] {
   let z_add: Fun2[i64, i64, Either[i64, Bool]] = new { Apply2(a, b) => Left(a + b) };
   let z_sub: Fun2[i64, i64, Either[i64, Bool]] = new { Apply2(a, b) => Left(a - b) };
   let z_mul: Fun2[i64, i64, Either[i64, Bool]] = new { Apply2(a, b) => Left(a * b) };
@@ -110,7 +110,7 @@ def runalltests(astart: i64, astep: i64, alim: i64, bstart: i64, bstep: i64, bli
 }
 
 def test_integer_nofib(n: i64): List[Either[i64, Bool]] {
-  runalltests(-2100000000, n, 2100000000, -2100000000, n, 2100000000)
+  runalltests(-2100000000, n, 2100000000)
 }
 
 def head(l: List[Either[i64, Bool]]): i64 {

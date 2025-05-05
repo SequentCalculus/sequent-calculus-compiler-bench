@@ -18,21 +18,6 @@ impl<A> List<A> {
         ls
     }
 
-    fn zip<B>(self, other: List<B>) -> List<(A, B)>
-    where
-        A: Clone,
-        B: Clone,
-    {
-        match (self, other) {
-            (List::Nil, _) => List::Nil,
-            (_, List::Nil) => List::Nil,
-            (List::Cons(a, as_), List::Cons(b, bs_)) => List::Cons(
-                (a, b),
-                Rc::new(Rc::unwrap_or_clone(as_).zip(Rc::unwrap_or_clone(bs_))),
-            ),
-        }
-    }
-
     fn map<B>(self, f: &impl Fn(A) -> B) -> List<B>
     where
         A: Clone,

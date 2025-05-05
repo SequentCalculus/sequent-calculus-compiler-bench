@@ -97,7 +97,7 @@ impl Error {
         }
     }
 
-    pub fn compile<T: std::error::Error>(name: &str, lang: &BenchmarkLanguage, err: T) -> Error {
+    pub fn compile<T: fmt::Display>(name: &str, lang: &BenchmarkLanguage, err: T) -> Error {
         Error::Compile {
             bench: name.to_owned(),
             lang: lang.to_string(),
@@ -105,7 +105,7 @@ impl Error {
         }
     }
 
-    pub fn run<T: std::error::Error>(name: &str, lang: &BenchmarkLanguage, err: T) -> Error {
+    pub fn run<T: fmt::Display>(name: &str, lang: &BenchmarkLanguage, err: T) -> Error {
         Error::Run {
             bench: name.to_owned(),
             lang: lang.to_string(),

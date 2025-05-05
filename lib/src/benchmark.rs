@@ -1,7 +1,7 @@
 use super::{
     config::Config,
     errors::Error,
-    paths::{BIN_PATH, HYPERFINE_PATH, REPORTS_PATH, SUITE_PATH},
+    paths::{bin_path_aarch, bin_path_x86, HYPERFINE_PATH, REPORTS_PATH, SUITE_PATH},
 };
 use std::{
     fmt,
@@ -32,26 +32,33 @@ impl BenchmarkLanguage {
         }
     }
 
-    fn compile_cmd(&self, source_file: &PathBuf, out_file: &PathBuf) -> Command {
+    fn compile_cmd(&self, source_file: &PathBuf) -> Command {
         match self {
             BenchmarkLanguage::Sc => {
                 let mut cmd = Command::new("grokking");
                 cmd.arg("codegen");
                 cmd.arg(source_file);
-                cmd.arg("-o");
-                cmd.arg(out_file);
-                #[cfg(target_arch = "aarch64")]
-                cmd.arg("aarch64");
                 #[cfg(target_arch = "x86_64")]
                 cmd.arg("x86-64");
-
+                #[cfg(target_arch = "aarch64")]
+                cmd.arg("aarch64");
                 cmd
             }
             BenchmarkLanguage::Rust => {
+                let mut source_base = source_file
+                    .as_path()
+                    .file_stem()
+                    .expect("Could not get file name")
+                    .to_owned();
+                source_base.push("_rs");
+
                 let mut cmd = Command::new("rustc");
                 cmd.arg(source_file);
                 cmd.arg("-o");
-                cmd.arg(out_file);
+                #[cfg(target_arch = "x86_64")]
+                cmd.arg(bin_path_x86().join(source_base));
+                #[cfg(target_arch = "aarch64")]
+                cmd.arg(bin_path_aarch().join(source_base));
                 cmd.arg("-C");
                 cmd.arg("opt-level=3");
                 cmd
@@ -114,9 +121,20 @@ impl Benchmark {
     }
 
     pub fn bin_path(&self, lang: &BenchmarkLanguage) -> Result<PathBuf, Error> {
-        create_dir_all(BIN_PATH)
-            .map_err(|_| Error::path_access(&PathBuf::from(BIN_PATH), "create bin path"))?;
-        Ok(PathBuf::from(BIN_PATH).join(self.name.clone() + "_" + lang.ext()))
+        #[cfg(target_arch = "x86_64")]
+        let bin_path = bin_path_x86();
+        #[cfg(target_arch = "aarch64")]
+        let bin_path = bin_path_aarch();
+
+        create_dir_all(&bin_path)
+            .map_err(|_| Error::path_access(&PathBuf::from(&bin_path), "create bin path"))?;
+        let mut bin_name = self.name.clone();
+        if *lang != BenchmarkLanguage::Sc {
+            bin_name += "_";
+            bin_name += lang.ext();
+        }
+
+        Ok(PathBuf::from(bin_path).join(bin_name))
     }
 
     pub fn result_path(&self, lang: &BenchmarkLanguage) -> Result<PathBuf, Error> {
@@ -160,11 +178,17 @@ impl Benchmark {
         let mut source_path = self.base_path.clone().join(&self.name);
         source_path.set_extension(lang.ext());
 
-        let out_path = self.bin_path(lang)?;
-        lang.compile_cmd(&source_path, &out_path)
-            .output()
-            .map_err(|err| Error::compile(&self.name, lang, err))?;
-        Ok(())
+        let mut compile_cmd = lang.compile_cmd(&source_path);
+        compile_cmd
+            .status()
+            .map_err(|err| Error::compile(&self.name, lang, err))?
+            .success()
+            .then_some(())
+            .ok_or(Error::compile(
+                &self.name,
+                lang,
+                "Compiler exited with nonzero exit status",
+            ))
     }
 
     pub fn run_all(&self, test: bool) -> Result<Vec<std::process::Output>, Error> {
@@ -177,7 +201,7 @@ impl Benchmark {
     }
 
     pub fn run(&self, lang: &BenchmarkLanguage, test: bool) -> Result<std::process::Output, Error> {
-        let bin_path = self.bin_path(lang).unwrap();
+        let bin_path = self.bin_path(lang)?;
         let mut cmd = Command::new(bin_path);
         let args = if test {
             &self.config.test_args
@@ -187,8 +211,17 @@ impl Benchmark {
         for arg in args {
             cmd.arg(arg);
         }
-        cmd.output()
-            .map_err(|err| Error::run(&self.name, lang, err))
+        let out = cmd
+            .output()
+            .map_err(|err| Error::run(&self.name, lang, err))?;
+        if !out.status.success() {
+            return Err(Error::run(
+                &self.name,
+                lang,
+                "Command exited with nonzero exit status",
+            ));
+        }
+        Ok(out)
     }
 
     pub fn run_hyperfine_all(&self) -> Result<(), Error> {
