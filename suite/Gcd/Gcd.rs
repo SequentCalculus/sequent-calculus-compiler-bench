@@ -92,7 +92,7 @@ fn test_gcd_nofib(d: i64) -> i64 {
     let ms: List<i64> = List::from_iterator(10000..=(10000 + d));
     let tripls: List<(i64, i64, (i64, i64, i64))> =
         lscomp1(ns, ms).map(&|(x, y)| (x, y, gcd_e(x, y)));
-    let rs: List<i64> = tripls.map(&|(_, _, (gg, u, v))| (gg + u).abs() + v);
+    let rs: List<i64> = tripls.map(&|(_, _, (gg, u, v))| (gg + u + v).abs());
     rs.max()
 }
 

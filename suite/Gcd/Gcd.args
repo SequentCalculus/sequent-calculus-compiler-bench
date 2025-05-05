@@ -1,5 +1,6 @@
-args = ["3", "1200"]
+args = ["1000", "120"]
 test_args = ["1", "40"]
+heap_size=1024
 expected = "5021"
 runs = 10
 suite = "NoFib"

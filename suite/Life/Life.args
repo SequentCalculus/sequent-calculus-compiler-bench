@@ -1,4 +1,4 @@
-args = ["2", "25000"]
+args = ["1", "2500"]
 test_args = ["1", "13"]
 expected = "00"
 runs = 10

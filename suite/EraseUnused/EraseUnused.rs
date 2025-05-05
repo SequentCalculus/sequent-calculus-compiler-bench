@@ -16,13 +16,13 @@ fn replicate(v: i64, n: i64, mut a: Vec<i64>) -> Vec<i64> {
 }
 
 fn main_loop(iters: u64, n: i64) -> i64 {
-    let res = useless(0, n, vec![]);
-    if iters == 1 {
-        println!("{}", res);
-        0
-    } else {
-        main_loop(iters - 1, n)
+    for i in 0..=iters {
+        let res = useless(0, n, vec![]);
+        if i == iters {
+            println!("{}", res);
+        }
     }
+    0
 }
 
 fn main() {

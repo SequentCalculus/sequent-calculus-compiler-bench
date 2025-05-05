@@ -11,32 +11,32 @@
 | Boyer                 | ✔️ | ✔️   | ✔️    |       |
 | Fish                  | ✔️ | ✔️   | ✔️    |       |
 | Perm                  | ✔️ | ✔️   | ✔️    | Rust version significantly faster |
-| Gcd                   | ✔️ | X    |       | Wrong Output |
-| Primes                | ✔️ | ✔️   |       |       |
-| Constraints           | ✔️ | X    |       | Stack Overflow |
-| Integer               | ✔️ | X    |       | Needs Refactoring, Stack Overflow |
-| Sudan                 | ✔️ | ✔️   |       |       |
-| Cpstak                | ✔️ | X    |       | Stack Overflow with bench args       |
-| IterateIncrement      | ✔️ | ✔️   |       |       |
-| SudanGoto             | ✔️ | N/A  |       |       |
-| Cryptarithm1          | ✔️ | X    |       | Stack Overflow |
-| Lcss                  | ✔️ | X    |       | Wrong Output |
-| SumRange              | ✔️ | X    |       | Stack Overflow with bench args       |
-| Deriv                 | ✔️ | X    |       | Stack overflow with bench args       |
-| Life                  | ✔️ | ✔️   |       |       |
-| TailFib               | ✔️ | ✔️   |       |       |
-| Divrec                | ✔️ | ✔️   |       |       |
-| LookupTree            | ✔️ | X    |       |       | Stack overflow with bench args |
-| Tak                   | ✔️ | ✔️   |       |       |
-| EraseUnused           | ✔️ | ✔️   |       |       |
-| MatchOptions          | ✔️ | ✔️   |       |       |
-| TakGoto               | ✔️ | N/A  |       |       |
-| Evenodd               | ✔️ | ✔️   |       |       |
-| Merge                 | ✔️ | X    |       |       |  Stack overflow with bench args |
-| Takl                  | ✔️ | ✔️   |       |       |
-| Minimax               | ✔️ | ✔️   |       |       |  |
-| FactorialAccumulator  | ✔️ | ✔️   |       |       |  |
-| Motzkin               | ✔️ | ✔️   | ✔️    |       |  |
+| Gcd                   | ✔️ | ✔️   | ✔️    |  |
+| Primes                | ✔️ | ✔️   | ✔️    |       |
+| Constraints           | ✔️ | X    | ✔️    | Stack Overflow |
+| Integer               | ✔️ | ✔️   | ✔️    |       |
+| Sudan                 | ✔️ | ✔️   | ✔️    |       |
+| Cpstak                | ✔️ | ✔️   | ✔️    |       |
+| IterateIncrement      | ✔️ | ✔️   | ✔️    |       |
+| SudanGoto             | ✔️ | N/A  | ✔️    |       |
+| Cryptarithm1          | ✔️ | X    | ✔️    | Stack Overflow |
+| Lcss                  | ✔️ | ✔️   | ✔️    |       |
+| SumRange              | ✔️ | ✔️   | ✔️    |       |
+| Deriv                 | ✔️ | ✔️   | ✔️    | Rust version significantly slower |
+| Life                  | ✔️ | ✔️   | ✔️    |       |
+| TailFib               | ✔️ | ✔️   | ✔️    |       |
+| Divrec                | ✔️ | ✔️   | ✔️    |       |
+| LookupTree            | ✔️ | ✔️   | ✔️    | Rust version about 10x slower | 
+| Tak                   | ✔️ | ✔️   | ✔️    |       |
+| EraseUnused           | ✔️ | ✔️   | ✔️    | Rust version significantly slower |
+| MatchOptions          | ✔️ | ✔️   | ✔️    | Rust version significantly faster |
+| TakGoto               | ✔️ | N/A  | ✔️    |       |
+| Evenodd               | ✔️ | ✔️   | ✔️    |       |
+| Merge                 | ✔️ | ✔️   | ✔️    | Rust version about 10x slower |
+| Takl                  | ✔️ | ✔️   | ✔️    |       |
+| Minimax               | ✔️ | ✔️   | ✔️    |       |  
+| FactorialAccumulator  | ✔️ | ✔️   | ✔️    |       |
+| Motzkin               | ✔️ | ✔️   | ✔️    |       | 
 
 
 # Nofib

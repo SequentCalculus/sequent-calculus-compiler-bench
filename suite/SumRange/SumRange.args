@@ -1,5 +1,6 @@
-args = ["1", "10000000"]
+args = ["1500", "100000"]
 test_args = ["1", "10"]
+heap_size=1024
 expected = "45"
 runs = 10
 suite = "custom"

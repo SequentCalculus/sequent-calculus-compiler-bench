@@ -102,32 +102,6 @@ impl<T> List<T> {
         }
     }
 
-    fn take(self, n: usize) -> List<T>
-    where
-        T: Clone,
-    {
-        if n == 0 {
-            return List::Nil;
-        }
-        match self {
-            List::Nil => panic!("cannot take from empty list"),
-            List::Cons(hd, tl) => List::Cons(hd, Rc::new(Rc::unwrap_or_clone(tl).take(n - 1))),
-        }
-    }
-
-    fn drop(self, n: usize) -> List<T>
-    where
-        T: Clone,
-    {
-        if n == 0 {
-            return List::Nil;
-        }
-        match self {
-            List::Nil => panic!("Cannot drop from empty list"),
-            List::Cons(_, tl) => Rc::unwrap_or_clone(tl).drop(n - 1),
-        }
-    }
-
     fn map<U>(self, f: &impl Fn(T) -> U) -> List<U>
     where
         T: Clone,
@@ -205,8 +179,9 @@ fn algc(m: usize, n: usize, xs: List<i64>, ys: List<i64>) -> Box<dyn Fn(List<i64
     let l2 = algb(xs2.clone().rev(), ys.clone().rev()).rev();
     let k = findk(0, 0, -1, l1.zip(l2));
     Box::new(move |x| {
-        let f1 = algc(m - m2, n - k, xs2.clone(), ys.clone().drop(k));
-        let f2 = algc(m2, k, xs1.clone(), ys.clone().take(k));
+        let (ys_head, ys_tail) = ys.clone().split_at(k);
+        let f1 = algc(m - m2, n - k, xs2.clone(), ys_tail);
+        let f2 = algc(m2, k, xs1.clone(), ys_head);
         f2(f1(x))
     })
 }
