@@ -409,15 +409,15 @@ fn u(arg: Vec2, p2: Vec2, p3: Vec2) -> List<Vec4> {
 }
 
 fn corner1(arg: Vec2, q6: Vec2, q7: Vec2) -> List<Vec4> {
-    quartet(&nil, &nil, &nil, &nil, arg, q6, q7)
+    quartet(&nil, &nil, &nil, &u, arg, q6, q7)
 }
 
 fn corner2(arg: Vec2, q6: Vec2, q7: Vec2) -> List<Vec4> {
     quartet(
         &corner1,
         &side1,
-        &|a, b, c| rot(&|a, b, c| side1(a, b, c), a, b, c),
-        &|a, b, c| rot(&|a, b, c| u(a, b, c), a, b, c),
+        &|a, b, c| rot(&side1, a, b, c),
+        &|a, b, c| rot(&u, a, b, c),
         arg,
         q6,
         q7,
@@ -469,8 +469,8 @@ fn pseudocorner(arg: Vec2, q6: Vec2, q7: Vec2) -> List<Vec4> {
     quartet(
         &corner2,
         &side2,
-        &|a, b, c| rot(&|a, b, c| side2(a, b, c), a, b, c),
-        &|a, b, c| rot(&|a, b, c| t(a, b, c), a, b, c),
+        &|a, b, c| rot(&side2, a, b, c),
+        &|a, b, c| rot(&t, a, b, c),
         arg,
         q6,
         q7,
@@ -500,5 +500,5 @@ fn main() {
         .expect("Missing Argument n")
         .parse::<i64>()
         .expect("n must be a number");
-    println!("{:?}", test_fish_nofib(n).head().len());
+    println!("{}", test_fish_nofib(n).head().len());
 }

@@ -1,4 +1,4 @@
-fn sum_loop(i: i64, tot: i64, stop: i64, f: Box<impl Fn(i64) -> i64>) -> i64 {
+fn sum_loop(i: i64, tot: i64, stop: i64, f: &impl Fn(i64) -> i64) -> i64 {
     if stop < i {
         tot
     } else {
@@ -6,7 +6,7 @@ fn sum_loop(i: i64, tot: i64, stop: i64, f: Box<impl Fn(i64) -> i64>) -> i64 {
     }
 }
 
-fn sum(f: Box<impl Fn(i64) -> i64>, start: i64, stop: i64) -> i64 {
+fn sum(f: &impl Fn(i64) -> i64, start: i64, stop: i64) -> i64 {
     sum_loop(start, 0, stop, f)
 }
 
@@ -15,8 +15,8 @@ fn motz(n: i64) -> i64 {
         1
     } else {
         let limit = n - 2;
-        let product = Box::new(|i| motz(i) * motz(limit - 1));
-        motz(n - 1) + sum(product, 0, limit)
+        let product = Box::new(|i| motz(i) * motz(limit - i));
+        motz(n - 1) + sum(&product, 0, limit)
     }
 }
 

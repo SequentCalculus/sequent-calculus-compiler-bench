@@ -1,43 +1,42 @@
 # Languages
 
-| Benchmark             | Sc | Rust | Notes |
-| --------------------- | -- | ---- | ----- |
-| Ack                   | ✔️ | ✔️   |       |
-| Fib                   | ✔️ | ✔️   |       |
-| MotzkinGoto           | ✔️ | N/A  |       |
-| AckGoto               | ✔️ | N/A  |       |
-| FibonacciRecursive    | ✔️ | ✔️   |       |
-| Nqueens               | ✔️ | X    | stack Overflow with bench args      |
-| Boyer                 | ✔️ | ✔️   |       |
-| Fish                  | ✔️ | X    | Wrong Output |
-| Perm                  | ✔️ | ✔️   |       |
-| Gcd                   | ✔️ | X    | Wrong Output |
-| Primes                | ✔️ | ✔️   |       |
-| Constraints           | ✔️ | X    | Stack Overflow |
-| Integer               | ✔️ | X    | Needs Refactoring, Stack Overflow |
-| Sudan                 | ✔️ | ✔️   |       |
-| Cpstak                | ✔️ | X    | Stack Overflow with bench args       |
-| IterateIncrement      | ✔️ | ✔️   |       |
-| SudanGoto             | ✔️ | N/A  |       |
-| Cryptarithm1          | ✔️ | X    | Stack Overflow |
-| Lcss                  | ✔️ | X    | Wrong Output |
-| SumRange              | ✔️ | X    | Stack Overflow with bench args       |
-| Deriv                 | ✔️ | X    | Stack overflow with bench args       |
-| Life                  | ✔️ | ✔️   |       |
-| TailFib               | ✔️ | ✔️   |       |
-| Divrec                | ✔️ | ✔️   |       |
-| LookupTree            | ✔️ | X    | Stack overflow with bench args |
-| Tak                   | ✔️ | ✔️   |       |
-| EraseUnused           | ✔️ | ✔️   |       |
-| MatchOptions          | ✔️ | ✔️   |       |
-| TakGoto               | ✔️ | N/A  |       |
-| Evenodd               | ✔️ | ✔️   |       |
-| Merge                 | ✔️ | X    | Stack overflow with bench args |
-| Takl                  | ✔️ | ✔️   |       |
-| EvenoddGoto           | ✔️ | N/A  |       |
-| Minimax               | ✔️ | ✔️   | Needs Refactoring |
-| FactorialAccumulator  | ✔️ | ✔️   |       |
-| Motzkin               | ✔️ | X    | Wrong Output |
+| Benchmark             | Sc | Rust | Args  | Notes |
+| --------------------- | -- | ---- | ----- | ----- |
+| Ack                   | ✔️ | ✔️   | ✔️    |       |
+| Fib                   | ✔️ | ✔️   | ✔️    |       |
+| MotzkinGoto           | ✔️ | N/A  | ✔️    |       |
+| AckGoto               | ✔️ | N/A  | ✔️    |       |
+| FibonacciRecursive    | ✔️ | ✔️   | ✔️    |       |
+| Nqueens               | ✔️ | ✔️   | ✔️    |       |
+| Boyer                 | ✔️ | ✔️   | ✔️    |       |
+| Fish                  | ✔️ | ✔️   | ✔️    |       |
+| Perm                  | ✔️ | ✔️   | ✔️    | Rust version significantly faster |
+| Gcd                   | ✔️ | X    |       | Wrong Output |
+| Primes                | ✔️ | ✔️   |       |       |
+| Constraints           | ✔️ | X    |       | Stack Overflow |
+| Integer               | ✔️ | X    |       | Needs Refactoring, Stack Overflow |
+| Sudan                 | ✔️ | ✔️   |       |       |
+| Cpstak                | ✔️ | X    |       | Stack Overflow with bench args       |
+| IterateIncrement      | ✔️ | ✔️   |       |       |
+| SudanGoto             | ✔️ | N/A  |       |       |
+| Cryptarithm1          | ✔️ | X    |       | Stack Overflow |
+| Lcss                  | ✔️ | X    |       | Wrong Output |
+| SumRange              | ✔️ | X    |       | Stack Overflow with bench args       |
+| Deriv                 | ✔️ | X    |       | Stack overflow with bench args       |
+| Life                  | ✔️ | ✔️   |       |       |
+| TailFib               | ✔️ | ✔️   |       |       |
+| Divrec                | ✔️ | ✔️   |       |       |
+| LookupTree            | ✔️ | X    |       |       | Stack overflow with bench args |
+| Tak                   | ✔️ | ✔️   |       |       |
+| EraseUnused           | ✔️ | ✔️   |       |       |
+| MatchOptions          | ✔️ | ✔️   |       |       |
+| TakGoto               | ✔️ | N/A  |       |       |
+| Evenodd               | ✔️ | ✔️   |       |       |
+| Merge                 | ✔️ | X    |       |       |  Stack overflow with bench args |
+| Takl                  | ✔️ | ✔️   |       |       |
+| Minimax               | ✔️ | ✔️   |       |       |  |
+| FactorialAccumulator  | ✔️ | ✔️   |       |       |  |
+| Motzkin               | ✔️ | ✔️   | ✔️    |       |  |
 
 
 # Nofib
