@@ -24,7 +24,7 @@ impl<A> List<A> {
         }
     }
 
-    fn map<B>(self, f: impl Fn(A) -> B) -> List<B>
+    fn map<B>(self, f: &impl Fn(A) -> B) -> List<B>
     where
         A: Clone,
     {
@@ -337,7 +337,7 @@ fn s_tile() -> List<Vec4> {
 }
 
 fn grid(m: i64, n: i64, segments: List<Vec4>, a: Vec2, b: Vec2, c: Vec2) -> List<Vec4> {
-    segments.map(|v| {
+    segments.map(&|v| {
         ((a + b.scale(v.x, m)) + c.scale(v.y, n)).tup2((a + b.scale(v.z, m)) + c.scale(v.w, n))
     })
 }

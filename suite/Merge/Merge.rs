@@ -7,7 +7,7 @@ enum List<A> {
 }
 
 impl List<u64> {
-    fn tabulate_loop(n: u64, len: u64, f: Box<impl Fn(u64) -> u64>, acc: List<u64>) -> List<u64> {
+    fn tabulate_loop(n: u64, len: u64, f: &impl Fn(u64) -> u64, acc: List<u64>) -> List<u64> {
         if n < len {
             let next = f(n);
             List::tabulate_loop(n + 1, len, f, List::Cons(next, Rc::new(acc)))
@@ -16,7 +16,7 @@ impl List<u64> {
         }
     }
 
-    fn tabulate(n: u64, f: Box<impl Fn(u64) -> u64>) -> List<u64> {
+    fn tabulate(n: u64, f: &impl Fn(u64) -> u64) -> List<u64> {
         List::tabulate_loop(0, n, f, List::Nil)
     }
 }
@@ -68,7 +68,7 @@ impl<A> List<A> {
 fn main_loop(iters: u64, n: u64, l1: List<u64>, l2: List<u64>) -> i64 {
     let res = l1.clone().merge(l2.clone());
     if iters == 1 {
-        println!("{:?}", res.head());
+        println!("{}", res.head());
         0
     } else {
         main_loop(iters - 1, n, l1, l2)
@@ -88,7 +88,7 @@ fn main() {
         .expect("Missing Argument n")
         .parse::<u64>()
         .expect("n must be a number");
-    let l1 = List::tabulate(n, Box::new(|x| 2 * x));
-    let l2 = List::tabulate(n, Box::new(|x| (2 * x) + 1));
+    let l1 = List::tabulate(n, &|x| 2 * x);
+    let l2 = List::tabulate(n, &|x| (2 * x) + 1);
     std::process::exit(main_loop(iters, n, l1, l2) as i32)
 }

@@ -33,7 +33,7 @@ fn bench_lscomp2(
     ls: List<i64>,
     t1: List<i64>,
     a: i64,
-    op: Box<dyn Fn(i64, i64) -> Either<i64, bool>>,
+    op: &impl Fn(i64, i64) -> Either<i64, bool>,
     bstart: i64,
     bstep: i64,
     blim: i64,
@@ -60,7 +60,7 @@ fn bench_lscomp1(
     bstart: i64,
     bstep: i64,
     blim: i64,
-    op: Box<dyn Fn(i64, i64) -> Either<i64, bool>>,
+    op: &impl Fn(i64, i64) -> Either<i64, bool>,
 ) -> List<Either<i64, bool>> {
     match ls {
         List::Nil => List::Nil,
@@ -77,7 +77,7 @@ fn bench_lscomp1(
 }
 
 fn integerbench(
-    op: Box<dyn Fn(i64, i64) -> Either<i64, bool>>,
+    op: &impl Fn(i64, i64) -> Either<i64, bool>,
     astart: i64,
     astep: i64,
     alim: i64,
@@ -95,8 +95,8 @@ fn integerbench(
 }
 
 fn runbench(
-    jop: Box<dyn Fn(i64, i64) -> Either<i64, bool>>,
-    iop: Box<dyn Fn(i64, i64) -> Either<i64, bool>>,
+    jop: &impl Fn(i64, i64) -> Either<i64, bool>,
+    iop: &impl Fn(i64, i64) -> Either<i64, bool>,
     astart: i64,
     astep: i64,
     alim: i64,
@@ -116,21 +116,20 @@ fn runalltests(
     _: i64,
     _: i64,
 ) -> List<Either<i64, bool>> {
-    let z_add: Box<dyn Fn(i64, i64) -> Either<i64, bool>> = Box::new(|a, b| Either::Left(a + b));
-    let z_sub: Box<dyn Fn(i64, i64) -> Either<i64, bool>> = Box::new(|a, b| Either::Left(a - b));
-    let z_mul: Box<dyn Fn(i64, i64) -> Either<i64, bool>> = Box::new(|a, b| Either::Left(a * b));
-    let z_div: Box<dyn Fn(i64, i64) -> Either<i64, bool>> = Box::new(|a, b| Either::Left(a / b));
-    let z_mod: Box<dyn Fn(i64, i64) -> Either<i64, bool>> = Box::new(|a, b| Either::Left(a % b));
-    let z_equal: Box<dyn Fn(i64, i64) -> Either<i64, bool>> =
-        Box::new(|a, b| Either::Right(a == b));
-    let z_lt: Box<dyn Fn(i64, i64) -> Either<i64, bool>> = Box::new(|a, b| Either::Right(a < b));
-    let z_gt: Box<dyn Fn(i64, i64) -> Either<i64, bool>> = Box::new(|a, b| Either::Right(a > b));
-    let z_leq: Box<dyn Fn(i64, i64) -> Either<i64, bool>> = Box::new(|a, b| Either::Right(a <= b));
-    let z_geq: Box<dyn Fn(i64, i64) -> Either<i64, bool>> = Box::new(|a, b| Either::Right(a >= b));
+    let z_add = &|a, b| Either::Left(a + b);
+    let z_sub = &|a, b| Either::Left(a - b);
+    let z_mul = &|a, b| Either::Left(a * b);
+    let z_div = &|a, b| Either::Left(a / b);
+    let z_mod = &|a, b| Either::Left(a % b);
+    let z_equal = &|a, b| Either::Right(a == b);
+    let z_lt = &|a, b| Either::Right(a < b);
+    let z_gt = &|a, b| Either::Right(a > b);
+    let z_leq = &|a, b| Either::Right(a <= b);
+    let z_geq = &|a, b| Either::Right(a >= b);
 
     let _ = runbench(
         z_add,
-        Box::new(|a, b| Either::Left(a + b)),
+        &|a, b| Either::Left(a + b),
         astart,
         astep,
         alim,
@@ -140,7 +139,7 @@ fn runalltests(
     );
     let _ = runbench(
         z_sub,
-        Box::new(|a, b| Either::Left(a - b)),
+        &|a, b| Either::Left(a - b),
         astart,
         astep,
         alim,
@@ -150,7 +149,7 @@ fn runalltests(
     );
     let _ = runbench(
         z_mul,
-        Box::new(|a, b| Either::Left(a * b)),
+        &|a, b| Either::Left(a * b),
         astart,
         astep,
         alim,
@@ -160,7 +159,7 @@ fn runalltests(
     );
     let _ = runbench(
         z_div,
-        Box::new(|a, b| Either::Left(a / b)),
+        &|a, b| Either::Left(a / b),
         astart,
         astep,
         alim,
@@ -170,7 +169,7 @@ fn runalltests(
     );
     let _ = runbench(
         z_mod,
-        Box::new(|a, b| Either::Left(a % b)),
+        &|a, b| Either::Left(a % b),
         astart,
         astep,
         alim,
@@ -180,7 +179,7 @@ fn runalltests(
     );
     let _ = runbench(
         z_equal,
-        Box::new(|a, b| Either::Right(a == b)),
+        &|a, b| Either::Right(a == b),
         astart,
         astep,
         alim,
@@ -190,7 +189,7 @@ fn runalltests(
     );
     let _ = runbench(
         z_lt,
-        Box::new(|a, b| Either::Right(a < b)),
+        &|a, b| Either::Right(a < b),
         astart,
         astep,
         alim,
@@ -200,7 +199,7 @@ fn runalltests(
     );
     let _ = runbench(
         z_leq,
-        Box::new(|a, b| Either::Right(a <= b)),
+        &|a, b| Either::Right(a <= b),
         astart,
         astep,
         alim,
@@ -210,7 +209,7 @@ fn runalltests(
     );
     let _ = runbench(
         z_gt,
-        Box::new(|a, b| Either::Right(a > b)),
+        &|a, b| Either::Right(a > b),
         astart,
         astep,
         alim,
@@ -220,7 +219,7 @@ fn runalltests(
     );
     runbench(
         z_geq,
-        Box::new(|a, b| Either::Right(a >= b)),
+        &|a, b| Either::Right(a >= b),
         astart,
         astep,
         alim,

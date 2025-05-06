@@ -30,7 +30,7 @@ enum Id {
     IMPLIES,
     LENGTH,
     _LESSEQP,
-    _LESSP,
+    LESSP,
     _LISTP,
     MEMBER,
     NIL,
@@ -90,15 +90,19 @@ fn d<'a>() -> Term<'a> {
 fn x<'a>() -> Term<'a> {
     Term::Var(Id::X)
 }
+
 fn y<'a>() -> Term<'a> {
     Term::Var(Id::Y)
 }
+
 fn z<'a>() -> Term<'a> {
     Term::Var(Id::Z)
 }
+
 fn u<'a>() -> Term<'a> {
     Term::Var(Id::U)
 }
+
 fn w<'a>() -> Term<'a> {
     Term::Var(Id::W)
 }
@@ -178,19 +182,19 @@ fn _consp<'a>(a: Term<'a>) -> Term<'a> {
     })
 }
 
-fn d_ifference<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
+fn difference<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
     Term::Fun(Id::DIFFERENCE, vec![a, b], &|| {
         vec![
-            (d_ifference(x(), x()), zero()),
-            (d_ifference(plus(x(), y()), x()), y()),
-            (d_ifference(plus(y(), x()), x()), y()),
+            (difference(x(), x()), zero()),
+            (difference(plus(x(), y()), x()), y()),
+            (difference(plus(y(), x()), x()), y()),
             (
-                d_ifference(plus(x(), y()), plus(x(), z())),
-                d_ifference(y(), z()),
+                difference(plus(x(), y()), plus(x(), z())),
+                difference(y(), z()),
             ),
-            (d_ifference(plus(y(), plus(x(), z())), x()), plus(y(), z())),
-            (d_ifference(add1(plus(y(), z())), z()), add1(y())),
-            (d_ifference(add1(add1(x())), two()), x()),
+            (difference(plus(y(), plus(x(), z())), x()), plus(y(), z())),
+            (difference(add1(plus(y(), z())), z()), add1(y())),
+            (difference(add1(add1(x())), two()), x()),
         ]
     })
 }
@@ -206,13 +210,13 @@ fn equal<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
         vec![
             (equal(plus(x(), y()), zero()), and_(zerop(x()), zerop(y()))),
             (equal(plus(x(), y()), plus(x(), z())), equal(y(), z())),
-            (equal(zero(), d_ifference(x(), y())), not_(lessp(y(), z()))),
+            (equal(zero(), difference(x(), y())), not_(lessp(y(), z()))),
             (
-                equal(x(), d_ifference(x(), y())),
+                equal(x(), difference(x(), y())),
                 or_(equal(x(), zero()), zerop(y())),
             ),
             (
-                equal(x(), d_ifference(x(), y())),
+                equal(x(), difference(x(), y())),
                 or_(equal(x(), zero()), zerop(y())),
             ),
             (equal(times(x(), y()), zero()), or_(zerop(x()), zerop(y()))),
@@ -230,7 +234,7 @@ fn equal<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
                 and_(equal(x(), one()), equal(y(), one())),
             ),
             (
-                equal(d_ifference(x(), y()), d_ifference(z(), y())),
+                equal(difference(x(), y()), difference(z(), y())),
                 if_(
                     lessp(x(), y()),
                     not_(lessp(y(), z())),
@@ -330,7 +334,7 @@ fn _lesseqp<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
 }
 
 fn lessp<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::_LESSP, vec![a, b], &|| {
+    Term::Fun(Id::LESSP, vec![a, b], &|| {
         vec![
             (lessp(remainder(x(), y()), y()), not_(zerop(y()))),
             (
@@ -450,8 +454,8 @@ fn times<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
             ),
             (times(times(x(), y()), z()), times(x(), times(y(), z()))),
             (
-                times(x(), d_ifference(y(), z())),
-                d_ifference(times(y(), x()), times(z(), x())),
+                times(x(), difference(y(), z())),
+                difference(times(y(), x()), times(z(), x())),
             ),
             (times(x(), add1(y())), plus(x(), times(x(), y()))),
         ]
@@ -618,7 +622,7 @@ fn test0<'a>(xxxx: Term<'a>) -> bool {
         (Id::X, f(plus(plus(a(), b()), plus(c(), zero())))),
         (Id::Y, f(times(times(a(), b()), plus(c(), d())))),
         (Id::Z, f(reverse_(append_(append_(a(), b()), nil())))),
-        (Id::U, equal(plus(a(), b()), d_ifference(x(), y()))),
+        (Id::U, equal(plus(a(), b()), difference(x(), y()))),
         (Id::W, lessp(remainder(a(), b()), member(a(), length_(b())))),
     ];
     let theorem = implies(
