@@ -4,7 +4,7 @@ do
   if [ $dir = "./" ]; then
     continue
   fi 
-  if [ !  $(find $dir -name "*.rs") ] ; then
+  if [ !  $(find $dir -name "*.sml") ] ; then
     echo $dir
   fi
 done
