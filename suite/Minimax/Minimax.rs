@@ -7,11 +7,11 @@ enum List<A> {
 }
 
 impl<A> List<A> {
-    fn tabulate(len: u64, f: Box<impl Fn() -> A>) -> List<A> {
+    fn tabulate(len: u64, f: &impl Fn() -> A) -> List<A> {
         List::tabulate_loop(0, len, f)
     }
 
-    fn tabulate_loop(n: u64, len: u64, f: Box<impl Fn() -> A>) -> List<A> {
+    fn tabulate_loop(n: u64, len: u64, f: &impl Fn() -> A) -> List<A> {
         if n == len {
             List::Nil
         } else {
@@ -56,7 +56,7 @@ impl<A> List<A> {
         self.rev_acc(List::Nil)
     }
 
-    fn map<B>(self, f: Box<impl Fn(A) -> B>) -> List<B>
+    fn map<B>(self, f: &impl Fn(A) -> B) -> List<B>
     where
         A: Clone,
     {
@@ -66,14 +66,14 @@ impl<A> List<A> {
         }
     }
 
-    fn exists(&self, f: Box<dyn Fn(&A) -> bool>) -> bool {
+    fn exists(&self, f: &impl Fn(&A) -> bool) -> bool {
         match self {
             List::Nil => false,
             List::Cons(a, as_) => f(a) || as_.exists(f),
         }
     }
 
-    fn all(&self, f: Box<dyn Fn(&A) -> bool>) -> bool {
+    fn all(&self, f: &impl Fn(&A) -> bool) -> bool {
         match self {
             List::Nil => true,
             List::Cons(a, as_) => f(a) && as_.all(f),
@@ -100,17 +100,17 @@ impl<A> List<A> {
     where
         A: PartialOrd + Clone + Default,
     {
-        self.extreme(Box::new(|a, b| if b < a { a } else { b }))
+        self.extreme(&|a, b| if b < a { a } else { b })
     }
 
     fn min(self) -> A
     where
         A: PartialOrd + Clone + Default,
     {
-        self.extreme(Box::new(|a, b| if a < b { a } else { b }))
+        self.extreme(&|a, b| if a < b { a } else { b })
     }
 
-    fn extreme(self, f: Box<impl Fn(A, A) -> A>) -> A
+    fn extreme(self, f: &impl Fn(A, A) -> A) -> A
     where
         A: Default + Clone,
     {
@@ -120,7 +120,7 @@ impl<A> List<A> {
         }
     }
 
-    fn fold<T>(self, f: Box<impl Fn(A, T) -> T>, start: T) -> T
+    fn fold<T>(self, f: &impl Fn(A, T) -> T, start: T) -> T
     where
         A: Clone,
     {
@@ -191,11 +191,11 @@ fn cols() -> List<List<i64>> {
 }
 
 fn empty() -> List<Option<Player>> {
-    List::<Option<Player>>::tabulate(9, Box::new(|| None))
+    List::<Option<Player>>::tabulate(9, &|| None)
 }
 
 fn is_full(board: &List<Option<Player>>) -> bool {
-    board.all(Box::new(|p| p.is_some()))
+    board.all(&|p| p.is_some())
 }
 
 fn is_win(board: &List<Option<Player>>) -> bool {
@@ -219,22 +219,22 @@ fn player_occupies(p: Player, board: &List<Option<Player>>, i: i64) -> bool {
 
 fn has_trip(board: &List<Option<Player>>, p: Player, l: &List<i64>) -> bool {
     let board_ = board.clone();
-    l.all(Box::new(move |&i| player_occupies(p, &board_, i)))
+    l.all(&move |&i| player_occupies(p, &board_, i))
 }
 
 fn has_row(board: &List<Option<Player>>, p: Player) -> bool {
     let board_ = board.clone();
-    rows().exists(Box::new(move |l| has_trip(&board_, p, l)))
+    rows().exists(&move |l| has_trip(&board_, p, l))
 }
 
 fn has_col(board: &List<Option<Player>>, p: Player) -> bool {
     let board_ = board.clone();
-    cols().exists(Box::new(move |l| has_trip(&board_, p, l)))
+    cols().exists(&move |l| has_trip(&board_, p, l))
 }
 
 fn has_diag(board: &List<Option<Player>>, p: Player) -> bool {
     let board_ = board.clone();
-    diags().exists(Box::new(move |l| has_trip(&board_, p, l)))
+    diags().exists(&move |l| has_trip(&board_, p, l))
 }
 
 fn is_win_for(board: &List<Option<Player>>, p: Player) -> bool {
@@ -301,7 +301,7 @@ fn all_moves(board: List<Option<Player>>) -> List<i64> {
 }
 
 fn successors(board: List<Option<Player>>, p: Player) -> List<List<Option<Player>>> {
-    all_moves(board.clone()).map(Box::new(move |i| move_to(&board, p, i)))
+    all_moves(board.clone()).map(&move |i| move_to(&board, p, i))
 }
 
 fn minimax(p: Player, board: List<Option<Player>>) -> RoseTree<(List<Option<Player>>, i64)> {
@@ -309,12 +309,10 @@ fn minimax(p: Player, board: List<Option<Player>>) -> RoseTree<(List<Option<Play
         let score = score(&board);
         RoseTree::leaf((board, score))
     } else {
-        let trees = successors(board.clone(), p).map(Box::new(|b| minimax(p.other(), b)));
+        let trees = successors(board.clone(), p).map(&|b| minimax(p.other(), b));
         let scores = trees
             .clone()
-            .map(Box::new(|t: RoseTree<(List<Option<Player>>, i64)>| {
-                t.top().1
-            }));
+            .map(&|t: RoseTree<(List<Option<Player>>, i64)>| t.top().1);
         match p {
             Player::X => RoseTree {
                 a: (board, scores.max()),
@@ -331,7 +329,7 @@ fn minimax(p: Player, board: List<Option<Player>>) -> RoseTree<(List<Option<Play
 fn main_loop(iters: u64) -> i64 {
     let res = minimax(Player::X, empty());
     if iters == 1 {
-        println!("{:?}", res.top().1);
+        println!("{}", res.top().1);
         0
     } else {
         main_loop(iters - 1)

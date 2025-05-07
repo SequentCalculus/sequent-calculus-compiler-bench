@@ -46,7 +46,7 @@ impl<T> List<T> {
         }
     }
 
-    fn map<U>(self, f: Box<dyn Fn(T) -> U>) -> List<U>
+    fn map<U>(self, f: &impl Fn(T) -> U) -> List<U>
     where
         T: Clone,
     {
@@ -79,7 +79,7 @@ impl<T> List<T> {
         self.filter(&|p| !y.contains(&p))
     }
 
-    fn fold<U>(self, start: U, f: Box<dyn Fn(T, U) -> U>) -> U
+    fn fold<U>(self, start: U, f: &impl Fn(T, U) -> U) -> U
     where
         T: Clone,
     {
@@ -89,7 +89,7 @@ impl<T> List<T> {
         }
     }
 
-    fn accumulate(self, xs: List<T>, f: Box<dyn Fn(T, List<T>) -> List<T>>) -> List<T>
+    fn accumulate(self, xs: List<T>, f: &impl Fn(T, List<T>) -> List<T>) -> List<T>
     where
         T: Clone,
     {
@@ -100,10 +100,10 @@ impl<T> List<T> {
     where
         T: Clone,
     {
-        self.accumulate(y, Box::new(|h, t| List::Cons(h, Rc::new(t))))
+        self.accumulate(y, &|h, t| List::Cons(h, Rc::new(t)))
     }
 
-    fn collect_accum(self, sofar: List<T>, f: Box<dyn Fn(T) -> List<T>>) -> List<T>
+    fn collect_accum(self, sofar: List<T>, f: &impl Fn(T) -> List<T>) -> List<T>
     where
         T: Clone,
     {
@@ -115,7 +115,7 @@ impl<T> List<T> {
         }
     }
 
-    fn collect(self, f: Box<dyn Fn(T) -> List<T>>) -> List<T>
+    fn collect(self, f: &impl Fn(T) -> List<T>) -> List<T>
     where
         T: Clone,
     {
@@ -148,23 +148,21 @@ impl Gen {
         let living = self.alive();
         let living_ = living.clone();
         let living__ = living.clone();
-        let is_alive: Box<dyn for<'a> Fn(&'a (i64, i64)) -> bool> =
-            Box::new(move |&p| living_.contains(&p));
-        let live_neighbors = move |p| neighbors(p).filter(&(*is_alive)).len();
+
+        let is_alive: &dyn for<'a> Fn(&'a (i64, i64)) -> bool = &move |&p| living_.contains(&p);
+        let live_neighbors = move |p| neighbors(p).filter(is_alive).len();
         let survivors = living.clone().filter(&|&p| twoorthree(live_neighbors(p)));
-        let not_is_alive: Box<dyn for<'a> Fn(&'a (i64, i64)) -> bool> =
-            Box::new(move |&p| !living__.contains(&p));
-        let newbrnlist = living.collect(Box::new(move |p| neighbors(p).filter(&not_is_alive)));
+
+        let not_is_alive: &dyn for<'a> Fn(&'a (i64, i64)) -> bool =
+            &move |&p| !living__.contains(&p);
+        let newbrnlist = living.collect(&move |p| neighbors(p).filter(not_is_alive));
         let newborn = occurs3(newbrnlist);
+
         Gen::new(survivors.append(newborn))
     }
 
     fn nth(self, i: u64) -> Gen {
-        if i == 0 {
-            self
-        } else {
-            self.next().nth(i - 1)
-        }
+        if i == 0 { self } else { self.next().nth(i - 1) }
     }
 }
 
@@ -248,8 +246,8 @@ fn neighbors((fst, snd): (i64, i64)) -> List<(i64, i64)> {
 }
 
 fn at_pos(coordslist: List<(i64, i64)>, (fst2, snd2): (i64, i64)) -> List<(i64, i64)> {
-    let move_ = Box::new(move |(fst1, snd1)| (fst1 + snd1, fst2 + snd2));
-    coordslist.map(move_)
+    let move_ = move |(fst1, snd1)| (fst1 + snd1, fst2 + snd2);
+    coordslist.map(&move_)
 }
 
 fn bail() -> List<(i64, i64)> {

@@ -74,7 +74,7 @@ impl<A> List<A> {
         }
     }
 
-    fn map<B>(self, f: Box<impl Fn(A) -> B>) -> List<B>
+    fn map<B>(self, f: &impl Fn(A) -> B) -> List<B>
     where
         A: Clone,
     {
@@ -134,8 +134,8 @@ fn permutations(x0: List<u64>) -> List<List<u64>> {
 
 fn loop_run(
     iters: u64,
-    work: Box<impl Fn() -> List<List<u64>>>,
-    result: Box<impl Fn(List<List<u64>>) -> bool>,
+    work: &impl Fn() -> List<List<u64>>,
+    result: &impl Fn(List<List<u64>>) -> bool,
 ) -> bool {
     let res = result(work());
     if iters == 0 {
@@ -147,8 +147,8 @@ fn loop_run(
 
 fn run_benchmark(
     iters: u64,
-    work: Box<impl Fn() -> List<List<u64>>>,
-    result: Box<impl Fn(List<List<u64>>) -> bool>,
+    work: &impl Fn() -> List<List<u64>>,
+    result: &impl Fn(List<List<u64>>) -> bool,
 ) -> bool {
     loop_run(iters, work, result)
 }
@@ -162,21 +162,16 @@ fn loop_work(m: u64, perms: List<List<u64>>) -> List<List<u64>> {
 }
 
 fn factorial(n: u64) -> u64 {
-    if n == 1 {
-        1
-    } else {
-        n * factorial(n - 1)
-    }
+    if n == 1 { 1 } else { n * factorial(n - 1) }
 }
 
 fn perm9(m: u64, n: u64) -> bool {
     run_benchmark(
         1,
-        Box::new(|| loop_work(m, permutations(List::one2n(n)))),
-        Box::new(|result: List<List<u64>>| {
-            result.map(Box::new(|is_: List<u64>| is_.sum())).sum()
-                == (((n * (n + 1)) * factorial(n)) / 2)
-        }),
+        &|| loop_work(m, permutations(List::one2n(n))),
+        &|result: List<List<u64>>| {
+            result.map(&|is_: List<u64>| is_.sum()).sum() == (((n * (n + 1)) * factorial(n)) / 2)
+        },
     )
 }
 

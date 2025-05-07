@@ -34,7 +34,7 @@ impl<A> List<A> {
         }
     }
 
-    fn all(&self, f: &impl Fn(&A) -> bool) -> bool {
+    fn all(&self, f: fn(&A) -> bool) -> bool {
         match self {
             List::Nil => true,
             List::Cons(a, as_) => {
@@ -206,6 +206,7 @@ impl<T> Node<T> {
                 })
         }
     }
+
     fn map<U>(self, f: &impl Fn(T) -> U) -> Node<U>
     where
         T: Clone,
@@ -305,14 +306,13 @@ fn cache_checks(
     tbl: List<List<ConflictSet>>,
     n: Node<List<Assign>>,
 ) -> Node<(List<Assign>, List<List<ConflictSet>>)> {
-    let tbl_tl = tbl.clone().tail();
     let s = n.lab.clone();
     Node {
-        lab: (n.lab, tbl),
+        lab: (n.lab, tbl.clone()),
         children: n.children.map(&|x| {
             Rc::new(cache_checks(
                 csp,
-                fill_table(&s, csp, tbl_tl.clone()),
+                fill_table(&s, csp, tbl.clone().tail()),
                 Rc::unwrap_or_clone(x),
             ))
         }),
@@ -399,7 +399,7 @@ fn domain_wipeout(
     t: Node<((List<Assign>, ConflictSet), List<List<ConflictSet>>)>,
 ) -> Node<(List<Assign>, ConflictSet)> {
     let f8 = |((as_, cs), tbl)| {
-        let lscomp1 = |ls: List<List<ConflictSet>>| ls.filter(&|vs| vs.all(&known_conflict));
+        let lscomp1 = |ls: List<List<ConflictSet>>| ls.filter(&|vs| vs.all(known_conflict));
         let wiped_domains: List<List<ConflictSet>> = lscomp1(tbl);
         let cs_ = if wiped_domains.is_empty() {
             cs
@@ -413,7 +413,7 @@ fn domain_wipeout(
 }
 
 fn init_tree(
-    f: &dyn Fn(List<Assign>) -> List<List<Assign>>,
+    f: &impl Fn(List<Assign>) -> List<List<Assign>>,
     x: List<Assign>,
 ) -> Node<List<Assign>> {
     let children = f(x.clone()).map(&|y| Rc::new(init_tree(f, y)));
@@ -425,14 +425,13 @@ fn mk_tree(csp: &CSP) -> Node<List<Assign>> {
         if max_level(&ss) < csp.vars {
             (1..=csp.vals)
                 .map({
-                    let ss_ = ss.clone();
                     move |j| {
                         List::Cons(
                             Assign {
-                                varr: max_level(&ss_) + 1,
+                                varr: max_level(&ss) + 1,
                                 value: j,
                             },
-                            Rc::new(ss_.clone()),
+                            Rc::new(ss.clone()),
                         )
                     }
                 })
@@ -445,10 +444,10 @@ fn mk_tree(csp: &CSP) -> Node<List<Assign>> {
 }
 
 fn search(
-    labeler: Box<dyn FnOnce(CSP, Node<List<Assign>>) -> Node<(List<Assign>, ConflictSet)>>,
-    csp: CSP,
+    labeler: fn(&CSP, Node<List<Assign>>) -> Node<(List<Assign>, ConflictSet)>,
+    csp: &CSP,
 ) -> List<List<Assign>> {
-    let tree = mk_tree(&csp);
+    let tree = mk_tree(csp);
     let labeled = labeler(csp, tree);
     let pruned = labeled.prune(&|(_, x)| known_conflict(&x));
     pruned
@@ -484,11 +483,11 @@ fn bt(csp: &CSP, t: Node<List<Assign>>) -> Node<(List<Assign>, ConflictSet)> {
     t.map(&f3)
 }
 
-fn bm(csp: CSP, t: Node<List<Assign>>) -> Node<(List<Assign>, ConflictSet)> {
-    lookup_cache(&csp, cache_checks(&csp, empty_table(&csp), t)).map(&|(x, _)| x)
+fn bm(csp: &CSP, t: Node<List<Assign>>) -> Node<(List<Assign>, ConflictSet)> {
+    lookup_cache(csp, cache_checks(csp, empty_table(csp), t)).map(&|(x, _)| x)
 }
 
-fn bjbt(csp: CSP, t: Node<List<Assign>>) -> Node<(List<Assign>, ConflictSet)> {
+fn bjbt(csp: &CSP, t: Node<List<Assign>>) -> Node<(List<Assign>, ConflictSet)> {
     bj(&csp, bt(&csp, t))
 }
 
@@ -509,8 +508,8 @@ fn bj(_: &CSP, t: Node<(List<Assign>, ConflictSet)>) -> Node<(List<Assign>, Conf
     t.fold(&f6)
 }
 
-fn bjbt_(csp: CSP, t: Node<List<Assign>>) -> Node<(List<Assign>, ConflictSet)> {
-    bj_(&csp, bt(&csp, t))
+fn bjbt_(csp: &CSP, t: Node<List<Assign>>) -> Node<(List<Assign>, ConflictSet)> {
+    bj_(csp, bt(csp, t))
 }
 
 fn bj_(_: &CSP, t: Node<(List<Assign>, ConflictSet)>) -> Node<(List<Assign>, ConflictSet)> {
@@ -537,37 +536,26 @@ fn bj_(_: &CSP, t: Node<(List<Assign>, ConflictSet)>) -> Node<(List<Assign>, Con
     t.fold(&f7)
 }
 
-fn fc(csp: CSP, t: Node<List<Assign>>) -> Node<(List<Assign>, ConflictSet)> {
+fn fc(csp: &CSP, t: Node<List<Assign>>) -> Node<(List<Assign>, ConflictSet)> {
     domain_wipeout(
-        &csp,
-        lookup_cache(&csp, cache_checks(&csp, empty_table(&csp), t)),
+        csp,
+        lookup_cache(csp, cache_checks(csp, empty_table(csp), t)),
     )
 }
 
 fn try_(
     n: i64,
-    algorithm: Box<dyn FnOnce(CSP, Node<List<Assign>>) -> Node<(List<Assign>, ConflictSet)>>,
+    algorithm: fn(&CSP, Node<List<Assign>>) -> Node<(List<Assign>, ConflictSet)>,
 ) -> i64 {
-    search(algorithm, queens(n)).len() as i64
+    search(algorithm, &queens(n)).len() as i64
 }
 
 fn test_constraints_nofib(n: i64) -> List<i64> {
-    [
-        Box::new(|csp, n| bt(&csp, n))
-            as Box<dyn FnOnce(CSP, Node<List<Assign>>) -> Node<(List<Assign>, ConflictSet)>>,
-        Box::new(|csp, n| bm(csp, n))
-            as Box<dyn FnOnce(CSP, Node<List<Assign>>) -> Node<(List<Assign>, ConflictSet)>>,
-        Box::new(|csp, n| bjbt(csp, n))
-            as Box<dyn FnOnce(CSP, Node<List<Assign>>) -> Node<(List<Assign>, ConflictSet)>>,
-        Box::new(|csp, n| bjbt_(csp, n))
-            as Box<dyn FnOnce(CSP, Node<List<Assign>>) -> Node<(List<Assign>, ConflictSet)>>,
-        Box::new(|csp, n| fc(csp, n))
-            as Box<dyn FnOnce(CSP, Node<List<Assign>>) -> Node<(List<Assign>, ConflictSet)>>,
-    ]
-    .map(&|x| try_(n, x))
-    .iter()
-    .map(|x| *x)
-    .into()
+    [bt, bm, bjbt, bjbt_, fc]
+        .map(&|x| try_(n, x))
+        .iter()
+        .map(|x| *x)
+        .into()
 }
 
 fn main_loop(iters: u64, n: i64) -> i64 {
