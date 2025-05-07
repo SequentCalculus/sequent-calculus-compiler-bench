@@ -50,18 +50,18 @@ def head(l:List[i64]) : i64 {
   }
 }
 
-def main_loop(iters: i64, n: i64, l1: List[i64], l2: List[i64]): i64 {
+def main_loop(iters: i64, l1: List[i64], l2: List[i64]): i64 {
   let res: List[i64] = merge(l1, l2);
   if iters == 1 {
     println_i64(head(res));
     0
   } else {
-    main_loop(iters - 1, n, l1, l2)
+    main_loop(iters - 1,  l1, l2)
   }
 }
 
 def main(iters: i64, n: i64): i64 {
   let l1: List[i64] = tabulate(n, new { Apply(x) => 2 * x });
   let l2: List[i64] = tabulate(n, new { Apply(x) => (2 * x) + 1 });
-  main_loop(iters, n, l1, l2)
+  main_loop(iters,  l1, l2)
 }
