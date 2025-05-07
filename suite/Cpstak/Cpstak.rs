@@ -1,17 +1,27 @@
-fn cps_tak(x: i64, y: i64, z: i64, k: impl FnOnce(i64) -> i64) -> i64 {
+fn cps_tak(x: i64, y: i64, z: i64, k: Box<dyn FnOnce(i64) -> i64>) -> i64 {
     if x <= y {
         k(z)
     } else {
-        cps_tak(x - 1, y, z, move |v1| {
-            cps_tak(y - 1, z, x, move |v2| {
-                cps_tak(z - 1, x, y, move |v3| cps_tak(v1, v2, v3, k))
-            })
-        })
+        cps_tak(
+            x - 1,
+            y,
+            z,
+            Box::new(move |v1| {
+                cps_tak(
+                    y - 1,
+                    z,
+                    x,
+                    Box::new(move |v2| {
+                        cps_tak(z - 1, x, y, Box::new(move |v3| cps_tak(v1, v2, v3, k)))
+                    }),
+                )
+            }),
+        )
     }
 }
 
 fn tak(x: i64, y: i64, z: i64) -> i64 {
-    cps_tak(x, y, z, |a| a)
+    cps_tak(x, y, z, Box::new(|a| a))
 }
 
 fn main_loop(iters: u64, x: i64, y: i64, z: i64) -> i64 {
