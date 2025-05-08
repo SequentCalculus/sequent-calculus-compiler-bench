@@ -69,10 +69,13 @@ impl BenchmarkLanguage {
                 cmd.arg(bin_path_aarch().join(source_base));
                 cmd.arg("-C");
                 cmd.arg("opt-level=3");
+                cmd.arg("-Awarnings");
                 cmd
             }
             BenchmarkLanguage::Sml => {
                 let mut cmd = Command::new("mlton");
+                cmd.arg("-default-type");
+                cmd.arg("int64");
                 cmd.arg("-output");
                 #[cfg(target_arch = "x86_64")]
                 cmd.arg(bin_path_x86().join(source_base));
