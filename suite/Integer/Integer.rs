@@ -233,21 +233,23 @@ fn test_integer_nofib(n: i64) -> List<Either<i64, bool>> {
     runalltests(-2100000000, n, 2100000000, -2100000000, n, 2100000000)
 }
 
+fn print_either(e: Either<i64, bool>) {
+    match e {
+        Either::Left(i) => println!("{i}"),
+        Either::Right(b) => {
+            if b {
+                println!("11")
+            } else {
+                println!("00")
+            }
+        }
+    }
+}
+
 fn main_loop(iters: u64, n: i64) -> i64 {
     let res = test_integer_nofib(n);
     if iters == 1 {
-        println!(
-            "{}",
-            match res.head() {
-                Either::Left(l) => l,
-                Either::Right(b) =>
-                    if b {
-                        -2
-                    } else {
-                        -3
-                    },
-            }
-        );
+        print_either(res.head());
         0
     } else {
         main_loop(iters - 1, n)

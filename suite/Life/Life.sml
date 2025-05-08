@@ -123,13 +123,15 @@ fun go_loop iters steps go =
       go_loop (iters-1) steps go 
     end
 
+
 fun main () =   
   let val args = CommandLine.arguments()
     val iters = valOf (Int.fromString (hd args))
     val steps = valOf (Int.fromString (hd (tl args)))
-    val run_res = go_loop iters steps go_gun
+    val gun_res = go_loop iters steps go_gun
     val shuttle_res = go_loop iters steps go_shuttle
 in 
+  print (Int.toString gun_res);
   print ((Int.toString shuttle_res) ^ "\n")
 end
 

@@ -2,10 +2,6 @@ exception TODO
 
 datatype ('a, 'b) either = Left of 'a | Right of 'b 
 
-fun either_to_int e = 
-  case e of 
-       Left i => i
-     | Right b => if b then ~2 else ~3
 
 fun enum_from_then_to from th to = 
   if from<=to
@@ -74,11 +70,16 @@ fun runalltests astart astep alim =
 fun test_integer_nofib n = 
   runalltests ~2100000000 n 2100000000
 
+fun print_either e = 
+  case e of 
+       Left i => print ((Int.toString i) ^"\n")
+     | Right b => if b then print "11\n" else print "00\n"
+
 fun main_loop iters n = 
   let val res = test_integer_nofib n 
   in 
     if iters=1 then 
-      print ((Int.toString (either_to_int (hd res))) ^ "\n")
+      print_either (hd res)
     else main_loop (iters-1) n
   end
 

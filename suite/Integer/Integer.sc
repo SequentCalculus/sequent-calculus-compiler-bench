@@ -113,15 +113,23 @@ def test_integer_nofib(n: i64): List[Either[i64, Bool]] {
   runalltests(-2100000000, n, 2100000000)
 }
 
-def head(l: List[Either[i64, Bool]]): i64 {
+def head(l: List[Either[i64, Bool]]): Either[i64,Bool] {
   l.case[Either[i64, Bool]] {
-    Nil => -1,
-    Cons(e, es) => e.case[i64, Bool] {
-      Left(i) => i,
-      Right(b) => b.case {
-        True => -2,
-        False => -3
-      }
+    Nil => Left(-1),
+    Cons(e, es) => e
+  }
+}
+
+def print_either(e:Either[i64,Bool]) : i64 {
+  e.case[i64,Bool] {
+    Left(i) => println_i64(i); 0,
+    Right(b) => b.case{
+      True => print_i64(1);
+      println_i64(1);
+      0,
+      False => print_i64(0);
+      println_i64(0);
+      0
     }
   }
 }
@@ -129,8 +137,7 @@ def head(l: List[Either[i64, Bool]]): i64 {
 def main_loop(iters: i64, n: i64): i64 {
   if iters == 1 {
     let res: List[Either[i64, Bool]] = test_integer_nofib(n);
-    println_i64(head(res));
-    0
+    print_either(head(res))
   } else {
     let res: List[Either[i64, Bool]] = test_integer_nofib(n);
     main_loop(iters - 1, n)
