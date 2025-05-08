@@ -34,7 +34,7 @@ impl<A> List<A> {
         }
     }
 
-    fn all(&self, f: fn(&A) -> bool) -> bool {
+    fn all(&self, f: &impl Fn(&A) -> bool) -> bool {
         match self {
             List::Nil => true,
             List::Cons(a, as_) => {
@@ -119,6 +119,19 @@ impl<A> List<A> {
         }
     }
 
+    fn find(&self, f: &impl Fn(&A) -> bool) -> Option<&A> {
+        match self {
+            List::Nil => None,
+            List::Cons(a, as_) => {
+                if f(a) {
+                    Some(a)
+                } else {
+                    as_.find(f)
+                }
+            }
+        }
+    }
+
     fn append(self, other: List<A>) -> List<A>
     where
         A: Clone,
@@ -158,6 +171,16 @@ impl<A> List<A> {
         B: Clone,
     {
         self.zip(other).map(&|(x, y)| f(x, y))
+    }
+}
+
+impl List<i64> {
+    pub fn enum_from_to(from: i64, to: i64) -> List<i64> {
+        if from <= to {
+            List::Cons(from, Rc::new(List::enum_from_to(from + 1, to)))
+        } else {
+            List::Nil
+        }
     }
 }
 
@@ -356,20 +379,17 @@ fn empty_table(csp: &CSP) -> List<List<ConflictSet>> {
 }
 
 fn combine(ls: List<(List<Assign>, ConflictSet)>, acc: List<i64>) -> List<i64> {
-    if ls.is_empty() {
-        return acc;
-    }
-
-    let (s, cs) = ls.clone().head();
-    let cs = match cs {
-        ConflictSet::Unknown => return acc,
-        ConflictSet::Known(cs) => cs,
-    };
-
-    if !cs.contains(&max_level(&s)) {
-        cs
-    } else {
-        combine(ls, cs.union(acc))
+    match ls {
+        List::Nil => acc,
+        List::Cons((s, ConflictSet::Known(cs)), css) => {
+            let maxl = max_level(&s);
+            if cs.find(&|x| *x == maxl).is_none() {
+                cs
+            } else {
+                combine(Rc::unwrap_or_clone(css), cs.union(acc))
+            }
+        }
+        List::Cons((_, ConflictSet::Unknown), _) => acc,
     }
 }
 
@@ -388,10 +408,26 @@ fn known_solution(c: &ConflictSet) -> bool {
 }
 
 fn collect_conflict(ls: List<ConflictSet>) -> List<i64> {
-    ls.fold(List::Nil, &|cs, css| match cs {
-        ConflictSet::Unknown => css,
-        ConflictSet::Known(cs_) => cs_.union(css),
-    })
+    match ls {
+        List::Nil => List::Nil,
+        List::Cons(ConflictSet::Known(cs), css) => {
+            cs.union(collect_conflict(Rc::unwrap_or_clone(css)))
+        }
+        List::Cons(ConflictSet::Unknown, _) => List::Nil,
+    }
+}
+
+fn wipe_lscomp(ls: List<List<ConflictSet>>) -> List<List<ConflictSet>> {
+    match ls {
+        List::Nil => List::Nil,
+        List::Cons(vs, t1) => {
+            if vs.all(&|x| known_conflict(&x)) {
+                List::Cons(vs, Rc::new(wipe_lscomp(Rc::unwrap_or_clone(t1))))
+            } else {
+                wipe_lscomp(Rc::unwrap_or_clone(t1))
+            }
+        }
+    }
 }
 
 fn domain_wipeout(
@@ -399,8 +435,7 @@ fn domain_wipeout(
     t: Node<((List<Assign>, ConflictSet), List<List<ConflictSet>>)>,
 ) -> Node<(List<Assign>, ConflictSet)> {
     let f8 = |((as_, cs), tbl)| {
-        let lscomp1 = |ls: List<List<ConflictSet>>| ls.filter(&|vs| vs.all(known_conflict));
-        let wiped_domains: List<List<ConflictSet>> = lscomp1(tbl);
+        let wiped_domains = wipe_lscomp(tbl);
         let cs_ = if wiped_domains.is_empty() {
             cs
         } else {
@@ -420,22 +455,26 @@ fn init_tree(
     Node { lab: x, children }
 }
 
+fn mk_lscomp(ls: List<i64>, ass: List<Assign>) -> List<List<Assign>> {
+    match ls {
+        List::Nil => List::Nil,
+        List::Cons(j, t1) => List::Cons(
+            List::Cons(
+                Assign {
+                    varr: max_level(&ass) + 1,
+                    value: j,
+                },
+                Rc::new(ass.clone()),
+            ),
+            Rc::new(mk_lscomp(Rc::unwrap_or_clone(t1), ass)),
+        ),
+    }
+}
+
 fn mk_tree(csp: &CSP) -> Node<List<Assign>> {
     let next = |ss: List<Assign>| {
         if max_level(&ss) < csp.vars {
-            (1..=csp.vals)
-                .map({
-                    move |j| {
-                        List::Cons(
-                            Assign {
-                                varr: max_level(&ss) + 1,
-                                value: j,
-                            },
-                            Rc::new(ss.clone()),
-                        )
-                    }
-                })
-                .into()
+            mk_lscomp(List::enum_from_to(1, csp.vals), ss)
         } else {
             List::Nil
         }
@@ -457,7 +496,7 @@ fn search(
 }
 
 fn safe(as1: &Assign, as2: &Assign) -> bool {
-    !(as1.value == as2.value) && !((as1.varr - as2.varr).abs() == (as1.value - as2.value).abs())
+    (!(as1.value == as2.value)) && (!((as1.varr - as2.varr).abs() == (as1.value - as2.value).abs()))
 }
 
 fn queens(n: i64) -> CSP {
