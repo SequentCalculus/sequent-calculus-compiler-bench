@@ -1,11 +1,13 @@
+stack_size = 2048000
+
 .PHONY: test 
 test: 
-	cargo test --all --no-fail-fast
+	ulimit -s $(stack_size) && cargo test --all --no-fail-fast
 
 .PHONY: bench
 bench:
 ifeq ($(name),)
-	cargo run
+	ulimit -s $(stack_size) && cargo run
 else
-	cargo run -- -n $(name)
+	ulimit -s $(stack_size) && cargo run -- -n $(name)
 endif
