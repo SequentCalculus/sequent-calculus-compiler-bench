@@ -1,7 +1,7 @@
 datatype Id = A | B | C | D | X | Y | Z | U | W 
             | ADD1 | AND | APPEND | CONS | CONSP 
             | DIFFERENCE | DIVIDES | EQUAL | EVEN | EXP 
-            | F | FALSE | FOUR | GCD | GREATERQP | GREATERP 
+            | F | FALSE | FOUR | GCD | GREATEREQP | GREATERP 
             | IF | IFF | IMPLIES | LENGTH | LESSEQP | LESSP 
             | LISTP | MEMBER | NIL | NILP | NLISTP | NOT 
             | ODD | ONE | OR | PLUS | QUOTIENT | REMAINDER 
@@ -12,6 +12,59 @@ datatype Term =
   | Func of Id * (Term list) * (unit -> (Term * Term) list)
   | ERROR
 
+fun id_equal id1 id2 = 
+  case (id1,id2) of 
+       (A,A) => true
+     | (B,B) => true
+     | (C,C) => true
+     | (D,D) => true
+     | (X,X) => true
+     | (Y,Y) => true
+     | (Z,Z) => true
+     | (U,U) => true
+     | (W,W) => true
+     | (ADD1,ADD1) => true
+     | (AND,AND) => true
+     | (APPEND,APPEND) => true
+     | (CONS,CONS) => true
+     | (CONSP,CONSP) => true
+     | (DIFFERENCE,DIFFERENCE) => true
+     | (DIVIDES,DIVIDES) => true
+     | (EQUAL,EQUAL) => true
+     | (EVEN,EVEN) => true
+     | (EXP,EXP) => true
+     | (F,F) => true
+     | (FALSE,FALSE) => true
+     | (FOUR,FOUR) => true
+     | (GCD,GCD) => true
+     | (GREATEREQP,GREATEREQP) => true
+     | (GREATERP,GREATERP) => true
+     | (IF,IF) => true
+     | (IFF,IFF) => true
+     | (IMPLIES,IMPLIES) => true
+     | (LENGTH,LENGTH) => true
+     | (LESSEQP,LESSEQP) => true
+     | (LESSP,LESSP) => true 
+     | (LISTP,LISTP) => true
+     | (MEMBER,MEMBER) => true
+     | (NIL,NIL) => true
+     | (NILP,NILP) => true
+     | (NLISTP,NLISTP) => true
+     | (NOT,NOT) => true
+     | (ODD,ODD) => true
+     | (ONE,ONE) => true
+     | (OR,OR) => true
+     | (PLUS,PLUS) => true
+     | (QUOTIENT,QUOTIENT) => true
+     | (REMAINDER,REMAINDER) => true
+     | (REVERSE,REVERSE) => true
+     | (SUB1,SUB1) => true
+     | (TIMES,TIMES) => true
+     | (TRUE,TRUE) => true
+     | (TWO,TWO) => true
+     | (ZERO,ZERO) => true
+     | (ZEROP,ZEROP) => true
+     | _ => false
 
 fun term_equal t1 t2 = 
   case (t1,t2) of 
@@ -29,11 +82,11 @@ fun find vid ls =
   case ls of 
        nil => (false,ERROR)
      | (vid2,val2)::bs => 
-       if vid=vid2 
+       if id_equal vid vid2 
        then (true,val2) 
        else find vid bs
 
-fun one_way_unify term1 term2 = one_way_unify1 term1 term1 nil
+fun one_way_unify term1 term2 = one_way_unify1 term1 term2 nil
 and one_way_unify1 term1 term2 subst = 
   case term2 of 
        Var vid2 => 
@@ -61,8 +114,8 @@ and one_way_unify1_lst tts1 tts2 subst =
              
 
 
-fun truep x l = 
-  Option.isSome (List.find (fn t => term_equal x t) l) 
+fun truep x l =
+  Option.isSome (List.find (fn t => term_equal x t) l)  
   orelse
   (case x of 
         Func(TRUE,args,lemmas) => true 
@@ -79,17 +132,18 @@ fun apply_subst subst t =
   case t of 
        Var vid => 
        (case (find vid subst) of
-            (true,value) => value
+            (true,value) => value 
           | (false,_) => Var vid)
     | Func (f, args, ls) =>
-        Func (f, (map (fn x => apply_subst subst x) args),ls)
+          Func (f, (map (fn x => apply_subst subst x) args),ls)
     | ERROR => ERROR
 
 
 fun rewrite t = 
   case t of 
        Var v => Var v
-     | Func (f,args,lemmas) => rewrite_with_lemmas (Func (f, (map (fn x =>
+     | Func (f,args,lemmas) => 
+         rewrite_with_lemmas (Func (f, (map (fn x =>
          rewrite x) args ), lemmas)) (lemmas())
      | ERROR => ERROR 
 and rewrite_with_lemmas term lss =
@@ -100,22 +154,27 @@ and rewrite_with_lemmas_helper term lss =
      | (lhs,rhs)::ls => 
          let val (unified,subst) = one_way_unify term lhs
          in 
-           if unified then rewrite (apply_subst subst rhs)
-           else rewrite_with_lemmas_helper term ls
+           if unified then 
+               rewrite (apply_subst subst rhs) 
+           else 
+               rewrite_with_lemmas_helper term ls 
          end
 
 
 
 fun tautologyp x true_lst false_lst = 
-  if truep x true_lst then true 
-  else if falsep x false_lst then false 
+  if truep x true_lst then 
+    true 
+  else if falsep x false_lst then 
+    false 
   else 
     case x of 
        Func(IF,cond::t::e::nil,lemmas) => 
-       if truep cond true_lst
-       then tautologyp t true_lst false_lst
+       if truep cond true_lst then 
+         tautologyp t true_lst false_lst 
        else if falsep cond false_lst
-       then tautologyp e true_lst false_lst
+       then 
+         tautologyp e true_lst false_lst 
        else 
          (tautologyp t (cond::true_lst) false_lst)
          andalso 
@@ -302,8 +361,8 @@ and boyer_times a b = Func(TIMES,a::b::nil,fn () =>
       (boyer_x()) 
       (boyer_plus (boyer_y()) (boyer_z())),
     boyer_plus 
-      (boyer_times (boyer_x()) (boyer_z())) 
-      (boyer_times (boyer_x()) (boyer_y()))
+      (boyer_times (boyer_x()) (boyer_y())) 
+      (boyer_times (boyer_x()) (boyer_z()))
   )::(
     boyer_times 
       (boyer_times (boyer_x()) (boyer_y())) 
@@ -520,13 +579,13 @@ fun boyer_subst0 () =
       )
     )
   ),
-  (U,boyer_f 
+  (U,
     (boyer_equal
       (boyer_plus (boyer_a()) (boyer_b()))
       (boyer_difference (boyer_x()) (boyer_y()))
     )
   ),
-  (W,boyer_f 
+  (W,
     (boyer_lessp
       (boyer_remainder (boyer_a()) (boyer_b()))
       (boyer_member (boyer_a()) (boyer_length_ (boyer_b())))
@@ -534,15 +593,18 @@ fun boyer_subst0 () =
   )
   ]
 
-fun tautp x = tautologyp (rewrite x) nil nil
+fun tautp x = 
+  tautologyp (rewrite x) nil nil 
 
-fun test0 xxxx = tautp (apply_subst (boyer_subst0()) (boyer_theorem xxxx))
+fun test0 xxxx = 
+  tautp (apply_subst (boyer_subst0()) (boyer_theorem xxxx))
 
 fun replicate_term n t = 
   if n=0 then nil 
   else t :: replicate_term (n-1) t
 
-fun test_boyer_nofib n = List.all (fn t => test0 t) (replicate_term n (Var X)) 
+fun test_boyer_nofib n = 
+  List.all (fn t => test0 t) (replicate_term n (Var X)) 
 
 fun main_loop iters n = 
 let val res = test_boyer_nofib n
