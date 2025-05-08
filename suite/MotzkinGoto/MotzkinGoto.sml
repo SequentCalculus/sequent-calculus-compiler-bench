@@ -21,11 +21,11 @@ fun motz n k =
       )
     end
 
-fun main_loop iters m n = 
+fun main_loop iters n = 
   let val res = CC.callcc (fn k => motz n k)
   in if iters=1
      then print ((Int.toString res) ^ "\n")
-     else main_loop (iters-1) m n 
+     else main_loop (iters-1) n 
   end
 
 fun main () = 

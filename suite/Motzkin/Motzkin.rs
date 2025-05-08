@@ -15,7 +15,7 @@ fn motz(n: i64) -> i64 {
         1
     } else {
         let limit = n - 2;
-        let product = &|i| motz(i) * motz(limit - 1);
+        let product = &|i| motz(i) * motz(limit - i);
         motz(n - 1) + sum(product, 0, limit)
     }
 }
