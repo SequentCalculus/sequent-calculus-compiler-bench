@@ -1,23 +1,30 @@
-fn useless(i: i64, n: i64, _: Vec<i64>) -> i64 {
-    if i < n {
-        useless(i + 1, n, replicate(0, i, vec![]))
-    } else {
-        i
-    }
+use std::rc::Rc;
+
+enum List<A> {
+    Nil,
+    Cons(A, Rc<List<A>>),
 }
 
-fn replicate(v: i64, n: i64, mut a: Vec<i64>) -> Vec<i64> {
-    if n == 0 {
-        a
-    } else {
-        a.insert(0, v);
-        replicate(v, n - 1, a)
+fn replicate(value: i64, n: i64) -> List<i64> {
+    let mut list = List::Nil;
+    for _ in 0..n {
+        list = List::Cons(value, Rc::new(list));
     }
+    list
+}
+
+fn useless(n: i64) -> i64 {
+    let mut i = 0;
+    for j in 0..n {
+        replicate(0, j);
+        i += 1;
+    }
+    i
 }
 
 fn main_loop(iters: u64, n: i64) -> i64 {
     for i in 0..=iters {
-        let res = useless(0, n, vec![]);
+        let res = useless(n);
         if i == iters {
             println!("{}", res);
         }

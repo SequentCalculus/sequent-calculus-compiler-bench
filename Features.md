@@ -28,7 +28,7 @@
 | Divrec                | ✔️ | ✔️   | ✔️    |       |
 | LookupTree            | ✔️ | ✔️   | ✔️    | Rust version about 10x slower | 
 | Tak                   | ✔️ | ✔️   | ✔️    |       |
-| EraseUnused           | ✔️ | ✔️   | ✔️    | Rust version significantly slower |
+| EraseUnused           | ✔️ | ✔️   | ✔️    |       |
 | MatchOptions          | ✔️ | ✔️   | ✔️    | Rust version significantly faster |
 | TakGoto               | ✔️ | N/A  | ✔️    |       |
 | Evenodd               | ✔️ | ✔️   | ✔️    |       |
