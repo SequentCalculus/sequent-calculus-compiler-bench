@@ -4,9 +4,9 @@ fun list_n_loop n a =
 fun list_n n = list_n_loop n nil
 
 fun shorterp x y = 
-  if not (null y) then true 
-  else if null x then true
-  else false 
+  if null y then false 
+  else if null x then true 
+  else shorterp (tl x) (tl y)
 
 fun mas x y z = 
   if not (shorterp y x) then z 
