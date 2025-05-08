@@ -14,6 +14,7 @@ use std::{
 pub enum BenchmarkLanguage {
     Sc,
     Rust,
+    Sml,
 }
 
 impl BenchmarkLanguage {
@@ -21,6 +22,7 @@ impl BenchmarkLanguage {
         match ext {
             "sc" => Some(BenchmarkLanguage::Sc),
             "rs" => Some(BenchmarkLanguage::Rust),
+            "sml" => Some(BenchmarkLanguage::Sml),
             _ => None,
         }
     }
@@ -29,10 +31,19 @@ impl BenchmarkLanguage {
         match self {
             BenchmarkLanguage::Sc => "sc",
             BenchmarkLanguage::Rust => "rs",
+            BenchmarkLanguage::Sml => "sml",
         }
     }
 
     fn compile_cmd(&self, source_file: &PathBuf, heap_size: Option<usize>) -> Command {
+        let mut source_base = source_file
+            .as_path()
+            .file_stem()
+            .expect("Could not get file name")
+            .to_owned();
+        source_base.push("_");
+        source_base.push(self.ext());
+
         match self {
             BenchmarkLanguage::Sc => {
                 let mut cmd = Command::new("grokking");
@@ -49,13 +60,6 @@ impl BenchmarkLanguage {
                 cmd
             }
             BenchmarkLanguage::Rust => {
-                let mut source_base = source_file
-                    .as_path()
-                    .file_stem()
-                    .expect("Could not get file name")
-                    .to_owned();
-                source_base.push("_rs");
-
                 let mut cmd = Command::new("rustc");
                 cmd.arg(source_file);
                 cmd.arg("-o");
@@ -67,6 +71,16 @@ impl BenchmarkLanguage {
                 cmd.arg("opt-level=3");
                 cmd
             }
+            BenchmarkLanguage::Sml => {
+                let mut cmd = Command::new("mlton");
+                cmd.arg("-output");
+                #[cfg(target_arch = "x86_64")]
+                cmd.arg(bin_path_x86().join(source_base));
+                #[cfg(target_arch = "aarch64")]
+                cmd.arg(bin_path_aarch().join(source_base));
+                cmd.arg(source_file);
+                cmd
+            }
         }
     }
 }
@@ -76,6 +90,7 @@ impl fmt::Display for BenchmarkLanguage {
         match self {
             BenchmarkLanguage::Sc => f.write_str("Compiling-Sc"),
             BenchmarkLanguage::Rust => f.write_str("Rust"),
+            BenchmarkLanguage::Sml => f.write_str("Sml"),
         }
     }
 }
