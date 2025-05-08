@@ -12,7 +12,8 @@ fun deriv e =
   case e of 
        Add sums => Add (map deriv sums)
      | Sub subs => Sub (map deriv subs)
-     | Mul muls => Mul [e,Add (map deriv muls)] 
+     | Mul muls => 
+         Mul [e,Add (map (fn x => Div [deriv x,x]) muls)] 
      | Div (x::y::nil) => 
          Sub [Div [deriv x, y],Div [x,Mul[y,y,deriv y]]]
      | Num i => Num 0
