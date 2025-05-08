@@ -30,7 +30,9 @@ impl TestResult {
         print!("Test {test_name}.........");
         match self {
             TestResult::Success => println!("\x1b[32mOk\x1b[0m"),
-            TestResult::Fail(msg) => println!("\x1b[31mfail\x1b[0m\n{msg}"),
+            TestResult::Fail(msg) => {
+                println!("\x1b[31mfail\x1b[0m\n\t{}", msg.replace('\n', "\n\t"))
+            }
         };
     }
 }
@@ -50,8 +52,12 @@ fn main() -> Result<(), Error> {
     let num_tests = tests.len();
     let mut num_fail = 0;
     for test in tests {
+        println!("testing {}", test.name);
         for lang in test.languages.iter() {
-            let report_format = |res: TestResult| res.report(&format!("{} ({lang})", test.name));
+            let report_format = |res: TestResult| {
+                print!("\t");
+                res.report(&lang.to_string().replace('\n', "\n\t"));
+            };
             match test.compile(lang) {
                 Ok(_) => (),
                 Err(err) => {
