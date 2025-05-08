@@ -31,7 +31,7 @@ fun f n perms x =
   end
 
 fun loop_p j perms x n = 
-  if j=0 then p (j-1) perms x 
+  if j=0 then p (n-1) perms x 
   else 
     let val (perms,x) = p (n-1) perms x  
       val (perms,x) = f n perms x 
@@ -65,7 +65,7 @@ fun perm9 m n =
   run_benchmark 1 
     (fn () => loop_work m (permutations (one2n n)))
     (fn result => 
-      (sumlists result) = ((n*(n+1)) * ((factorial n) div 2)))
+      (sumlists result) = (((n*(n+1)) * (factorial n)) div 2))
 
 fun main_loop iters m n = 
   let val res = perm9 m n
