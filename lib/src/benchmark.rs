@@ -15,6 +15,7 @@ pub enum BenchmarkLanguage {
     Sc,
     Rust,
     Sml,
+    OCaml,
 }
 
 impl BenchmarkLanguage {
@@ -23,6 +24,7 @@ impl BenchmarkLanguage {
             "sc" => Some(BenchmarkLanguage::Sc),
             "rs" => Some(BenchmarkLanguage::Rust),
             "sml" => Some(BenchmarkLanguage::Sml),
+            "ml" => Some(BenchmarkLanguage::OCaml),
             _ => None,
         }
     }
@@ -32,6 +34,7 @@ impl BenchmarkLanguage {
             BenchmarkLanguage::Sc => "sc",
             BenchmarkLanguage::Rust => "rs",
             BenchmarkLanguage::Sml => "sml",
+            BenchmarkLanguage::OCaml => "ml",
         }
     }
 
@@ -84,6 +87,16 @@ impl BenchmarkLanguage {
                 cmd.arg(source_file);
                 cmd
             }
+            BenchmarkLanguage::OCaml => {
+                let mut cmd = Command::new("ocamlc");
+                cmd.arg(source_file);
+                cmd.arg("-o");
+                #[cfg(target_arch = "x86_64")]
+                cmd.arg(bin_path_x86().join(source_base));
+                #[cfg(target_arch = "aarch64")]
+                cmd.arg(bin_path_aarch().join(source_base));
+                cmd
+            }
         }
     }
 }
@@ -94,6 +107,7 @@ impl fmt::Display for BenchmarkLanguage {
             BenchmarkLanguage::Sc => f.write_str("Compiling-Sc"),
             BenchmarkLanguage::Rust => f.write_str("Rust"),
             BenchmarkLanguage::Sml => f.write_str("Sml"),
+            BenchmarkLanguage::OCaml => f.write_str("OCaml"),
         }
     }
 }
