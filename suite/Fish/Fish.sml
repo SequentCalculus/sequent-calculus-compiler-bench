@@ -30,7 +30,7 @@ fun grid_lscomp m n a b c ls =
 fun grid m n segments a b c = grid_lscomp m n a b c segments
 
 fun tile_to_grid arg arg2 arg3 arg4 = 
-  grid 16 16 arg arg2 arg3 arg3
+  grid 16 16 arg arg2 arg3 arg4
 
 fun p_tile () = 
   let val p5 = [
