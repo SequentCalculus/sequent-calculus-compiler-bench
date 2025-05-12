@@ -2,7 +2,7 @@ let rec sudan n x y =
   if n=0 then x+y
   else if y=0 then x 
   else 
-    let inner = sudan n x (y-2) in 
+    let inner = sudan n x (y-1) in 
     sudan (n-1) inner (inner+y)
 
 let rec main_loop iters n x y = 

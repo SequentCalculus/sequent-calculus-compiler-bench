@@ -11,20 +11,13 @@ type 'a tree = Node of 'a * 'a tree list
 let value (Assign(_,value)) = value
 let level (Assign(varr,_)) = varr
 
-let label t = 
-  match t with 
-   | Node(a,_) -> a
-
-let rec leaves n = 
-  match n with
-    | Node(leaf,[]) -> leaf::[]
-    | Node(leaf,cs) -> List.concat (List.map (fun x -> leaves x) cs)
-
-let rec fold_tree f (Node(l,c)) = 
-  Node(l,List.map (fun x -> fold_tree f x) c)
+let label (Node(a,_)) = a
 
 let rec map_tree f (Node(l,ls)) = 
   Node(f l,List.map (fun x -> map_tree f x) ls)
+
+let rec fold_tree f (Node(l,c)) = 
+  f (l,List.map (fun x -> fold_tree f x) c)
 
 let rec filter_tree p n =
   let f = fun (a,cs) ->
@@ -34,6 +27,11 @@ let rec filter_tree p n =
 
 let prune f n = 
   filter_tree (fun x -> not (f x)) n
+
+let rec leaves n = 
+  match n with
+    | Node(leaf,[]) -> leaf::[]
+    | Node(leaf,cs) -> List.concat (List.map (fun x -> leaves x) cs)
 
 let rec enum_from_to from to_ = 
   if from<=to_ then 
@@ -46,22 +44,10 @@ let max_level ls =
     | Assign(v,_)::_ -> v
 
 
-let rec init_tree f x = 
-  Node(x, List.map (fun y -> init_tree f y) (f x))
-
-let rec mk_lscomp ls ss = 
-  match ls with 
-    | [] -> [] 
-    | j::t1 -> (Assign((max_level ss) +1,j)::ss)::(mk_lscomp t1 ss)
-
-let mk_tree (CSP(vars,vals,_)) = 
-  let next = fun ss -> 
-    if max_level ss < vars then
-      mk_lscomp (enum_from_to 1 vals) ss
-    else []
-  in 
-  init_tree next []
-
+let rec nub_by f l = 
+  match l with 
+    | [] -> []
+    | h::t -> h::nub_by f (List.filter (fun y -> not (f(h,y))) t)
 
 let rec delete_by f x ys = 
   match ys with 
@@ -69,11 +55,6 @@ let rec delete_by f x ys =
     | y::ys -> 
         if (f (x,y)) then ys
         else y::delete_by f x ys
-
-let rec nub_by f l = 
-  match l with 
-    | [] -> []
-    | h::t -> h::nub_by f (List.filter (fun y -> not (f(h,y))) t)
 
 let union_by f l1 l2 = 
   List.append l1 
@@ -85,11 +66,12 @@ let union_by f l1 l2 =
 
 let union l1 l2 = union_by (fun (x,y) -> x=y) l1 l2
 
-let rec collect ls = 
-  match ls with 
-    | [] -> []
-    | Known cs :: css -> union cs (collect css)
-    | Unknown :: _ -> []
+let rec zip_with f x y = 
+  match (x,y) with 
+    | ([],_) -> []
+    | (_,[]) -> []
+    | (c::cs,p::ps) -> f(c,p) :: zip_with f cs ps
+
 
 let rec combine ls acc = 
   match ls with 
@@ -101,12 +83,30 @@ let rec combine ls acc =
         else combine css (union cs acc)
     | ((s,Unknown)::_) -> acc
 
+let rec init_tree f x = 
+  Node(x, List.map (fun y -> init_tree f y) (f x))
 
-let rec zip_with f x y = 
-  match (x,y) with 
-    | ([],_) -> []
-    | (_,[]) -> []
-    | (c::cs,p::ps) -> f(c,p) :: zip_with f cs ps
+
+let rec mk_lscomp ls ss = 
+  match ls with 
+    | [] -> [] 
+    | j::t1 -> (Assign((max_level ss) +1,j)::ss)::(mk_lscomp t1 ss)
+
+
+let mk_tree (CSP(vars,vals,_)) = 
+  let next = fun ss -> 
+    if max_level ss < vars then
+      mk_lscomp (enum_from_to 1 vals) ss
+    else []
+  in 
+  init_tree next []
+
+
+let rec collect ls = 
+  match ls with 
+    | [] -> []
+    | Known cs :: css -> union cs (collect css)
+    | Unknown :: _ -> []
 
 let known_conflict c = 
   match c with 
@@ -128,6 +128,46 @@ let earliest_inconsistency (CSP(_,_,rel)) aas =
           | [] -> None
           | b::bs_ -> Some(level a, level b)
         )
+
+let rec wipe_lscomp ls = 
+  match ls with 
+    | [] -> []
+    | vs::t1 -> 
+        if List.for_all known_conflict vs 
+        then vs::(wipe_lscomp t1)
+        else wipe_lscomp t1
+
+let domain_wipeout csp t = 
+  let f8 = fun ((as_,cs),tbl) ->
+    let wiped_domains = wipe_lscomp tbl in 
+    let cs_ = 
+      if List.is_empty wiped_domains then cs
+      else Known (collect (List.hd wiped_domains))
+    in 
+    (as_,cs_)
+  in 
+  map_tree f8 t 
+
+let complete (CSP (v,_,_)) s = max_level s = v
+
+let check_complete csp s = 
+  if complete csp s then Known [] else Unknown
+
+
+let lookup_cache csp t = 
+  let f5 = fun (csp, (ls,tbl)) -> 
+    match ls with 
+      | [] -> (([],Unknown),tbl)
+      | a::as_ -> 
+          let table_entry = List.nth (List.hd tbl) ((value a)-1) in 
+          let cs = (
+            match table_entry with 
+              | Unknown -> check_complete csp (a::as_)
+              | Known vals -> table_entry)
+          in 
+          ((a::as_,cs),tbl)
+  in 
+  map_tree (fun x -> f5 (csp,x)) t
 
 let rec empty_lscomp1 ls vals = 
   match ls with 
@@ -170,44 +210,7 @@ let fill_table s (CSP(vars,vals,rel)) tbl =
           tbl
           (fill_lscomp1 (enum_from_to (var_+1) vars) vals)
 
-let rec wipe_lscomp ls = 
-  match ls with 
-    | [] -> []
-    | vs::t1 -> 
-        if List.for_all known_conflict vs 
-        then vs::(wipe_lscomp t1)
-        else wipe_lscomp t1
 
-let domain_wipeout csp t = 
-  let f8 = fun ((as_,cs),tbl) ->
-    let wiped_domains = wipe_lscomp tbl in 
-    let cs_ = 
-      if List.is_empty wiped_domains then cs
-      else Known (collect (List.hd wiped_domains))
-    in 
-    (as_,cs_)
-  in 
-  map_tree f8 t 
-
-let complete (CSP (v,_,_)) s = max_level s = v
-
-let check_complete csp s = 
-  if complete csp s then Known [] else Unknown
-
-let lookup_cache csp t = 
-  let f5 = fun (csp, (ls,tbl)) -> 
-    match ls with 
-      | [] -> (([],Unknown),tbl)
-      | a::as_ -> 
-          let table_entry = List.nth (List.hd tbl) ((value a)-1) in 
-          let cs = (
-            match table_entry with 
-              | Unknown -> check_complete csp (a::as_)
-              | Known vals -> table_entry)
-          in 
-          ((a::as_,cs),tbl)
-  in 
-  map_tree (fun x -> f5 (csp,x)) t
 
 let rec cache_checks csp tbl (Node (s,cs)) = 
   Node ((s,tbl),

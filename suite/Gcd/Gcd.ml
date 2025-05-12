@@ -16,17 +16,16 @@ let rec g (u1,u2,u3) (v1,v2,v3) =
   if v3=0 then (u3,u1,u2) 
   else
     let (q,r) = quot_rem u3 v3 in 
-    g (v1,v2,v3) (u1 - (q*v1),u2 - (1*v2),r)
+    g (v1,v2,v3) (u1 - (q*v1),u2 - (q*v2),r)
 
 let gcd_e x y =
   if x=0 then (y,0,1) else g (1,0,x) (0,1,y)
 
 let rec test_lscomp2 p2 t1 ms h1 = 
   match p2 with 
-    | [] -> []
+    | [] -> test_lscomp1 t1 ms
     | h2::t2 -> (h1,h2) :: test_lscomp2 t2 t1 ms h1
-
-let test_lscomp1 p1 ms = 
+and test_lscomp1 p1 ms = 
   match p1 with 
     | [] -> []
     | h1::t1 -> test_lscomp2 ms t1 ms h1

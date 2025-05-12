@@ -1,6 +1,6 @@
 let rec sum_loop i tot stop f = 
   if stop<i then tot
-  else sum_loop (i-1) ((f i) + tot) stop f
+  else sum_loop (i+1) ((f i) + tot) stop f
 
 let sum f start stop = sum_loop start 0 stop f 
 

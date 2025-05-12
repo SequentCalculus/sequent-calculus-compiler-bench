@@ -8,6 +8,7 @@ type expr =
   | Num of int 
   | X
 
+
 let rec deriv e = 
   match e with
     | Add sums -> Add (List.map deriv sums)
@@ -65,7 +66,7 @@ let mk_ans a b =
       )
     :: 
     (Mul (
-      (Mul (a::X::X::[]))
+      (Mul (b::X::[]))
       ::
       (Add (
         (Div (Num 0 :: b :: []))

@@ -32,7 +32,7 @@ let integerbench op_ astart astep alim bstart bstep blim =
      bstart bstep blim op_
 
 let runbench jop iop astart astep alim bstart bstep blim =
-  let res1 = integerbench iop astart astep alim in 
+  let _ = integerbench iop astart astep alim astart astep alim in 
   integerbench jop astart astep alim astart astep alim
 
 let runalltests astart astep alim = 
@@ -47,24 +47,24 @@ let runalltests astart astep alim =
   let z_gt = fun (a,b) -> Right (a>b) in
   let z_geq = fun (a,b) -> Right (a>=b) in
 
-  let add =
+  let _ =
     runbench z_add (fun (a,b) -> Left (a+b)) 
     astart astep alim astart astep alim in 
-  let sub = runbench z_sub (fun (a,b) -> Left (a-b))
+  let _ = runbench z_sub (fun (a,b) -> Left (a-b))
   astart astep alim astart astep alim in
-  let mul = runbench z_mul (fun (a,b) -> Left (a*b))
+  let _ = runbench z_mul (fun (a,b) -> Left (a*b))
   astart astep alim astart astep alim in 
-  let div_ = runbench z_mul (fun (a,b) -> Left (a /b))
+  let _ = runbench z_div (fun (a,b) -> Left (a /b))
   astart astep alim astart astep alim in
-  let mod_ = runbench z_mod (fun (a,b) -> Left (a mod b))
+  let _ = runbench z_mod (fun (a,b) -> Left (a mod b))
   astart astep alim astart astep alim in
-  let equal = runbench z_equal (fun (a,b) -> Left (a mod b))
+  let _ = runbench z_equal (fun (a,b) -> Left (a mod b))
   astart astep alim astart astep alim in
-  let lt = runbench z_lt (fun (a,b) -> Right (a<b))
+  let _ = runbench z_lt (fun (a,b) -> Right (a<b))
   astart astep alim astart astep alim in
-  let leq = runbench z_leq (fun (a,b) -> Right (a<=b))
+  let _ = runbench z_leq (fun (a,b) -> Right (a<=b))
   astart astep alim astart astep alim in
-  let gt = runbench z_gt (fun (a,b) -> Right (a>b))
+  let _ = runbench z_gt (fun (a,b) -> Right (a>b))
   astart astep alim astart astep alim in 
   runbench z_geq (fun (a,b) -> Right (a>=b)) 
   astart astep alim astart astep alim

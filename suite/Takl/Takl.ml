@@ -9,7 +9,7 @@ let rec shorterp x y =
   else shorterp (List.tl x) (List.tl y)
 
 let rec mas x y z = 
-  if not (shorterp y x) then x 
+  if not (shorterp y x) then z 
   else 
     mas 
       (mas (List.tl x) y z)

@@ -7,7 +7,7 @@ and even_abs i =
   if i=0 then true 
   else odd_abs (i-1)
 
-let even i = even_abs (abs i)
+let even i = try even_abs (abs i) with Return i -> i
 
 let odd i = try odd_abs (abs i) with Return i -> i
 
