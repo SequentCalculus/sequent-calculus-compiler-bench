@@ -1,5 +1,3 @@
-exception TODO
-
 fun tabulate_loop n len f acc = 
   if n<len then 
     tabulate_loop (n+1) len f (f n::acc)
