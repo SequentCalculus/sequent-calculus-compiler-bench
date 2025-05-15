@@ -16,8 +16,7 @@ structure Sudan = struct
       end
 
   fun run args = 
-  let val args = CommandLine.arguments()
-    val iters = valOf (Int.fromString (hd args))
+    let val iters = valOf (Int.fromString (hd args))
     val n = valOf (Int.fromString (hd (tl args)))
     val x = valOf (Int.fromString (hd (tl (tl args))))
     val y = valOf (Int.fromString (hd (tl (tl (tl args)))))

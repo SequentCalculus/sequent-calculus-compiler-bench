@@ -1,43 +1,42 @@
 # Languages
 
-| Benchmark             | Sc | Rust | Args  | Notes |
-| --------------------- | -- | ---- | ----- | ----- |
-| Ack                   | ✔️ | ✔️   | ✔️    |       |
-| Fib                   | ✔️ | ✔️   | ✔️    |       |
-| MotzkinGoto           | ✔️ | N/A  | ✔️    |       |
-| AckGoto               | ✔️ | N/A  | ✔️    |       |
-| FibonacciRecursive    | ✔️ | ✔️   | ✔️    |       |
-| Nqueens               | ✔️ | ✔️   | ✔️    |       |
-| Boyer                 | ✔️ | ✔️   | ✔️    |       |
-| Fish                  | ✔️ | ✔️   | ✔️    |       |
-| Perm                  | ✔️ | ✔️   | ✔️    | Rust version significantly faster |
-| Gcd                   | ✔️ | ✔️   | ✔️    |       |
-| Primes                | ✔️ | ✔️   | ✔️    |       |
-| Constraints           | ✔️ | X    | ✔️    | Stack Overflow |
-| Integer               | ✔️ | ✔️   | ✔️    |       |
-| Sudan                 | ✔️ | ✔️   | ✔️    |       |
-| Cpstak                | ✔️ | ✔️   | ✔️    |       |
-| IterateIncrement      | ✔️ | ✔️   | ✔️    |       |
-| SudanGoto             | ✔️ | N/A  | ✔️    |       |
-| Cryptarithm1          | ✔️ | X    | ✔️    | Stack Overflow |
-| Lcss                  | ✔️ | ✔️   | ✔️    |       |
-| SumRange              | ✔️ | ✔️   | ✔️    |       |
-| Deriv                 | ✔️ | ✔️   | ✔️    | Rust version significantly slower |
-| Life                  | ✔️ | ✔️   | ✔️    |       |
-| TailFib               | ✔️ | ✔️   | ✔️    |       |
-| Divrec                | ✔️ | ✔️   | ✔️    |       |
-| LookupTree            | ✔️ | ✔️   | ✔️    | Rust version about 10x slower | 
-| Tak                   | ✔️ | ✔️   | ✔️    |       |
-| EraseUnused           | ✔️ | ✔️   | ✔️    |       |
-| MatchOptions          | ✔️ | ✔️   | ✔️    | Rust version significantly faster |
-| TakGoto               | ✔️ | N/A  | ✔️    |       |
-| Evenodd               | ✔️ | ✔️   | ✔️    |       |
-| Merge                 | ✔️ | ✔️   | ✔️    | Rust version about 10x slower |
-| Takl                  | ✔️ | ✔️   | ✔️    |       |
-| Minimax               | ✔️ | ✔️   | ✔️    |       |  
-| FactorialAccumulator  | ✔️ | ✔️   | ✔️    |       |
-| Motzkin               | ✔️ | ✔️   | ✔️    |       | 
-
+| Benchmark             | Sc | Rust | SML | OCaml | Args  | Notes |
+| --------------------- | -- | ---- | --- | ----- | ----- | ----- | 
+| Ack                   | ✔️ | ✔️   | ✔️  | ✔️    | ✔️    |       |  
+| Fib                   | ✔️ | ✔️   | ✔️  | ✔️    | ✔️    |       |
+| MotzkinGoto           | ✔️ | N/A  | ✔️  | ✔️    | ✔️    |       |
+| AckGoto               | ✔️ | N/A  | ✔️  | ✔️    | ✔️    |       |
+| FibonacciRecursive    | ✔️ | ✔️   | ✔️  | ✔️    | ✔️    |       |
+| Nqueens               | ✔️ | ✔️   | ✔️  | ✔️    | ✔️    |       |
+| Boyer                 | ✔️ | ✔️   | ✔️  | ✔️    | ✔️    |       |
+| Fish                  | ✔️ | ✔️   | ✔️  | ✔️    | ✔️    |       |
+| Perm                  | ✔️ | ✔️   | ✔️  | ✔️    | ✔️    | Rust version significantly faster |
+| Gcd                   | ✔️ | ✔️   | ✔️  | ✔️    | ✔️    |       |
+| Primes                | ✔️ | ✔️   | ✔️  | ✔️    | ✔️    |       |
+| Constraints           | ✔️ | ✔️   | ✔️  | ✔️    | ✔️    |       |
+| Integer               | ✔️ | ✔️   | ✔️  | ✔️    | ✔️    |       |
+| Sudan                 | ✔️ | ✔️   | ✔️  | ✔️    | ✔️    |       |
+| Cpstak                | ✔️ | ✔️   | ✔️  | ✔️    | ✔️    |       |
+| IterateIncrement      | ✔️ | ✔️   | ✔️  | ✔️    | ✔️    |       |
+| SudanGoto             | ✔️ | N/A  | ✔️  | ✔️    | ✔️    |       |
+| Cryptarithm1          | ✔️ | ✔️   | ✔️  | ✔️    | ✔️    |       |
+| Lcss                  | ✔️ | ✔️   | ✔️  | ✔️    | ✔️    |       |
+| SumRange              | ✔️ | ✔️   | ✔️  | ✔️    | ✔️    |       | 
+| Deriv                 | ✔️ | ✔️   | ✔️  | ✔️    | ✔️    | Rust version significantly slower |
+| Life                  | ✔️ | ✔️   | ✔️  | ✔️    | ✔️    |       |
+| TailFib               | ✔️ | ✔️   | ✔️  | ✔️    | ✔️    |       | 
+| Divrec                | ✔️ | ✔️   | ✔️  | ✔️    | ✔️    |       | 
+| LookupTree            | ✔️ | ✔️   | ✔️  | ✔️    | ✔️    | Rust version about 10x slower | 
+| Tak                   | ✔️ | ✔️   | ✔️  | ✔️    | ✔️    |       | 
+| EraseUnused           | ✔️ | ✔️   | ✔️  | ✔️    | ✔️    |       | 
+| MatchOptions          | ✔️ | ✔️   | ✔️  | ✔️    | ✔️    | Rust version significantly faster |
+| TakGoto               | ✔️ | N/A  | ✔️  | ✔️    | ✔️    |       | 
+| Evenodd               | ✔️ | ✔️   | ✔️  | ✔️    | ✔️    |       | 
+| Merge                 | ✔️ | ✔️   | ✔️  | ✔️    | ✔️    | Rust version about 10x slower |
+| Takl                  | ✔️ | ✔️   | ✔️  | ✔️    | ✔️    |       | 
+| Minimax               | ✔️ | ✔️   | ✔️  | ✔️    | ✔️    |       | 
+| FactorialAccumulator  | ✔️ | ✔️   | ✔️  | ✔️    | ✔️    |       | 
+| Motzkin               | ✔️ | ✔️   | ✔️  | ✔️    | ✔️    |       | 
 
 # Nofib
 
