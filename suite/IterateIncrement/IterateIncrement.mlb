@@ -1,0 +1,6 @@
+$(SML_LIB)/basis/basis.mlb
+local
+  IterateIncrement_lib.sml
+in
+  IterateIncrement_mlton.sml
+end

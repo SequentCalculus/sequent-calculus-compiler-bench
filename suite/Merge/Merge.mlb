@@ -1,0 +1,6 @@
+$(SML_LIB)/basis/basis.mlb
+local
+  Merge_lib.sml
+in
+  Merge_mlton.sml
+end

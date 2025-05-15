@@ -1,0 +1,6 @@
+$(SML_LIB)/basis/basis.mlb
+local
+  SumRange_lib.sml
+in
+  SumRange_mlton.sml
+end

@@ -1,0 +1,6 @@
+$(SML_LIB)/basis/basis.mlb
+local 
+  Cpstak_lib.sml
+in
+  Cpstak_mlton.sml
+end

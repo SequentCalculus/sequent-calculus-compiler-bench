@@ -1,0 +1,6 @@
+$(SML_LIB)/basis/basis.mlb
+local
+  Tak_lib.sml
+in
+  Tak_mlton.sml
+end

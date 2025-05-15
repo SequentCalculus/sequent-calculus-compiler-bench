@@ -1,0 +1,6 @@
+$(SML_LIB)/basis/basis.mlb
+local
+  Motzkin_lib.sml
+in 
+  Motzkin_mlton.sml
+end

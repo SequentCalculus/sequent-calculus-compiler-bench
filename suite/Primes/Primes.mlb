@@ -1,0 +1,6 @@
+$(SML_LIB)/basis/basis.mlb
+local
+  Primes_lib.sml
+in 
+  Primes_mlton.sml
+end

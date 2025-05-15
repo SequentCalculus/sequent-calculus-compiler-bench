@@ -1,0 +1,6 @@
+$(SML_LIB)/basis/basis.mlb
+local
+  Fish_lib.sml
+in
+  Fish_mlton.sml
+end

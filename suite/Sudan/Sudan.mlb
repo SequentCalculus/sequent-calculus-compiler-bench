@@ -1,0 +1,6 @@
+$(SML_LIB)/basis/basis.mlb
+local
+  Sudan_lib.sml
+in 
+  Sudan_mlton.sml
+end

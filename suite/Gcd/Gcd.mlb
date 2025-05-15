@@ -1,0 +1,6 @@
+$(SML_LIB)/basis/basis.mlb
+local
+  Gcd_lib.sml
+in 
+  Gcd_mlton.sml
+end

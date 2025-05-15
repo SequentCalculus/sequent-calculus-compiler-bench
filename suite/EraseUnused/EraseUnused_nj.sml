@@ -1,0 +1,6 @@
+structure Main = struct 
+  fun main (_,args) = 
+    let val _ = EraseUnused.run (tl args) in 
+      OS.Process.success
+    end 
+end

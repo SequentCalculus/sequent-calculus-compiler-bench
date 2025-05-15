@@ -1,0 +1,6 @@
+$(SML_LIB)/basis/basis.mlb
+local
+  Life_lib.sml
+in
+  Life_mlton.sml
+end

@@ -1,0 +1,6 @@
+$(SML_LIB)/basis/basis.mlb
+local
+  LookupTree_lib.sml
+in
+  LookupTree_mlton.sml
+end

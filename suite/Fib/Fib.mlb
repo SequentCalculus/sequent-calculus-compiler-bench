@@ -1,0 +1,6 @@
+$(SML_LIB)/basis/basis.mlb
+local
+  Fib_lib.sml
+in 
+  Fib_mlton.sml
+end

@@ -1,0 +1,6 @@
+$(SML_LIB)/basis/basis.mlb
+local
+  FactorialAccumulator_lib.sml
+in
+  FactorialAccumulator_mlton.sml
+end

@@ -1,0 +1,6 @@
+$(SML_LIB)/basis/basis.mlb
+local
+  Cryptarithm1_lib.sml
+in
+  Cryptarithm1_mlton.sml
+end
