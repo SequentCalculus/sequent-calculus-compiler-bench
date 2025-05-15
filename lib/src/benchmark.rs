@@ -14,7 +14,8 @@ use std::{
 pub enum BenchmarkLanguage {
     Sc,
     Rust,
-    Sml,
+    SmlMlton,
+    SmlNj,
     OCaml,
 }
 
@@ -23,7 +24,8 @@ impl BenchmarkLanguage {
         match ext {
             "sc" => Some(BenchmarkLanguage::Sc),
             "rs" => Some(BenchmarkLanguage::Rust),
-            "sml" => Some(BenchmarkLanguage::Sml),
+            "mlb" => Some(BenchmarkLanguage::SmlMlton),
+            "cm" => Some(BenchmarkLanguage::SmlNj),
             "ml" => Some(BenchmarkLanguage::OCaml),
             _ => None,
         }
@@ -33,7 +35,8 @@ impl BenchmarkLanguage {
         match self {
             BenchmarkLanguage::Sc => "sc",
             BenchmarkLanguage::Rust => "rs",
-            BenchmarkLanguage::Sml => "sml",
+            BenchmarkLanguage::SmlNj => "cm",
+            BenchmarkLanguage::SmlMlton => "mlb",
             BenchmarkLanguage::OCaml => "ml",
         }
     }
@@ -46,6 +49,10 @@ impl BenchmarkLanguage {
             .to_owned();
         source_base.push("_");
         source_base.push(self.ext());
+        #[cfg(target_arch = "x86_64")]
+        let out_path = bin_path_x86().join(source_base);
+        #[cfg(target_arch = "aarch64")]
+        let out_path = bin_path_aarch().join(source_base);
 
         match self {
             BenchmarkLanguage::Sc => {
@@ -66,24 +73,25 @@ impl BenchmarkLanguage {
                 let mut cmd = Command::new("rustc");
                 cmd.arg(source_file);
                 cmd.arg("-o");
-                #[cfg(target_arch = "x86_64")]
-                cmd.arg(bin_path_x86().join(source_base));
-                #[cfg(target_arch = "aarch64")]
-                cmd.arg(bin_path_aarch().join(source_base));
+                cmd.arg(out_path);
                 cmd.arg("-C");
                 cmd.arg("opt-level=3");
                 cmd.arg("-Awarnings");
                 cmd
             }
-            BenchmarkLanguage::Sml => {
+            BenchmarkLanguage::SmlNj => {
+                let mut cmd = Command::new("ml-build");
+                cmd.arg(source_file);
+                cmd.arg("Main.main");
+                cmd.arg(out_path);
+                cmd
+            }
+            BenchmarkLanguage::SmlMlton => {
                 let mut cmd = Command::new("mlton");
                 cmd.arg("-default-type");
                 cmd.arg("int64");
                 cmd.arg("-output");
-                #[cfg(target_arch = "x86_64")]
-                cmd.arg(bin_path_x86().join(source_base));
-                #[cfg(target_arch = "aarch64")]
-                cmd.arg(bin_path_aarch().join(source_base));
+                cmd.arg(out_path);
                 cmd.arg(source_file);
                 cmd
             }
@@ -91,10 +99,7 @@ impl BenchmarkLanguage {
                 let mut cmd = Command::new("ocamlc");
                 cmd.arg(source_file);
                 cmd.arg("-o");
-                #[cfg(target_arch = "x86_64")]
-                cmd.arg(bin_path_x86().join(source_base));
-                #[cfg(target_arch = "aarch64")]
-                cmd.arg(bin_path_aarch().join(source_base));
+                cmd.arg(out_path);
                 cmd
             }
         }
@@ -106,7 +111,8 @@ impl fmt::Display for BenchmarkLanguage {
         match self {
             BenchmarkLanguage::Sc => f.write_str("Compiling-Sc"),
             BenchmarkLanguage::Rust => f.write_str("Rust"),
-            BenchmarkLanguage::Sml => f.write_str("Sml"),
+            BenchmarkLanguage::SmlNj => f.write_str("Sml/NJ"),
+            BenchmarkLanguage::SmlMlton => f.write_str("Mlton"),
             BenchmarkLanguage::OCaml => f.write_str("OCaml"),
         }
     }
@@ -216,8 +222,9 @@ impl Benchmark {
 
         let mut compile_cmd = lang.compile_cmd(&source_path, self.config.heap_size);
         compile_cmd
-            .status()
+            .output()
             .map_err(|err| Error::compile(&self.name, lang, err))?
+            .status
             .success()
             .then_some(())
             .ok_or(Error::compile(
@@ -236,9 +243,20 @@ impl Benchmark {
         Ok(results)
     }
 
-    pub fn run(&self, lang: &BenchmarkLanguage, test: bool) -> Result<std::process::Output, Error> {
+    pub fn run_cmd(&self, lang: &BenchmarkLanguage) -> Result<Command, Error> {
         let bin_path = self.bin_path(lang)?;
-        let mut cmd = Command::new(bin_path);
+        if *lang == BenchmarkLanguage::SmlNj {
+            let mut cmd = Command::new("sml");
+            cmd.arg("@SMLload");
+            cmd.arg(bin_path);
+            Ok(cmd)
+        } else {
+            Ok(Command::new(bin_path))
+        }
+    }
+
+    pub fn run(&self, lang: &BenchmarkLanguage, test: bool) -> Result<std::process::Output, Error> {
+        let mut cmd = self.run_cmd(lang)?;
         let args = if test {
             &self.config.test_args
         } else {
@@ -276,10 +294,17 @@ impl Benchmark {
         let out_path = self.result_path(lang)?;
 
         let mut command = Command::new("hyperfine");
-        let mut call_str = bin_path
+        let bin_str = bin_path
             .to_str()
             .ok_or(Error::path_access(&bin_path, "Path as String"))?
             .to_owned();
+
+        let mut call_str = if *lang == BenchmarkLanguage::SmlNj {
+            format!("sml @SMLload {bin_str}")
+        } else {
+            bin_str
+        };
+
         for arg in &self.config.args {
             call_str.push(' ');
             call_str.push_str(arg);

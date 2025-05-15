@@ -16,3 +16,4 @@ endif
 clean:
 	find -name "*.cmi" -delete
 	find -name "*.cmo" -delete
+	find -name ".cm" -type d | xargs rm -r 
