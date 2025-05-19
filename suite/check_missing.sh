@@ -19,4 +19,9 @@ do
   if [ !  $(find $dir -name "*.sc") ] ; then 
     echo "Missing Compiling-Sc $dir"
   fi
+  if [ !  $(find $dir -name "*.effekt") ] ; then 
+    echo "Missing Effekt $dir"
+  fi
+
+
 done

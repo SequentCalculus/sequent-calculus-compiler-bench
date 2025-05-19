@@ -1,0 +1,40 @@
+import args
+
+def cps_tak(x:Int,y:Int,z:Int) { k: Int => Int } : Int = {
+  if (x<=y){
+    k(z)
+  }else{
+    cps_tak(x - 1, y, z) { v1 => 
+      cps_tak(y - 1, z, x) { v2 => 
+        cps_tak(z - 1, x, y) { v3 => 
+          cps_tak(v1,v2,v3) {k}
+        }
+      }
+    }
+  }
+}
+
+def tak(x:Int,y:Int,z:Int) : Int = { 
+  cps_tak(x,y,z) { a => a }
+}
+
+def main_loop(iters:Int,x:Int,y:Int,z:Int) : Unit = { 
+  val res = tak(x,y,z)
+  if (iters==1) {
+    println(res)
+  }else{
+    main_loop(iters - 1, x, y, z)
+  }
+}
+
+def main() : Unit = {
+  commandLineArgs() match{
+    case Cons(iters_str,Cons(x_str,Cons(y_str,Cons(z_str,Nil())))) => 
+      val iters = try { string::toInt(iters_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) } }
+      val x = try { string::toInt(x_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) } }
+      val y = try { string::toInt(y_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) } }
+      val z = try { string::toInt(z_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) } }
+      main_loop(iters,x,y,z)
+    case _ => panic("Please provide arguments \"iters\",\"x\",\"y\",\"z\"")
+  }
+}

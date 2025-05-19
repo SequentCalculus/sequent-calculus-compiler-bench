@@ -391,7 +391,7 @@ let falsep x l =
   Option.is_some (List.find_opt (fun t -> term_equal x t) l) 
   || 
   match x with 
-    | Func(TRUE,_,_) -> true
+    | Func(FALSE,_,_) -> true
     | _ -> false 
 
 let rec tautologyp x true_lst false_lst = 
@@ -402,13 +402,13 @@ let rec tautologyp x true_lst false_lst =
         if truep cond true_lst then
           tautologyp t true_lst false_lst
         else if falsep cond false_lst then 
-          tautologyp t true_lst false_lst
+          tautologyp e true_lst false_lst
         else 
           (tautologyp t (cond::true_lst) false_lst)
           && 
-          (tautologyp t true_lst (cond::false_lst))
+          (tautologyp e true_lst (cond::false_lst))
     | _ -> false 
-
+ue
 let tautp x = 
   tautologyp (rewrite x) [] []
 
