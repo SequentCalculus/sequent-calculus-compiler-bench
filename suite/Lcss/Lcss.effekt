@@ -1,0 +1,123 @@
+import args 
+
+def snd(x:(Int,Int)) : Int = {
+  x match{
+    case (_,b) => b
+  }
+}
+
+def enum_from_then_to(from:Int,then:Int,to:Int) : List[Int] = {
+  if (from<=to){
+    Cons(from,enum_from_then_to(then,(2 * then) - from,to))
+  }else{
+    Nil()
+  }
+}
+
+def list_len[A](ls:List[A]) : Int = {
+  ls match{
+    case Nil() => 0
+    case Cons(_,as) => 1+list_len(as)
+  }
+}
+
+def in_list(a:Int,ls:List[Int]) : Bool = {
+  ls match{
+    case Nil() => false
+    case Cons(a_,as) => if (a==a_) { true } else { in_list(a,as) }
+  }
+}
+
+def findk(k:Int,km:Int,m:Int,ls:List[(Int,Int)]) : Int = {
+  ls match{
+    case Nil() => km
+    case Cons((x,y),xys) => 
+      if (m<= (x + y)){
+        findk(k + 1,k,x + y,xys)
+      }else{
+        findk(k + 1,km,m,xys)
+      }
+  }
+}
+
+def algb2(x:Int,k0j1:Int,k1j1:Int,yss:List[(Int,Int)]) : List[(Int,Int)] = {
+  yss match{
+    case Nil() => Nil()
+    case Cons((y,k0j),ys) => 
+      val kjcurr = if (x==y) { k0j1 + 1 } else { max(k1j1,k0j) }
+      Cons((y,kjcurr),algb2(x,k0j,kjcurr,ys))
+  }
+}
+
+def algb1(xss:List[Int],yss:List[(Int,Int)]) : List[Int] = {
+  xss match{
+    case Nil() => list::map(yss) { snd }
+    case Cons(x,xs) => algb1(xs,algb2(x,0,0,yss))
+  }
+}
+
+def algb_listcomp_fun(listcomp_fun_para:List[Int]) : List[(Int,Int)] = {
+  listcomp_fun_para match{
+    case Nil() => Nil() 
+    case Cons(listcomp_fun_ls_h,listcomp_fun_ls_t) => 
+      Cons((listcomp_fun_ls_h,0),algb_listcomp_fun(listcomp_fun_ls_t))
+  }
+}
+
+def algb(xss:List[Int],ys:List[Int]) : List[Int] = {
+  Cons(0,algb1(xss,algb_listcomp_fun(ys)))
+}
+
+def algc(m:Int,n:Int,xs:List[Int],ys:List[Int]) : List[Int] => List[Int] at {} = {
+  ys match{
+    case Nil() => box { x => x }
+    case Cons(x,Nil()) => 
+      if (in_list(x,ys)) {
+        box { t => Cons(x,t) } 
+      } else {
+        box { x => x }
+      }
+    case Cons(_,_) => 
+      val m2 = m / 2 
+      val xs1 = list::take(xs,m2)
+      val xs2 = list::drop(xs,m2)
+      val l1 = algb(xs1,ys)
+      val l2 = list::reverse(algb(list::reverse(xs2),list::reverse(ys)))
+      val k = findk(0,0,-1,list::zip(l1,l2))
+      box { x => 
+        val f1 = algc(m - m2,n - k, xs2, list::drop(ys,k))
+        val f2 = algc(m2,k,xs1,list::take(ys,k))
+        f2(f1(x))
+      }
+  }
+}
+
+def lcss(xs:List[Int],ys:List[Int]) : List[Int] = {
+  algc(list_len(xs),list_len(ys),xs,ys)(Nil())
+}
+
+def lcss_main(a:Int,b:Int,c:Int,d:Int,e:Int,f:Int) : List[Int] = {
+  lcss(enum_from_then_to(a,b,c),enum_from_then_to(d,e,f))
+}
+
+def test_lcss_nofib() : List[Int] = {
+  lcss_main(1,2,200,100,101,300)
+}
+
+def main_loop(iters:Int) : Unit = {
+  val res = test_lcss_nofib()
+  if (iters==1){
+    println(option::getOrElse(list::headOption(res)){panic("Empty List") })
+  }else{
+    main_loop(iters - 1)
+  }
+}
+
+def main() : Unit = {
+  commandLineArgs() match{
+    case Cons(iters_str,Nil()) => 
+      val iters = try { string::toInt(iters_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) } }
+      main_loop(iters)
+    case _ => panic("Please provide argument \"iters\"")
+  }
+}

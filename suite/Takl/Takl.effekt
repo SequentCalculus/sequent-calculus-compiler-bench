@@ -1,0 +1,76 @@
+import args 
+
+def tail(x:List[Int]) : List[Int] = {
+  x match{
+    case Nil() => panic("Empty List")
+    case Cons(_,xs) => xs
+  }
+}
+
+def len_loop(l:List[Int],acc:Int) : Int = {
+  l match{
+    case Nil() => acc
+    case Cons(_,xs) => len_loop(xs,acc + 1)
+  }
+}
+
+def len(l:List[Int]) : Int = {
+  len_loop(l,0)
+}
+
+def list_n_loop(n:Int,a:List[Int]) : List[Int] = {
+  if (n==0){
+    a
+  }else{
+    list_n_loop(n - 1,Cons(n,a))
+  }
+}
+
+def list_n(n:Int) : List[Int] = {
+  list_n_loop(n,Nil())
+}
+
+def shorterp(x:List[Int],y:List[Int]) :Bool = {
+  if (not(list::isEmpty(x))) {
+    if (list::isEmpty(y)) {
+      true
+    }else{
+      shorterp(tail(x),tail(y))
+    }
+  }else{
+    false
+  }
+}
+
+def mas(x:List[Int],y:List[Int],z:List[Int]) : List[Int] = {
+  if (not(shorterp(y,x))) {
+    z
+  }else{
+    mas(
+      mas(tail(x),y,z),
+      mas(tail(y),z,x),
+      mas(tail(z),x,y)
+    )
+  }
+}
+
+def main_loop(iters:Int,x:Int,y:Int,z:Int) : Unit = {
+  val res = len(mas(list_n(x),list_n(y),list_n(z)))
+  if (iters==1){
+    println(res)
+  }else{
+    main_loop(iters - 1,x,y,z)
+  }
+}
+
+def main() : Unit = {
+  commandLineArgs() match{
+    case Cons(iters_str,Cons(x_str,Cons(y_str,Cons(z_str,Nil())))) => 
+      val iters = try { string::toInt(iters_str) } with Exception[WrongFormat] { def raise(_,msg)  = { panic(msg) }} 
+      val x = try { string::toInt(x_str) } with Exception[WrongFormat] { def raise(_,msg)  = { panic(msg) }} 
+      val y = try { string::toInt(y_str) } with Exception[WrongFormat] { def raise(_,msg)  = { panic(msg) }} 
+      val z = try { string::toInt(z_str) } with Exception[WrongFormat] { def raise(_,msg)  = { panic(msg) }} 
+      main_loop(iters,x,y,z)
+    case _ => panic("Expected Arguments \"iters\",\"x\",\"y\",\"z\"")
+  }
+}

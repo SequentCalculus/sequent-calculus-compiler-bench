@@ -1,0 +1,153 @@
+import args 
+
+def factorial(n:Int) : Int = {
+  if (n==1){
+    1 
+  }else{
+    n * factorial(n - 1)
+  }
+}
+
+def head[A](ls:List[A]) : A = {
+  ls match{
+    case Nil() => panic("Empty List")
+    case Cons(a,_) => a
+  }
+}
+
+def tail[A](ls:List[A]) : List[A] = {
+  ls match{
+    case Nil() => panic("Empty List")
+    case Cons(_,as) => as
+  }
+}
+
+def tail_n[A](x:List[A],n:Int) : List[A] = {
+  if (n==0){ 
+    x 
+  }else{
+    tail_n(tail(x),n - 1)
+  }
+}
+
+def length[A](ls:List[A]) : Int = {
+  ls match{
+    case Nil() => 0
+    case Cons(_,as) => 1 + length(as)
+  }
+}
+
+def loop_sum2(y:List[Int],sum:Int) : Int = {
+  y match{
+    case Nil() => sum
+    case Cons(hd,tl) => loop_sum2(tl,sum + hd)
+  }
+}
+
+def loop_sum1(x:List[List[Int]],sum:Int) : Int = {
+  x match{
+    case Nil() => sum
+    case Cons(hd,tl) => loop_sum1(tl,loop_sum2(hd,sum))
+  }
+}
+
+def sumlists(x:List[List[Int]]) : Int = {  
+  loop_sum1(x,0)
+}
+
+def loop_one2n(n:Int,p:List[Int]) : List[Int] ={
+  if (n==0){
+    p 
+  }else{
+    loop_one2n(n - 1,Cons(n,p))
+  }
+}
+
+def one2n(n:Int) : List[Int] = {
+  loop_one2n(n,Nil())
+}
+
+def loop_run(iters:Int) { work:() => List[List[Int]] } {result: List[List[Int]] => Bool } : Bool = {
+  val res = result(work())
+  if (iters==0){
+    res
+  }else{
+    loop_run(iters - 1) { work } { result }
+  }
+}
+
+def rev_loop(x:List[Int],n:Int,y:List[Int]) : List[Int] = {
+  if (n==0){
+    y 
+  }else{
+    rev_loop(tail(x),n - 1,Cons(head(x),y))
+  }
+}
+
+def f(n:Int,perms:List[List[Int]],x:List[Int]):(List[List[Int]],List[Int]) = {
+  val x = rev_loop(x,n,tail_n(x,n))
+  val perms = Cons(x,perms)
+  (perms,x)
+}
+
+def loop_p(j:Int,perms:List[List[Int]],x:List[Int],n:Int) : (List[List[Int]],List[Int]) = {
+  if (j==0){
+    p(n - 1,perms,x)
+  }else{
+    val (perms,x) = p(n - 1,perms,x)
+    val (perms,x) = f(n,perms,x)
+    loop_p(j - 1,perms,x,n)
+  }
+}
+
+def p(n:Int,perms:List[List[Int]],x:List[Int]) : (List[List[Int]],List[Int]) = {
+  if (1<n){
+    loop_p(n - 1,perms,x,n)
+  }else{
+    (perms,x)
+  }
+}
+
+def permutations(x0:List[Int]) : List[List[Int]] = {
+  val (final_perms,x) = p(length(x0),Cons(x0,Nil()),x0)
+  final_perms
+}
+
+def loop_work(m:Int,perms:List[List[Int]]) : List[List[Int]] = {
+  if (m==0){
+    perms
+  }else{
+    loop_work(m - 1,permutations(head(perms)))
+  }
+}
+
+def run_benchmark(iters:Int) { work: () => List[List[Int]] } { result : List[List[Int]] => Bool } : Bool = {
+  loop_run(iters) {work} {result}
+}
+
+def perm9(m:Int,n:Int) : Bool = {
+  run_benchmark(1) 
+  { () => loop_work(m,permutations(one2n(n))) }
+  { result => sumlists(result) == (((n * (n + 1)) * factorial(n))/2) }
+
+}
+
+def main_loop(iters:Int,m:Int,n:Int) : Unit = {
+  val res = perm9(m,n)
+  if (iters==1){
+    if (res) { println("1") } else { println("0") }
+  }else{
+    main_loop(iters - 1,m,n)
+  }
+}
+
+def main() : Unit = {
+  commandLineArgs() match{
+    case Cons(iters_str,Cons(n_str,Cons(m_str,Nil()))) => 
+      val iters = try { string::toInt(iters_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) }}
+      val m = try { string::toInt(m_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) }}
+      val n = try { string::toInt(n_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) }}
+      main_loop(iters,m,n)
+    case _ => panic("Expected Arguments \"iters\",\"m\",\"n\"")
+  }
+}

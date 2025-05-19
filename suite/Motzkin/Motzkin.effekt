@@ -1,0 +1,44 @@
+import args 
+
+def sum_loop(i:Int,tot:Int,stop:Int) { f:Int=>Int } : Int = {
+  if (stop<i){
+    tot
+  }else{
+    sum_loop(i + 1, f(i) + tot, stop) {f}
+  }
+}
+
+def sum(start:Int,stop:Int) { f:Int=>Int} : Int = {
+  sum_loop(start,0,stop) { f }
+}
+
+def motz(n:Int) : Int = {
+  if (n<=1){
+    1
+  }else{
+    val limit = n - 2 
+    val product: Int => Int at {} = box {
+      i => motz(i) * motz(limit - i) 
+    }
+    motz(n - 1) + sum(0,limit) {product}
+  }
+}
+
+def main_loop(iters:Int,n:Int) : Unit = {
+  val res = motz(n)
+  if (iters==1){
+    println(res)
+  }else{
+    main_loop(iters - 1,n)
+  }
+}
+
+def main() : Unit = {
+  commandLineArgs() match {
+    case Cons(iters_str,Cons(n_str,Nil())) => 
+      val iters = try { string::toInt(iters_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) } }
+      val n = try { string::toInt(n_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) } } 
+      main_loop(iters,n)
+    case _ => panic("Expected arguments \"iters\",\"n\"")
+  }
+}

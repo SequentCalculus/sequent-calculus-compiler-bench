@@ -1,0 +1,53 @@
+import args 
+
+def tabulate_loop(n:Int,len:Int,acc:List[Int]) { f:Int => Int }: List[Int] ={
+  if (n<len){
+    tabulate_loop(n + 1, len, Cons(f(n),acc)) {f}
+  }else{
+    list::reverse(acc)
+  }
+}
+
+def tabulate(n:Int) { f: Int => Int } : List[Int] = {
+  if (n<0){
+    panic("n should be posivitive")
+  }else{
+    tabulate_loop(0,n,Nil()) {f}
+  }
+}
+
+def merge(l1:List[Int],l2:List[Int]) : List[Int] = {
+  l1 match{
+    case Nil() => l2
+    case Cons(x1,xs1) => l2 match{
+      case Nil() => l1
+      case Cons(x2,xs2) => 
+        if (x1<=x2){
+          Cons(x1,merge(xs1,l2))
+        }else{
+          Cons(x2,merge(l2,xs2))
+        }
+    }
+  }
+}
+
+def main_loop(iters:Int,l1:List[Int],l2:List[Int]) : Unit = {
+  val res = merge(l1,l2)
+  if (iters==1){
+    println(option::getOrElse(list::headOption(res)){panic("Empty List")})
+  }else{
+    main_loop(iters - 1,l1,l2)
+  }
+}
+
+def main() : Unit = {
+  commandLineArgs() match{
+    case Cons(iters_str,Cons(n_str,Nil())) => 
+      val iters = try { string::toInt(iters_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) } }
+      val n = try { string::toInt(n_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) } }
+      val l1 = tabulate(n) { x => 2 * x }
+      val l2 = tabulate(n) { x => (2 * x) + 1 }  
+      main_loop(iters,l1,l2)
+    case _ => panic("Expceted arguments \"iters\",\"n\"")
+  }
+}

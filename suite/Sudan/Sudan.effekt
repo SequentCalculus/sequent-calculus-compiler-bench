@@ -1,0 +1,34 @@
+import args 
+
+def sudan(n:Int,x:Int,y:Int) : Int = {
+  if (n==0){
+    x + y 
+  }else if (y==0) {
+    x 
+  }else{
+    val inner = sudan(n,x,y - 1)
+    sudan(n - 1,inner,inner + y)
+  }
+}
+
+def main_loop(iters:Int,n:Int,x:Int,y:Int) : Unit = {
+  val res = sudan(n,x,y)
+  if (iters==1){
+    println(iters)
+  }else{
+    main_loop(iters - 1,n,x,y)
+  }
+}
+
+def main() : Unit = {
+  commandLineArgs() match{
+    case Cons(iters_str,Cons(n_str,Cons(x_str,Cons(y_str,Nil())))) => 
+      val iters = try{ string::toInt(iters_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) }}
+      val n = try{ string::toInt(n_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) }}
+      val x = try{ string::toInt(x_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) }}
+      val y = try{ string::toInt(y_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) }}
+      main_loop(iters,n,x,y)
+    case _ => panic("Expected Arguments \"iters\",\"n\",\"x\",\"y\"")
+
+  }
+}

@@ -1,0 +1,35 @@
+import args 
+
+def range(i:Int,n:Int) : List[Int] = {
+  if(i<n) {
+    Cons(i,range(i + 1,n))
+  }else{
+    Nil()
+  }
+}
+
+def sum(xs:List[Int]):Int = {
+  xs match{
+    case Nil() => 0
+    case Cons(y,ys) => y + sum(ys)
+  }
+}
+
+def main_loop(iters:Int,n:Int) : Unit = {
+  val res = sum(range(0,n))
+  if (iters==1){
+    println(res)
+  }else{
+    main_loop(iters - 1,n)
+  }
+}
+
+def main() : Unit = {
+  commandLineArgs() match{
+    case Cons(iters_str,Cons(n_str,Nil())) => 
+      val iters = try { string::toInt(iters_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg)} }
+      val n = try { string::toInt(n_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg)} }
+      main_loop(iters,n)
+    case _ => panic("Expected arguments \"iters\",\"n\"")
+  }
+}
