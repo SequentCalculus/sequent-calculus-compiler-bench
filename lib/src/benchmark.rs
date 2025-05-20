@@ -17,6 +17,7 @@ pub enum BenchmarkLanguage {
     SmlMlton,
     SmlNj,
     OCaml,
+    Effekt,
 }
 
 impl BenchmarkLanguage {
@@ -27,6 +28,7 @@ impl BenchmarkLanguage {
             "mlb" => Some(BenchmarkLanguage::SmlMlton),
             "cm" => Some(BenchmarkLanguage::SmlNj),
             "ml" => Some(BenchmarkLanguage::OCaml),
+            "effekt" => Some(BenchmarkLanguage::Effekt),
             _ => None,
         }
     }
@@ -38,6 +40,7 @@ impl BenchmarkLanguage {
             BenchmarkLanguage::SmlNj => "cm",
             BenchmarkLanguage::SmlMlton => "mlb",
             BenchmarkLanguage::OCaml => "ml",
+            BenchmarkLanguage::Effekt => "effekt",
         }
     }
 
@@ -102,6 +105,16 @@ impl BenchmarkLanguage {
                 cmd.arg(out_path);
                 cmd
             }
+            BenchmarkLanguage::Effekt => {
+                let mut cmd = Command::new("effekt");
+                cmd.arg(source_file);
+                cmd.arg("-b");
+                cmd.arg("--backend");
+                cmd.arg("llvm");
+                cmd.arg("-o");
+                cmd.arg(out_path);
+                cmd
+            }
         }
     }
 }
@@ -114,6 +127,7 @@ impl fmt::Display for BenchmarkLanguage {
             BenchmarkLanguage::SmlNj => f.write_str("Sml/NJ"),
             BenchmarkLanguage::SmlMlton => f.write_str("Mlton"),
             BenchmarkLanguage::OCaml => f.write_str("OCaml"),
+            BenchmarkLanguage::Effekt => f.write_str("Effekt"),
         }
     }
 }
@@ -217,10 +231,12 @@ impl Benchmark {
         if !self.languages.contains(lang) {
             return Err(Error::unknown_lang(&self.name, "Compiling", lang));
         }
+
         let mut source_path = self.base_path.clone().join(&self.name);
         source_path.set_extension(lang.ext());
 
         let mut compile_cmd = lang.compile_cmd(&source_path, self.config.heap_size);
+
         compile_cmd
             .output()
             .map_err(|err| Error::compile(&self.name, lang, err))?
@@ -250,6 +266,8 @@ impl Benchmark {
             cmd.arg("@SMLload");
             cmd.arg(bin_path);
             Ok(cmd)
+        } else if *lang == BenchmarkLanguage::Effekt {
+            Ok(Command::new(bin_path.join(&self.name)))
         } else {
             Ok(Command::new(bin_path))
         }

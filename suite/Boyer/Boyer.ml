@@ -408,7 +408,7 @@ let rec tautologyp x true_lst false_lst =
           && 
           (tautologyp e true_lst (cond::false_lst))
     | _ -> false 
-ue
+
 let tautp x = 
   tautologyp (rewrite x) [] []
 
