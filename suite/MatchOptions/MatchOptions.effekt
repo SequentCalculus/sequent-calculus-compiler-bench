@@ -14,7 +14,7 @@ def attempt(i:Int) : Option[Int] = {
 def main_loop(iters:Int,n:Int) : Unit = {
   val res = attempt(n) match{
     case None() => -1
-    case Some(x) => 1 
+    case Some(x) => x 
   }
   if (iters==1){
     println(res)

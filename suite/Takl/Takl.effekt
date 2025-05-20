@@ -31,8 +31,8 @@ def list_n(n:Int) : List[Int] = {
 }
 
 def shorterp(x:List[Int],y:List[Int]) :Bool = {
-  if (not(list::isEmpty(x))) {
-    if (list::isEmpty(y)) {
+  if (not(list::isEmpty(y))) {
+    if (list::isEmpty(x)) {
       true
     }else{
       shorterp(tail(x),tail(y))

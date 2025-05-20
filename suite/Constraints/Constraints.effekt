@@ -132,7 +132,7 @@ def at_index[A](ind:Int,ls:List[A]) : A = {
 def rev_loop[A](ls:List[A],acc:List[A]) : List[A] = {
   ls match{
     case Nil() => acc
-    case Cons(p,ps) => rev_loop(ps,Cons(p,ps))
+    case Cons(p,ps) => rev_loop(ps,Cons(p,acc))
   }
 }
 
@@ -147,11 +147,15 @@ def concat[A](lss:List[List[A]]) : List[A] = {
   concat_loop(lss,Nil())
 }
 
-def not_elem(a:Int,ls:List[Int]) : Bool = {
+def in_list(i:Int,ls:List[Int]):Bool = {
   ls match {
-    case Nil() => true
-    case Cons(a_,as) => if (a==a_) { false } else { not_elem(a,as) }
+    case Nil() => false
+    case Cons(j,js) => if (i==j) { true } else { in_list(i,js) }
   }
+}
+
+def not_elem(a:Int,ls:List[Int]) : Bool = {
+  not(in_list(a,ls))
 }
 
 def max_level(ls:List[Assign]) : Int = {
@@ -211,16 +215,16 @@ def union(l1:List[Int],l2:List[Int]) : List[Int] = {
   union_by(l1,l2) { (x,y) => x==y }
 }
 
+def init_tree(x:List[Assign]) { f:List[Assign] => List[List[Assign]] } : Node[List[Assign]] = {
+  Node(x,list::map(f(x)){y => init_tree(y) {f} })
+
+}
+
 def mk_lscomp1(ls:List[Int],ss:List[Assign]) : List[List[Assign]] = {
   ls match{
     case Nil() => Nil()
     case Cons(j,t1) => Cons(Cons(Assign(max_level(ss) + 1,j),ss),mk_lscomp1(t1,ss))
   }
-}
-
-def init_tree(x:List[Assign]) { f:List[Assign] => List[List[Assign]] } : Node[List[Assign]] = {
-  Node(x,list::map(f(x)){y => init_tree(y) {f} })
-
 }
 
 def mk_tree(csp:CSP) : Node[List[Assign]] = {
@@ -290,7 +294,7 @@ def earliest_inconsistency(csp:CSP,aas:List[Assign]) : Option[(Int,Int)] = {
     case (CSP(vars,vals,rel),Cons(a,as)) => 
       filter(list::reverse(as)) { x => not(rel(a,x)) }match  {
         case Nil() => None() 
-        case Cons(b,bs) => Some((level(a),level(b)))
+        case Cons(b,_) => Some((level(a),level(b)))
       }
   }
 }
@@ -335,20 +339,6 @@ def known_conflict(c:ConflictSet) : Bool = {
   }
 }
 
-def empt_lscomp2(ls:List[Int]) : List[ConflictSet] = {
-  ls match{
-    case Nil() => Nil()
-    case Cons(m,t2) => Cons(Unknown(),empt_lscomp2(t2))
-  }
-}
-
-def empt_lscomp1(ls:List[Int],vals:Int) : List[List[ConflictSet]] = {
-  ls match{
-    case Nil() => Nil()
-    case Cons(n,t1) => Cons(empt_lscomp2(enum_from_to(1,vals)),empt_lscomp1(t1,vals))
-  }
-}
-
 def fill_lscomp2(ls:List[Int],varrr:Int) : List[(Int,Int)] = {
   ls match{
     case Nil() => Nil()
@@ -385,6 +375,21 @@ def fill_table(s:List[Assign],csp:CSP,tbl:List[List[ConflictSet]]) : List[List[C
   }
 }
 
+def empt_lscomp2(ls:List[Int]) : List[ConflictSet] = {
+  ls match{
+    case Nil() => Nil()
+    case Cons(m,t2) => Cons(Unknown(),empt_lscomp2(t2))
+  }
+}
+
+def empt_lscomp1(ls:List[Int],vals:Int) : List[List[ConflictSet]] = {
+  ls match{
+    case Nil() => Nil()
+    case Cons(n,t1) => Cons(empt_lscomp2(enum_from_to(1,vals)),empt_lscomp1(t1,vals))
+  }
+}
+
+
 def empty_table(csp:CSP) : List[List[ConflictSet]] = { 
   csp match{
     case CSP(vars,vals,rel) => Cons(Nil(),empt_lscomp1(enum_from_to(1,vars),vals))
@@ -406,7 +411,7 @@ def search(csp:CSP){labeler:(CSP,Node[List[Assign]]) => Node[(List[Assign],Confl
 
 def safe(as1:Assign,as2:Assign): Bool = { 
   (as1,as2) match {
-    case (Assign(j,m),Assign(i,n)) => not(m==n) && not(abs(i - j) == abs(m - n))
+    case (Assign(i,m),Assign(j,n)) => not(m==n) && not(abs(i - j) == abs(m - n))
   }
 }
 
@@ -416,7 +421,7 @@ def queens(n:Int) : CSP = {
 
 def bt_f3(csp:CSP, s:List[Assign]) : (List[Assign],ConflictSet) = { 
   earliest_inconsistency(csp,s) match{
-    case Some((a,b)) => (s,Known([a,b]))
+    case Some((a,b)) => (s,Known(Cons(a,Cons(b,Nil()))))
     case None() => (s,check_complete(csp,s))
   }
 }

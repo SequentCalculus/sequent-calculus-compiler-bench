@@ -14,7 +14,7 @@ def sudan(n:Int,x:Int,y:Int) : Int = {
 def main_loop(iters:Int,n:Int,x:Int,y:Int) : Unit = {
   val res = sudan(n,x,y)
   if (iters==1){
-    println(iters)
+    println(res)
   }else{
     main_loop(iters - 1,n,x,y)
   }

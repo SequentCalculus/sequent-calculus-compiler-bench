@@ -28,6 +28,13 @@ def in_list(a:Int,ls:List[Int]) : Bool = {
   }
 }
 
+def is_singleton[A](ls:List[A]) : Option[A] = {
+  ls match{
+    case Cons(x,Nil()) => Some(x)
+    case _ => None()
+  }
+}
+
 def findk(k:Int,km:Int,m:Int,ls:List[(Int,Int)]) : Int = {
   ls match{
     case Nil() => km
@@ -71,24 +78,26 @@ def algb(xss:List[Int],ys:List[Int]) : List[Int] = {
 def algc(m:Int,n:Int,xs:List[Int],ys:List[Int]) : List[Int] => List[Int] at {} = {
   ys match{
     case Nil() => box { x => x }
-    case Cons(x,Nil()) => 
-      if (in_list(x,ys)) {
-        box { t => Cons(x,t) } 
-      } else {
-        box { x => x }
-      }
-    case Cons(_,_) => 
-      val m2 = m / 2 
-      val xs1 = list::take(xs,m2)
-      val xs2 = list::drop(xs,m2)
-      val l1 = algb(xs1,ys)
-      val l2 = list::reverse(algb(list::reverse(xs2),list::reverse(ys)))
-      val k = findk(0,0,-1,list::zip(l1,l2))
-      box { x => 
-        val f1 = algc(m - m2,n - k, xs2, list::drop(ys,k))
-        val f2 = algc(m2,k,xs1,list::take(ys,k))
-        f2(f1(x))
-      }
+    case _ => is_singleton(xs) match {
+      case Some(x) => 
+        if (in_list(x,ys)) {
+          box { t => Cons(x,t) } 
+          } else {
+            box { x => x }
+          }
+      case None() => 
+        val m2 = m / 2 
+        val xs1 = list::take(xs,m2)
+        val xs2 = list::drop(xs,m2)
+        val l1 = algb(xs1,ys)
+        val l2 = list::reverse(algb(list::reverse(xs2),list::reverse(ys)))
+        val k = findk(0,0,-1,list::zip(l1,l2))
+        box { x => 
+          val f1 = algc(m - m2,n - k, xs2, list::drop(ys,k))
+          val f2 = algc(m2,k,xs1,list::take(ys,k))
+          f2(f1(x))
+        }
+    }
   }
 }
 

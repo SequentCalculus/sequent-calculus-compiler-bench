@@ -16,7 +16,7 @@ def odd_abs(i:Int) : Bool / {Ret} = {
   if (i==0){
     do ret(false)
   }else{
-    try { odd_abs(i - 1) } with Ret { def ret(b) = { b }}
+    do ret (even_abs(i - 1))
   }
 }
 
