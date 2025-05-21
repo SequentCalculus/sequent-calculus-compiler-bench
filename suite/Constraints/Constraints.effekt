@@ -61,8 +61,7 @@ def fold_tree[A,B](t:Node[A]) {f : (A,List[Node[B]]) => Node[B] } : Node[B] = {
 }
 
 def filter_tree[A](n:Node[A]) {p: A => Bool }: Node[A] = {
-  val f: (A,List[Node[A]]) => Node[A] at {p} = box { (a,cs) => Node(a,filter(cs) {x => p(label(x))})}
-  fold_tree(n) { f } 
+  fold_tree(n) { (a,cs) => Node(a,filter(cs) {x => p(label(x))}) }
 }
 
 def leaves[A](n:Node[A]) : List[A] = {
@@ -230,14 +229,13 @@ def mk_lscomp1(ls:List[Int],ss:List[Assign]) : List[List[Assign]] = {
 def mk_tree(csp:CSP) : Node[List[Assign]] = {
   csp match{
     case CSP(vars,vals,rel) => 
-      val next : List[Assign] => List[List[Assign]] at {} = box { ss => 
+      init_tree(Nil()) { ss =>
         if (max_level(ss) < vars){
           mk_lscomp1(enum_from_to(1,vals),ss)
         }else{
           Nil()
         }
       }
-      init_tree(Nil()) { next } 
   }
 }
 
@@ -264,7 +262,7 @@ def wipe_lscomp1(ls:List[List[ConflictSet]]) : List[List[ConflictSet]] = {
 def domain_wipeout(csp:CSP,t:Node[((List[Assign],ConflictSet),List[List[ConflictSet]])]) : Node[(List[Assign],ConflictSet)] = { 
   csp match{
     case CSP(vars,vals,rel) => 
-      val f8: Tuple2[(List[Assign],ConflictSet),List[List[ConflictSet]]] => (List[Assign],ConflictSet) at {io} = box { tup => tup match {case (p,tbl) => 
+      map_tree(t){ tup => tup match {case (p,tbl) =>
         p match{ 
           case (as_,cs) => 
             val wiped_domains = wipe_lscomp1(tbl)
@@ -275,8 +273,8 @@ def domain_wipeout(csp:CSP,t:Node[((List[Assign],ConflictSet),List[List[Conflict
             }
             (as_,cs_)
         }
-      }}
-      map_tree(t){f8}
+      }
+      }
   }
 }
 
@@ -300,9 +298,8 @@ def earliest_inconsistency(csp:CSP,aas:List[Assign]) : Option[(Int,Int)] = {
 }
 
 def lookup_cache(csp:CSP,t:Node[(List[Assign],List[List[ConflictSet]])]): Node[((List[Assign],ConflictSet),List[List[ConflictSet]])] = {
-  val f5: (CSP,(List[Assign],List[List[ConflictSet]])) => ((List[Assign],ConflictSet),List[List[ConflictSet]]) at {io} = 
-    box {
-      (csp,tp) => tp match{
+    map_tree(t) { tp =>
+      tp match{
         case (Nil(),tbl) => ((Nil(),Unknown()),tbl)
         case (Cons(a,as),tbl) => 
           val table_entry = at_index(value(a) - 1, head(tbl))
@@ -311,9 +308,9 @@ def lookup_cache(csp:CSP,t:Node[(List[Assign],List[List[ConflictSet]])]): Node[(
             case Known(_) => table_entry
           }
           ((Cons(a,as),cs),tbl)
-      }
+
     }
-    map_tree(t) { x => f5(csp,x) }
+  }
 }
 
 def cache_checks(csp:CSP,tbl:List[List[ConflictSet]],n:Node[List[Assign]]) : Node[(List[Assign],List[List[ConflictSet]])] = { 
@@ -359,7 +356,7 @@ def fill_table(s:List[Assign],csp:CSP,tbl:List[List[ConflictSet]]) : List[List[C
     case Cons(Assign(var_,val_),as_) => 
       csp match{
         case CSP(vars,vals,rel) => 
-          val f4 : (ConflictSet,(Int,Int)) => ConflictSet at {} = box{ (cs,varval) => 
+          list::zipWith(tbl,fill_lscomp1(enum_from_to(var_ + 1,vars),vals)) { (x,y) => list::zipWith(x,y) { (cs,varval) => 
             (cs,varval) match{
               case (Known(_),_) => cs
               case (Unknown(),(varr,vall)) => 
@@ -369,8 +366,7 @@ def fill_table(s:List[Assign],csp:CSP,tbl:List[List[ConflictSet]]) : List[List[C
                   cs
                 }
             }
-          }
-          list::zipWith(tbl,fill_lscomp1(enum_from_to(var_ + 1,vars),vals)) { (x,y) => list::zipWith(x,y) {f4} }
+          } }
       }
   }
 }
@@ -478,9 +474,13 @@ def try_(n:Int) { algorithm: (CSP, Node[List[Assign]]) => Node[(List[Assign],Con
   len(search(queens(n)){algorithm})
 }
 
-def test_constraints_nofib(n:Int) : List[Int] = { 
-  list::map([bt,bm,bjbt,bjbt_,fc]) { x => try_(n) {x} }
-}
+def test_constraints_nofib(n:Int) : List[Int] = [
+  try_(n){bt},
+  try_(n){bm},
+  try_(n){bjbt},
+  try_(n){bjbt_},
+  try_(n){fc}
+]
 
 def main_loop(iters:Int,n:Int) : Unit = {
   val res = test_constraints_nofib(n)
