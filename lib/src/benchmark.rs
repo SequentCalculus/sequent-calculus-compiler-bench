@@ -18,6 +18,7 @@ pub enum BenchmarkLanguage {
     SmlNj,
     OCaml,
     Effekt,
+    Koka,
 }
 
 impl BenchmarkLanguage {
@@ -29,6 +30,7 @@ impl BenchmarkLanguage {
             "cm" => Some(BenchmarkLanguage::SmlNj),
             "ml" => Some(BenchmarkLanguage::OCaml),
             "effekt" => Some(BenchmarkLanguage::Effekt),
+            "kk" => Some(BenchmarkLanguage::Koka),
             _ => None,
         }
     }
@@ -41,6 +43,7 @@ impl BenchmarkLanguage {
             BenchmarkLanguage::SmlMlton => "mlb",
             BenchmarkLanguage::OCaml => "ml",
             BenchmarkLanguage::Effekt => "effekt",
+            BenchmarkLanguage::Koka => "kk",
         }
     }
 
@@ -115,6 +118,23 @@ impl BenchmarkLanguage {
                 cmd.arg(out_path);
                 cmd
             }
+            BenchmarkLanguage::Koka => {
+                let source_base = source_file
+                    .file_name()
+                    .expect("Could not read file name")
+                    .to_str()
+                    .expect("Could not get file name as string")
+                    .to_lowercase();
+                let source_file = source_file
+                    .parent()
+                    .expect("Could not get file path")
+                    .join(source_base);
+                let mut cmd = Command::new("koka");
+                cmd.arg(&source_file);
+                cmd.arg("-o");
+                cmd.arg(out_path);
+                cmd
+            }
         }
     }
 }
@@ -128,6 +148,7 @@ impl fmt::Display for BenchmarkLanguage {
             BenchmarkLanguage::SmlMlton => f.write_str("Mlton"),
             BenchmarkLanguage::OCaml => f.write_str("OCaml"),
             BenchmarkLanguage::Effekt => f.write_str("Effekt"),
+            BenchmarkLanguage::Koka => f.write_str("Koka"),
         }
     }
 }
@@ -142,7 +163,6 @@ pub struct Benchmark {
 impl Benchmark {
     pub fn new(name: &str) -> Result<Benchmark, Error> {
         let base_path = PathBuf::from(SUITE_PATH).join(name);
-
         let mut config_path = base_path.clone().join(name);
         config_path.set_extension("args");
         let config = Config::from_file(config_path);
@@ -188,6 +208,8 @@ impl Benchmark {
         if *lang != BenchmarkLanguage::Sc {
             bin_name += "_";
             bin_name += lang.ext();
+        } else if *lang == BenchmarkLanguage::Koka {
+            bin_name = bin_name.to_lowercase()
         }
 
         Ok(PathBuf::from(bin_path).join(bin_name))
@@ -268,6 +290,13 @@ impl Benchmark {
             Ok(cmd)
         } else if *lang == BenchmarkLanguage::Effekt {
             Ok(Command::new(bin_path.join(&self.name)))
+        } else if *lang == BenchmarkLanguage::Koka {
+            Command::new("chmod")
+                .arg("+x")
+                .arg(&bin_path)
+                .status()
+                .map_err(|err| Error::run(&self.name, lang, err))?;
+            Ok(Command::new(bin_path))
         } else {
             Ok(Command::new(bin_path))
         }
