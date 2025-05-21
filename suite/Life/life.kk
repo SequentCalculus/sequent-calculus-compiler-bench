@@ -1,0 +1,192 @@
+module life 
+
+import std/os/env
+import std/num/int64
+
+fun todo(a:a): total a { a }
+
+struct gen
+  coordslist: list<(int64,int64)>
+
+fun alive(g:gen): total list<(int64,int64)>{
+  match g
+    Gen(livecoords) -> livecoords
+}
+
+fun exists_l(l:list<(int64,int64)>,f:(int64,int64) -> bool): total bool{
+  match l
+    Nil -> False
+    Cons((x,y),ps) -> f(x,y) || exists_l(ps,f)
+}
+
+fun member(l:list<(int64,int64)>,p:(int64,int64)): total bool{
+  match p
+    (x1,x2) -> exists_l(l,fn(y1,y2) (x1 == y1) && (x2 == y2))
+}
+
+fun accumulate(
+  a:list<(int64,int64)>,xs:list<(int64,int64)>,
+  f:(list<(int64,int64)>,(int64,int64)) -> list<(int64,int64)>
+): total list<(int64,int64)> {
+  foldl(xs,a,f)
+}
+
+fun revonto(x:list<(int64,int64)>,y:list<(int64,int64)>): total list<(int64,int64)>{
+  accumulate(x,y,fn(t,h) -> Cons(h,t))
+}
+
+fun collect_accum(
+  sofar:list<(int64,int64)>,
+  xs:list<(int64,int64)>,
+  f:(int64,int64) -> list<(int64,int64)>
+): total list<(int64,int64)>{
+  match xs
+    Nil -> sofar
+    Cons((x,y),ys) -> collect_accum(revonto(sofar,f(x,y)),ys,f)
+}
+
+fun collect(l:list<(int64,int64)>,f:(int64,int64) -> list<(int64,int64)>): total list<(int64,int64)>{
+  collect_accum(Nil,l,f)
+}
+
+fun neighbours(p:(int64,int64)): total list<(int64,int64)>{
+  match p
+    (fst,snd) -> 
+      Cons((fst - 1.int64, snd - 1.int64),
+        Cons((fst - 1.int64, snd),
+          Cons((fst - 1.int64, snd + 1.int64),
+            Cons((fst, snd - 1.int64),
+              Cons((fst, snd + 1.int64),
+                Cons((fst + 1.int64, snd - 1.int64),
+                  Cons((fst + 1.int64, snd),
+                    Cons((fst + 1.int64, snd + 1.int64),
+                      Nil))))))))
+}
+
+fun diff(x:list<(int64,int64)>,y:list<(int64,int64)>): total list<(int64,int64)>{
+  filter(x,fn(p) not(member(y,p)))
+}
+
+
+fun collect_neighbours(
+  xover:list<(int64,int64)>,
+  x3:list<(int64,int64)>,
+  x2:list<(int64,int64)>,
+  x1:list<(int64,int64)>,
+  xs:list<(int64,int64)>
+): total list<(int64,int64)>{
+  match xs
+    Nil -> diff(x3,xover)
+    Cons(a,x) -> 
+      if member(xover,a) then
+          collect_neighbours(xover,x3,x2,x1,x)
+      else if member(x3,a) then
+          collect_neighbours(Cons(a,xover),x3,x2,x1,x)
+      else if member(x2,a) then
+          collect_neighbours(xover,Cons(a,x3),x2,x1,x)
+      else if member(x1,a) then
+          collect_neighbours(xover,x3,Cons(a,x2),x1,x)
+      else 
+          collect_neighbours(xover,x3,x2,Cons(a,x1),x)
+}
+
+fun occurs3(l:list<(int64,int64)>): total list<(int64,int64)>{
+  collect_neighbours(Nil,Nil,Nil,Nil,l)
+}
+
+fun twoorthree(n:int64): bool{
+  (n == 2.int64) || (n == 3.int64)
+}
+
+fun mk_nextgen(gen:gen) : total gen{
+  val living = alive(gen)
+  val isalive = fn(p) member(living,p)
+  val liveneighbours = fn(x,y) length(filter(neighbours((x,y)),isalive)).int64
+  val survivors = filter(living,fn((x,y)) twoorthree(liveneighbours(x,y)))
+  val newbrnlist: list<(int64,int64)> = collect(living,fn(x,y) filter(neighbours((x,y)),fn(n) not(isalive(n))))
+  val newborn = occurs3(newbrnlist)
+  Gen(append(survivors,newborn))
+}
+
+fun nthgen(g:gen,i:int64): div gen {
+  if i == 0.int64 then
+    g 
+  else 
+    nthgen(mk_nextgen(g), i - 1.int64)
+}
+
+fun at_pos(coordlist:list<(int64,int64)>,p:(int64,int64)): total list<(int64,int64)>{
+  val move = fn((fst1,snd1))
+    match p 
+      (fst2,snd2) -> (fst1 + fst2, snd1 + snd2)
+  map(coordlist,move)
+}
+
+fun shuttle(): total list<(int64,int64)>{
+  val r4 = Cons((4.int64, 1.int64), Cons((4.int64, 0.int64), Cons((4.int64, 5.int64), Cons((4.int64, 6.int64), Nil))));
+  val r3 = Cons((3.int64, 2.int64), Cons((3.int64, 3.int64), Cons((3.int64, 4.int64), r4)));
+  val r2 = Cons((2.int64, 1.int64), Cons((2.int64, 5.int64), r3));
+  val r1 = Cons((1.int64, 2.int64), Cons((1.int64, 4.int64), r2));
+  Cons((0.int64, 3.int64), r1)
+}
+
+fun bail(): total list<(int64,int64)>{
+  Cons((0.int64, 0.int64), Cons((0.int64, 1.int64), Cons((1.int64, 0.int64), Cons((1.int64, 1.int64), Nil))))
+
+}
+
+fun center_line(): total int64{
+  5.int64
+}
+
+fun gun(): total gen{
+  val r9 = Cons((9.int64, 29.int64), Cons((9.int64, 30.int64), Cons((9.int64, 31.int64), Cons((9.int64, 32.int64), Nil))))
+  val r8 = Cons((8.int64, 20.int64), Cons((8.int64, 28.int64), Cons((8.int64, 29.int64), Cons((8.int64, 30.int64),
+    Cons((8.int64, 31.int64), Cons((8.int64, 40.int64), Cons((8.int64, 41.int64), r9)))))))
+  val r7 = Cons((7.int64, 19.int64), Cons((7.int64, 21.int64), Cons((7.int64, 28.int64), Cons((7.int64, 31.int64),
+    Cons((7.int64, 40.int64), Cons((7.int64, 41.int64), r8))))))
+  val r6 = Cons((6.int64, 7.int64), Cons((6.int64, 8.int64), Cons((6.int64, 18.int64), Cons((6.int64, 22.int64),
+     Cons((6.int64, 23.int64), Cons((6.int64, 28.int64), Cons((6.int64, 29.int64), Cons((6.int64, 30.int64),
+      Cons((6.int64, 31.int64), Cons((6.int64, 36.int64), r7))))))))))
+  val r5 = Cons((5.int64, 7.int64), Cons((5.int64, 8.int64), Cons((5.int64, 18.int64), Cons((5.int64, 22.int64),
+     Cons((5.int64, 23.int64), Cons((5.int64, 29.int64), Cons((5.int64, 30.int64), Cons((5.int64, 31.int64),
+      Cons((5.int64, 32.int64), Cons((5.int64, 36.int64), r6))))))))))
+  val r4 = Cons((4.int64, 18.int64), Cons((4.int64, 22.int64), Cons((4.int64, 23.int64), Cons((4.int64, 32.int64), r5))))
+  val r3 = Cons((3.int64, 19.int64), Cons((3.int64, 21.int64), r4))
+  val r2 = Cons((2.int64, 20.int64), r3)
+  Gen(r2)
+}
+
+fun non_steady(): total gen { 
+  Gen(append(append(
+    at_pos(bail(),(1.int64, center_line())),
+    at_pos(bail(),(21.int64,center_line()))),
+    at_pos(shuttle(),(6.int64, center_line() - 2.int64))  ))
+}
+
+fun go_gun(steps:int64): div (){
+  val _ = nthgen(gun(),steps)
+  ()
+}
+
+fun go_shuttle(steps:int64): div () { 
+  val _ = nthgen(non_steady(),steps)
+  ()
+}
+
+fun go_loop(iters:int64,steps:int64,go:int64 -> div ()): div int64{
+  if iters == 1.int64 then
+    0.int64
+  else 
+    val res = go(steps)
+    go_loop(iters - 1.int64,steps,go)
+}
+
+fun main() : <ndet,exn,console,div> (){
+  val args = get-args()
+  val iters = unjust(parse-int(unjust(head(args)))).int64
+  val steps = unjust(parse-int(unjust(head(tail(args))))).int64
+  val gun_res = go_loop(iters,steps,go_gun)
+  val shuttle_res = go_loop(iters,steps,go_shuttle)
+  println(show(gun_res) ++ show(shuttle_res))
+}
