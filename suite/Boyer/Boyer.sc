@@ -3302,7 +3302,7 @@ def main_loop(iters: i64, n: i64): i64 {
     res.case {
       True => println_i64(1);
               0,
-      False => println_i64(-1);
+      False => println_i64(0);
                0
     }
   } else {

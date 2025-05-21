@@ -59,9 +59,9 @@ fun nth(l:list<a>,i:int64): exn a {
     Cons(a,as_) -> if i==0.int64 then a else nth(as_,i - 1.int64)
 }
 
-fun find_player(l:list<maybe<player>>,i:int64): exn maybe<player> {
+fun find_player(l:list<maybe<player>>,i:int64): total maybe<player> {
   match l 
-    Nil -> throw("Empty list")
+    Nil -> Nothing
     Cons(p,ps) -> 
       if i == 0.int64 then
         p

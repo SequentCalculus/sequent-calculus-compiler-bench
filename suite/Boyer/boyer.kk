@@ -248,7 +248,7 @@ fun tautologyp(x:term,true_lst:list<term>,false_lst:list<term>) : div bool {
       else 
         (tautologyp(t,Cons(cond,true_lst),false_lst))
         && 
-        (tautologyp(t,true_lst,Cons(cond,false_lst)))
+        (tautologyp(e,true_lst,Cons(cond,false_lst)))
     _ -> False
 }
 

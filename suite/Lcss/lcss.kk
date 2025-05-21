@@ -82,9 +82,9 @@ fun algc(m:int64,n:int64,xs:list<int64>,ys:list<int64>): div (list<int64> -> div
         val l2 = reverse(algb(reverse(xs2),reverse(ys)))
         val k = findk(0.int64, 0.int64, (-1).int64, zip(l1,l2))
         fn(x) 
-          val f1 = algc(m - m2.int64, n - k, xs1, drop(ys,k.int))
+          val f1 = algc(m - m2.int64, n - k, xs2, drop(ys,k.int))
           val f2 = algc(m2.int64,k,xs1,take(ys,k.int))
-          f2(f2(x))
+          f2(f1(x))
 }
 
 fun lcss(xs:list<int64>,ys:list<int64>): div list<int64>{

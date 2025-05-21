@@ -286,7 +286,7 @@ fun rot(p:(vec,vec,vec) -> div list<vec4>,a:vec,b:vec,c:vec): div list<vec4>{
 }
 
 fun corner1(arg:vec,q6:vec,q7:vec): div list<vec4>{
-  quartet(corner1,side1,fn(a,b,c) rot(side1,a,b,c),u,arg,q6,q7)
+  quartet(nil,nil,nil,u,arg,q6,q7)
 }
 
 fun corner2(arg:vec,q6:vec,q7:vec): div list<vec4>{

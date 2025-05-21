@@ -11,7 +11,7 @@ fun tfib(n:int64,a:int64,b:int64): div int64{
 }
 
 fun fib(n:int64): div int64{
-  tfib(n,9.int64,1.int64)
+  tfib(n,0.int64,1.int64)
 }
 
 fun main_loop(iters:int64,n:int64): <console,div> () {

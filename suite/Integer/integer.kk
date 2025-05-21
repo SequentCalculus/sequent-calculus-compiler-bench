@@ -97,6 +97,6 @@ fun main_loop(iters:int64,n:int64): <console,div,exn> (){
 fun main(): <ndet,exn,console,div> () {
   val args = get-args()
   val iters = unjust(parse-int(unjust(head(args)))).int64
-  val n = unjust(parse-int(unjust(head(args)))).int64
+  val n = unjust(parse-int(unjust(head(tail(args))))).int64
   main_loop(iters,n)
 }

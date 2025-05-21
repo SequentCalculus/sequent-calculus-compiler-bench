@@ -30,10 +30,10 @@ fun merge(l1:list<int64>,l2:list<int64>): total list<int64>{
             Cons(x2,merge(l1,xs2))
 }
 
-fun main_loop(iters:int64,l1:list<int64>,l2:list<int64>): <console,div> (){
+fun main_loop(iters:int64,l1:list<int64>,l2:list<int64>): <console,div,exn> (){
   val res = merge(l1,l2)
   if iters == 1.int64 then
-    println(res)
+    println(unjust(head(res)))
   else 
     main_loop(iters - 1.int64,l1,l2)
 }
