@@ -22,6 +22,7 @@ do
   if [ !  $(find $dir -name "*.effekt") ] ; then 
     echo "Missing Effekt $dir"
   fi
-
-
+  if [ !  $(find $dir -name "*.kk") ] ; then 
+    echo "Missing Koka $dir"
+  fi
 done
