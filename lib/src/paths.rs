@@ -11,9 +11,17 @@ pub const HYPERFINE_PATH: &str = "results/hyperfine";
 pub const REPORTS_PATH: &str = "results/reports";
 
 pub fn bin_path_x86() -> PathBuf {
-    Path::new(BIN_PATH).join(BIN_X86)
+    let path = Path::new(BIN_PATH).join(BIN_X86);
+    if !path.exists() {
+        std::fs::create_dir_all(&path).expect("Could not create out dir");
+    }
+    path
 }
 
 pub fn bin_path_aarch() -> PathBuf {
-    Path::new(BIN_PATH).join(BIN_AARCH)
+    let path = Path::new(BIN_PATH).join(BIN_AARCH);
+    if !path.exists() {
+        std::fs::create_dir_all(&path).expect("Could not create out dir");
+    }
+    path
 }

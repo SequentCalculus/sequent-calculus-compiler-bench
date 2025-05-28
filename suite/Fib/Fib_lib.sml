@@ -1,4 +1,5 @@
 structure Fib = struct 
+
   fun fib n = 
     if n=0 then 0 
     else if n=1 then 1 

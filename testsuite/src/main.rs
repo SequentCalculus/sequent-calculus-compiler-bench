@@ -61,6 +61,7 @@ fn main() -> Result<(), Error> {
             match test.compile(lang) {
                 Ok(_) => (),
                 Err(err) => {
+                    num_fail += 1;
                     report_format(TestResult::from_err(err));
                     continue;
                 }
