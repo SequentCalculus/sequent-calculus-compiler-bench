@@ -78,8 +78,9 @@ def tup2(a_b: Vec, c_d: Vec): Vec4 {
   }
 }
 
-def grid_lscomp(m: i64, n: i64, a: Vec, b: Vec, c: Vec, ls: List[Vec4]): List[Vec4] {
-  ls.case[Vec4] {
+
+def grid(m: i64, n: i64, segments: List[Vec4], a: Vec, b: Vec, c: Vec): List[Vec4] {
+  segments.case[Vec4] {
     Nil => Nil,
     Cons(v, t) => v.case {
       Vec4(x0, y0, x1, y1) =>
@@ -87,13 +88,9 @@ def grid_lscomp(m: i64, n: i64, a: Vec, b: Vec, c: Vec, ls: List[Vec4]): List[Ve
           tup2(
             vec_add(vec_add(a, scale_vec2(b, x0, m)), scale_vec2(c, y0, n)),
             vec_add(vec_add(a, scale_vec2(b, x1, m)), scale_vec2(c, y1, n))),
-          grid_lscomp(m, n, a, b, c, t))
+          grid(m, n, t, a, b, c))
     }
   }
-}
-
-def grid(m: i64, n: i64, segments: List[Vec4], a: Vec, b: Vec, c: Vec): List[Vec4] {
-  grid_lscomp(m, n, a, b, c, segments)
 }
 
 def rot(p: Fun3[Vec, Vec, Vec, List[Vec4]], a: Vec, b: Vec, c: Vec): List[Vec4] {
@@ -264,26 +261,11 @@ def min(i1: i64, i2: i64): i64 {
   }
 }
 
-def rev_list_loop(l1: List[List[Vec4]], l2: List[List[Vec4]]): List[List[Vec4]] {
-  l1.case[List[Vec4]] {
-    Nil => l2,
-    Cons(is, iss) => rev_list_loop(iss, Cons(is, l2))
-  }
-}
-
-def rev_list(l: List[List[Vec4]]): List[List[Vec4]] {
-  rev_list_loop(l, Nil)
-}
-
-def map_loop(f: Fun[i64, List[Vec4]], l: List[i64], acc: List[List[Vec4]]): List[List[Vec4]] {
-  l.case[i64] {
-    Nil => rev_list(acc),
-    Cons(p, ps) => map_loop(f, ps, Cons(f.Apply[i64, List[Vec4]](p), acc))
-  }
-}
-
 def map(f: Fun[i64, List[Vec4]], l: List[i64]): List[List[Vec4]] {
-  map_loop(f, l, Nil)
+  l.case[i64]{
+    Nil => Nil,
+    Cons(i,is) => Cons(f.Apply[i64,List[Vec4]](i),map(f,is))
+  }
 }
 
 def test_fish_nofib(n: i64): List[List[Vec4]] {

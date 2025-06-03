@@ -9,18 +9,14 @@ let scale_vec (Vec(x,y)) a b = Vec ((x*a) / b, (y*a) / b)
 
 let tup2 (Vec(x1,y1)) (Vec(x2,y2)) = Vec4(x1,y1,x2,y2)
 
-let rec grid_lscomp m n a b c ls = 
-  match ls with 
+let rec grid m n segments a b c= 
+  match segments with 
     | [] -> []
     | Vec4(x0,y0,x1,y1)::t -> 
         (tup2 
         (vec_add (vec_add a (scale_vec b x0 m)) (scale_vec c y0 n))
         (vec_add (vec_add a (scale_vec b x1 m)) (scale_vec c y1 n))) 
-        :: grid_lscomp m n a b c t 
-
-
-let grid m n segments a b c = 
-  grid_lscomp m n a b c segments
+        :: grid m n t a b c
 
 let tile_to_grid arg arg2 arg3 arg4 = 
   grid 16 16  arg arg2 arg3 arg4 

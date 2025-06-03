@@ -9,7 +9,7 @@
 | FibonacciRecursive    | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         | identical to Fib |
 | Nqueens               | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         |
 | Boyer                 | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         |
-| Fish                  | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            |         
+| Fish                  | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         |         
 | Perm                  | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            | Rust version significantly faster |
 | Gcd                   | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            |
 | Primes                | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            | 

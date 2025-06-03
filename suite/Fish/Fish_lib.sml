@@ -13,8 +13,8 @@ structure Fish = struct
     then from::(enum_from_to (from+1) to)
     else nil
 
-  fun grid_lscomp m n a b c ls = 
-    case ls of 
+  fun grid m n segments a b c = 
+    case segments of 
          nil => nil
        | (Vec4 (x0,y0,x1,y1))::t => 
            (tup2 
@@ -26,9 +26,7 @@ structure Fish = struct
            (vec_add a (scale_vec b x1 m)) 
            (scale_vec c y1 n)
            )
-           )::grid_lscomp m n a b c t
-
-  fun grid m n segments a b c = grid_lscomp m n a b c segments
+           )::grid m n t a b c
 
   fun tile_to_grid arg arg2 arg3 arg4 = 
     grid 16 16 arg arg2 arg3 arg4

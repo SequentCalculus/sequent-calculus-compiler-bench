@@ -237,19 +237,16 @@ fun cycle_(p1:(vec,vec,vec) -> div list<vec4>,arg:vec,p3:vec,p4:vec): div list<v
     arg,p3,p4)
 }
 
-fun grid_lscomp(m:int64, n:int64, a:vec,b:vec,c:vec,ls:list<vec4>): total list<vec4>{
-  match ls 
+
+fun grid(m:int64, n:int64, segments:list<vec4>, a:vec,b:vec,c:vec): total list<vec4>{
+  match segments
     Nil -> Nil
     Cons(Vec4(x0,y0,x1,y1),t) -> 
       Cons(tup2(
         vec_add(vec_add(a,scale_vec2(b,x0,m)),scale_vec2(c,y0,n)),
         vec_add(vec_add(a,scale_vec2(b,x1,m)),scale_vec2(c, y1,n))),
-        grid_lscomp(m,n,a,b,c,t)
+        grid(m,n,t,a,b,c)
       )
-}
-
-fun grid(m:int64, n:int64, segments:list<vec4>, a:vec,b:vec,c:vec): total list<vec4>{
-  grid_lscomp(m,n,a,b,c,segments)
 }
 
 fun tile_to_grid(arg:list<vec4>, arg2:vec,arg3:vec,arg4:vec) : total list<vec4>{
