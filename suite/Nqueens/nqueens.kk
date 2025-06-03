@@ -10,7 +10,7 @@ fun safe(x:int64,d:int64,l:list<int64>): total bool{
       not(x == q) && not(x == (q + d)) && not(x == (q - d)) && safe(x,d + 1.int64,l)
 }
 
-fun check(l:list<list<int64>>,acc:list<list<int64>>,q:int64): list<list<int64>>{
+fun check(l:list<list<int64>>,acc:list<list<int64>>,q:int64): total list<list<int64>>{
   match l
     Nil -> acc
     Cons(b,bs) -> 

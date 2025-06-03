@@ -12,32 +12,17 @@ def neq_i(i1: i64, i2: i64): Bool {
   if i1 == i2 { False } else { True }
 }
 
-def length_loop(l: List[List[i64]], acc: i64): i64 {
-  l.case[List[i64]] {
-    Nil => acc,
-    Cons(is, iss) => length_loop(iss, acc + 1)
-  }
-}
-
 def length(l: List[List[i64]]): i64 {
-  length_loop(l, 0)
-}
-
-def appendRev(l1: List[List[i64]], l2: List[List[i64]]): List[List[i64]] {
-  l1.case[List[i64]] {
-    Nil => l2,
-    Cons(is, iss) => appendRev(iss, Cons(is, l2))
+  l.case[List[i64]]{
+    Nil => 0,
+    Cons(i,ls) => 1+length(ls)
   }
-}
-
-def rev(l: List[List[i64]]): List[List[i64]] {
-  appendRev(l, Nil)
 }
 
 def append(l1: List[List[i64]], l2: List[List[i64]]): List[List[i64]] {
-  l2.case[List[i64]] {
-    Nil => l1,
-    Cons(is, iss) => appendRev(rev(l1), Cons(is, iss))
+  l1.case[List[i64]] {
+    Nil => l2,
+    Cons(is, iss) => Cons(is,append(iss,l2))
   }
 }
 

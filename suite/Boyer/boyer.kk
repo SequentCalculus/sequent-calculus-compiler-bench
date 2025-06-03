@@ -17,38 +17,24 @@ type id
   ID_AND
   ID_APPEND
   ID_CONS
-  ID_CONSP
   ID_DIFFERENCE
-  ID_DIVIDES
   ID_EQUAL
-  ID_EVEN
-  ID_EXP
   ID_F
   ID_FALSE
   ID_FOUR
-  ID_GCD
-  ID_GREATEREQP
-  ID_GREATERP
   ID_IF
-  ID_IFF
   ID_IMPLIES
   ID_LENGTH
-  ID_LESSEQP
   ID_LESSP
-  ID_LISTP
   ID_MEMBER
   ID_NIL
-  ID_NILP
-  ID_NLISTP
   ID_NOT
-  ID_ODD
   ID_ONE
   ID_OR
   ID_PLUS
   ID_QUOTIENT
   ID_REMAINDER
   ID_REVERSE
-  ID_SUB1
   ID_TIMES
   ID_TRUE
   ID_TWO
@@ -75,38 +61,24 @@ fun id_eq(id1:id,id2:id) : total bool {
     (ID_AND,ID_AND) -> True
     (ID_APPEND,ID_APPEND) -> True
     (ID_CONS,ID_CONS) -> True
-    (ID_CONSP,ID_CONSP) -> True
     (ID_DIFFERENCE,ID_DIFFERENCE) -> True
-    (ID_DIVIDES,ID_DIVIDES) -> True
     (ID_EQUAL,ID_EQUAL) -> True
-    (ID_EVEN,ID_EVEN) -> True
-    (ID_EXP,ID_EXP) -> True
     (ID_F,ID_F) -> True
     (ID_FALSE,ID_FALSE) -> True
     (ID_FOUR,ID_FOUR) -> True
-    (ID_GCD,ID_GCD) -> True
-    (ID_GREATEREQP,ID_GREATEREQP) -> True
-    (ID_GREATERP,ID_GREATERP) -> True
     (ID_IF,ID_IF) -> True
-    (ID_IFF,ID_IFF) -> True
     (ID_IMPLIES,ID_IMPLIES) -> True
     (ID_LENGTH,ID_LENGTH) -> True
-    (ID_LESSEQP,ID_LESSEQP) -> True
     (ID_LESSP,ID_LESSP) -> True
-    (ID_LISTP,ID_LISTP) -> True
     (ID_MEMBER,ID_MEMBER) -> True
     (ID_NIL,ID_NIL) -> True
-    (ID_NILP,ID_NILP) -> True
-    (ID_NLISTP,ID_NLISTP) -> True
     (ID_NOT,ID_NOT) -> True
-    (ID_ODD,ID_ODD) -> True
     (ID_ONE,ID_ONE) -> True
     (ID_OR,ID_OR) -> True
     (ID_PLUS,ID_PLUS) -> True
     (ID_QUOTIENT,ID_QUOTIENT) -> True
     (ID_REMAINDER,ID_REMAINDER) -> True
     (ID_REVERSE,ID_REVERSE) -> True
-    (ID_SUB1,ID_SUB1) -> True
     (ID_TIMES,ID_TIMES) -> True
     (ID_TRUE,ID_TRUE) -> True
     (ID_TWO,ID_TWO) -> True
@@ -200,7 +172,8 @@ fun one_way_unify(term1:term,term2:term) : div (bool,list<(id,term)>)  {
   one_way_unify1(term1,term2,Nil)
 }
 
-fun rewrite_with_lemmas_helper(term:term,lss:list<(term,term)>) : div term {
+
+fun rewrite_with_lemmas(term:term,lss:list<(term,term)>) : div term {
   match lss
     Nil -> term
     Cons((lhs,rhs),ls) -> 
@@ -208,12 +181,8 @@ fun rewrite_with_lemmas_helper(term:term,lss:list<(term,term)>) : div term {
       if unified then
         rewrite(apply_subst(subst,rhs))
       else 
-        rewrite_with_lemmas_helper(term,ls)
+        rewrite_with_lemmas(term,ls)
   }
-
-fun rewrite_with_lemmas(term:term,lss:list<(term,term)>) : div term {
-  rewrite_with_lemmas_helper(term,lss)
-}
 
 fun rewrite(t:term) : div term {
   match t 

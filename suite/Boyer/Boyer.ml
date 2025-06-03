@@ -1,11 +1,9 @@
 type id = A | B | C | D | X | Y | Z | U | W 
-  | ADD1 | AND | APPEND | CONS | CONSP 
-  | DIFFERENCE | DIVIDES | EQUAL | EVEN | EXP 
-  | F | FALSE | FOUR | GCD | GREATEREQP | GREATERP 
-  | IF | IFF | IMPLIES | LENGTH | LESSEQP | LESSP
-  | LISTP | MEMBER | NIL | NILP | NLISTP | NOT
-  | ODD | ONE | OR | PLUS | QUOTIENT | REMAINDER 
-  | REVERSE | SUB1 | TIMES | TRUE | TWO | ZERO | ZEROP
+  | ADD1 | AND | APPEND | CONS |  DIFFERENCE | EQUAL 
+  | F | FALSE | FOUR | IF | IMPLIES | LENGTH | LESSP
+  | MEMBER | NIL | NOT
+  | ONE | OR | PLUS | QUOTIENT | REMAINDER 
+  | REVERSE | TIMES | TRUE | TWO | ZERO | ZEROP
 
 type term = 
   Var of id
@@ -367,8 +365,6 @@ let rec rewrite t =
           (lemmas ())
     | ERROR -> ERROR
 and rewrite_with_lemmas term lss =
-  rewrite_with_lemmas_helper term lss
-and rewrite_with_lemmas_helper term lss = 
   match lss with 
     | [] -> term
     | (lhs,rhs)::ls -> 
@@ -376,7 +372,7 @@ and rewrite_with_lemmas_helper term lss =
         if unified then 
           rewrite (apply_subst subst rhs)
         else 
-          rewrite_with_lemmas_helper term ls
+          rewrite_with_lemmas term ls
 
 
 

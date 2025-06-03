@@ -1,3 +1,99 @@
+use std::rc::Rc;
+
+#[derive(Clone)]
+enum List<T> {
+    Nil,
+    Cons(T, Rc<List<T>>),
+}
+
+impl<T> List<T> {
+    fn three(self) -> Option<(T, T, T)>
+    where
+        T: Clone,
+    {
+        match self {
+            List::Nil => None,
+            List::Cons(t1, ts1) => match Rc::unwrap_or_clone(ts1) {
+                List::Nil => None,
+                List::Cons(t2, ts2) => match Rc::unwrap_or_clone(ts2) {
+                    List::Nil => None,
+                    List::Cons(t3, ts3) => match Rc::unwrap_or_clone(ts3) {
+                        List::Nil => Some((t1, t2, t3)),
+                        List::Cons(_, _) => None,
+                    },
+                },
+            },
+        }
+    }
+
+    fn contains(&self, t: &T) -> bool
+    where
+        T: PartialEq,
+    {
+        match self {
+            List::Nil => false,
+            List::Cons(t1, ts) => {
+                if t1 == t {
+                    true
+                } else {
+                    ts.contains(t)
+                }
+            }
+        }
+    }
+
+    fn all(self, f: impl Fn(T) -> bool) -> bool
+    where
+        T: Clone,
+    {
+        match self {
+            List::Nil => true,
+            List::Cons(t, ts) => {
+                if f(t) {
+                    Rc::unwrap_or_clone(ts).all(f)
+                } else {
+                    false
+                }
+            }
+        }
+    }
+
+    fn map<U>(self, f: impl Fn(T) -> U) -> List<U>
+    where
+        T: Clone,
+    {
+        match self {
+            List::Nil => List::Nil,
+            List::Cons(t, ts) => List::Cons(f(t), Rc::new(Rc::unwrap_or_clone(ts).map(f))),
+        }
+    }
+}
+
+impl<T> PartialEq for List<T>
+where
+    T: PartialEq,
+{
+    fn eq(&self, other: &List<T>) -> bool {
+        match (self, other) {
+            (List::Nil, List::Nil) => true,
+            (List::Cons(t1, ts1), List::Cons(t2, ts2)) => t1 == t2 && ts1 == ts2,
+            _ => false,
+        }
+    }
+}
+
+impl<T> Eq for List<T> where T: Eq {}
+
+impl<T> From<Vec<T>> for List<T> {
+    fn from(mut v: Vec<T>) -> List<T> {
+        if v.is_empty() {
+            return List::Nil;
+        }
+        let fst = v.remove(0);
+        List::Cons(fst, Rc::new(v.into()))
+    }
+}
+
 #[derive(PartialEq, Eq, Clone, Copy)]
 enum Id {
     A,
@@ -13,38 +109,24 @@ enum Id {
     AND,
     APPEND,
     CONS,
-    _CONSP,
     DIFFERENCE,
-    _DIVIDES,
     EQUAL,
-    _EVEN,
-    _EXP,
     F,
     FALSE,
     FOUR,
-    _GCD,
-    _GREATEREQP,
-    _GREATERP,
     IF,
-    _IFF,
     IMPLIES,
     LENGTH,
-    _LESSEQP,
     LESSP,
-    _LISTP,
     MEMBER,
     NIL,
-    _NILP,
-    _NLISTP,
     NOT,
-    _ODD,
     ONE,
     OR,
     PLUS,
     QUOTIENT,
     REMAINDER,
     REVERSE,
-    _SUB1,
     TIMES,
     TRUE,
     TWO,
@@ -55,8 +137,12 @@ enum Id {
 #[derive(Clone)]
 enum Term<'a> {
     Var(Id),
-    Fun(Id, Vec<Term<'a>>, &'a dyn Fn() -> Vec<(Term<'a>, Term<'a>)>),
-    _ERROR,
+    Fun(
+        Id,
+        Rc<List<Term<'a>>>,
+        &'a dyn Fn() -> List<(Term<'a>, Term<'a>)>,
+    ),
+    ERROR,
 }
 
 impl<'a> PartialEq for Term<'a> {
@@ -71,463 +157,559 @@ impl<'a> PartialEq for Term<'a> {
 
 impl<'a> Eq for Term<'a> {}
 
-fn a<'a>() -> Term<'a> {
+fn boyer_a<'a>() -> Term<'a> {
     Term::Var(Id::A)
 }
 
-fn b<'a>() -> Term<'a> {
+fn boyer_b<'a>() -> Term<'a> {
     Term::Var(Id::B)
 }
 
-fn c<'a>() -> Term<'a> {
+fn boyer_c<'a>() -> Term<'a> {
     Term::Var(Id::C)
 }
 
-fn d<'a>() -> Term<'a> {
+fn boyer_d<'a>() -> Term<'a> {
     Term::Var(Id::D)
 }
 
-fn x<'a>() -> Term<'a> {
+fn boyer_x<'a>() -> Term<'a> {
     Term::Var(Id::X)
 }
 
-fn y<'a>() -> Term<'a> {
+fn boyer_y<'a>() -> Term<'a> {
     Term::Var(Id::Y)
 }
 
-fn z<'a>() -> Term<'a> {
+fn boyer_z<'a>() -> Term<'a> {
     Term::Var(Id::Z)
 }
 
-fn u<'a>() -> Term<'a> {
+fn boyer_u<'a>() -> Term<'a> {
     Term::Var(Id::U)
 }
 
-fn w<'a>() -> Term<'a> {
+fn boyer_w<'a>() -> Term<'a> {
     Term::Var(Id::W)
 }
 
 fn boyer_false<'a>() -> Term<'a> {
-    Term::Fun(Id::FALSE, vec![], &|| vec![])
+    Term::Fun(Id::FALSE, Rc::new(List::Nil), &|| List::Nil)
 }
 
-fn nil<'a>() -> Term<'a> {
-    Term::Fun(Id::NIL, vec![], &|| vec![])
+fn boyer_nil<'a>() -> Term<'a> {
+    Term::Fun(Id::NIL, Rc::new(List::Nil), &|| List::Nil)
 }
 
 fn boyer_true<'a>() -> Term<'a> {
-    Term::Fun(Id::TRUE, vec![], &|| vec![])
+    Term::Fun(Id::TRUE, Rc::new(List::Nil), &|| List::Nil)
 }
 
-fn zero<'a>() -> Term<'a> {
-    Term::Fun(Id::ZERO, vec![], &|| vec![])
+fn boyer_zero<'a>() -> Term<'a> {
+    Term::Fun(Id::ZERO, Rc::new(List::Nil), &|| List::Nil)
 }
 
-fn one<'a>() -> Term<'a> {
-    Term::Fun(Id::ONE, vec![], &|| vec![(one(), add1(zero()))])
+fn boyer_one<'a>() -> Term<'a> {
+    Term::Fun(Id::ONE, Rc::new(List::Nil), &|| {
+        vec![(boyer_one(), boyer_add1(boyer_zero()))].into()
+    })
 }
 
-fn two<'a>() -> Term<'a> {
-    Term::Fun(Id::TWO, vec![], &|| vec![(two(), add1(one()))])
+fn boyer_two<'a>() -> Term<'a> {
+    Term::Fun(Id::TWO, Rc::new(List::Nil), &|| {
+        vec![(boyer_two(), boyer_add1(boyer_one()))].into()
+    })
 }
 
-fn four<'a>() -> Term<'a> {
-    Term::Fun(Id::FOUR, vec![], &|| vec![(four(), add1(add1(two())))])
+fn boyer_four<'a>() -> Term<'a> {
+    Term::Fun(Id::FOUR, Rc::new(List::Nil), &|| {
+        vec![(boyer_four(), boyer_add1(boyer_add1(boyer_two())))].into()
+    })
 }
 
-fn add1<'a>(a: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::ADD1, vec![a], &|| vec![])
+fn boyer_add1<'a>(a: Term<'a>) -> Term<'a> {
+    Term::Fun(
+        Id::ADD1,
+        Rc::new(List::Cons(a, Rc::new(List::Nil))),
+        &|| List::Nil,
+    )
 }
 
-fn if_<'a>(a: Term<'a>, b: Term<'a>, c: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::IF, vec![a, b, c], &|| {
+fn boyer_if<'a>(a: Term<'a>, b: Term<'a>, c: Term<'a>) -> Term<'a> {
+    Term::Fun(Id::IF, Rc::new(vec![a, b, c].into()), &|| {
         vec![(
-            if_(if_(x(), y(), z()), u(), w()),
-            if_(x(), if_(y(), u(), w()), if_(z(), u(), w())),
-        )]
-    })
-}
-
-fn not_<'a>(a: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::NOT, vec![a], &|| {
-        vec![(not_(x()), if_(x(), boyer_true(), boyer_false()))]
-    })
-}
-
-fn and_<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::AND, vec![a, b], &|| {
-        vec![(
-            and_(x(), y()),
-            if_(x(), if_(y(), boyer_true(), boyer_false()), boyer_false()),
-        )]
-    })
-}
-
-fn append_<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::APPEND, vec![a, b], &|| {
-        vec![(
-            append_(append_(x(), y()), z()),
-            append_(x(), append_(y(), z())),
-        )]
-    })
-}
-
-fn cons<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::CONS, vec![a, b], &|| vec![])
-}
-
-fn _consp<'a>(a: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::_CONSP, vec![a], &|| {
-        vec![(_consp(cons(x(), y())), boyer_true())]
-    })
-}
-
-fn difference<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::DIFFERENCE, vec![a, b], &|| {
-        vec![
-            (difference(x(), x()), zero()),
-            (difference(plus(x(), y()), x()), y()),
-            (difference(plus(y(), x()), x()), y()),
-            (
-                difference(plus(x(), y()), plus(x(), z())),
-                difference(y(), z()),
+            boyer_if(
+                boyer_if(boyer_x(), boyer_y(), boyer_z()),
+                boyer_u(),
+                boyer_w(),
             ),
-            (difference(plus(y(), plus(x(), z())), x()), plus(y(), z())),
-            (difference(add1(plus(y(), z())), z()), add1(y())),
-            (difference(add1(add1(x())), two()), x()),
+            boyer_if(
+                boyer_x(),
+                boyer_if(boyer_y(), boyer_u(), boyer_w()),
+                boyer_if(boyer_z(), boyer_u(), boyer_w()),
+            ),
+        )]
+        .into()
+    })
+}
+
+fn boyer_not<'a>(a: Term<'a>) -> Term<'a> {
+    Term::Fun(Id::NOT, Rc::new(vec![a].into()), &|| {
+        vec![(
+            boyer_not(boyer_x()),
+            boyer_if(boyer_x(), boyer_true(), boyer_false()),
+        )]
+        .into()
+    })
+}
+
+fn boyer_and<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
+    Term::Fun(Id::AND, Rc::new(vec![a, b].into()), &|| {
+        vec![(
+            boyer_and(boyer_x(), boyer_y()),
+            boyer_if(
+                boyer_x(),
+                boyer_if(boyer_y(), boyer_true(), boyer_false()),
+                boyer_false(),
+            ),
+        )]
+        .into()
+    })
+}
+
+fn boyer_append<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
+    Term::Fun(Id::APPEND, Rc::new(vec![a, b].into()), &|| {
+        vec![(
+            boyer_append(boyer_append(boyer_x(), boyer_y()), boyer_z()),
+            boyer_append(boyer_x(), boyer_append(boyer_y(), boyer_z())),
+        )]
+        .into()
+    })
+}
+
+fn boyer_cons<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
+    Term::Fun(Id::CONS, Rc::new(vec![a, b].into()), &|| List::Nil)
+}
+
+fn boyer_difference<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
+    Term::Fun(Id::DIFFERENCE, Rc::new(vec![a, b].into()), &|| {
+        vec![
+            (boyer_difference(boyer_x(), boyer_x()), boyer_zero()),
+            (
+                boyer_difference(boyer_plus(boyer_x(), boyer_y()), boyer_x()),
+                boyer_y(),
+            ),
+            (
+                boyer_difference(boyer_plus(boyer_y(), boyer_x()), boyer_x()),
+                boyer_y(),
+            ),
+            (
+                boyer_difference(
+                    boyer_plus(boyer_x(), boyer_y()),
+                    boyer_plus(boyer_x(), boyer_z()),
+                ),
+                boyer_difference(boyer_y(), boyer_z()),
+            ),
+            (
+                boyer_difference(
+                    boyer_plus(boyer_y(), boyer_plus(boyer_x(), boyer_z())),
+                    boyer_x(),
+                ),
+                boyer_plus(boyer_y(), boyer_z()),
+            ),
+            (
+                boyer_difference(boyer_add1(boyer_plus(boyer_y(), boyer_z())), boyer_z()),
+                boyer_add1(boyer_y()),
+            ),
+            (
+                boyer_difference(boyer_add1(boyer_add1(boyer_x())), boyer_two()),
+                boyer_x(),
+            ),
         ]
+        .into()
     })
 }
 
-fn _divides<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::_DIVIDES, vec![a, b], &|| {
-        vec![(_divides(x(), y()), zerop(remainder(y(), x())))]
-    })
-}
-
-fn equal<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::EQUAL, vec![a, b], &|| {
+fn boyer_equal<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
+    Term::Fun(Id::EQUAL, Rc::new(vec![a, b].into()), &|| {
         vec![
-            (equal(plus(x(), y()), zero()), and_(zerop(x()), zerop(y()))),
-            (equal(plus(x(), y()), plus(x(), z())), equal(y(), z())),
-            (equal(zero(), difference(x(), y())), not_(lessp(y(), z()))),
             (
-                equal(x(), difference(x(), y())),
-                or_(equal(x(), zero()), zerop(y())),
+                boyer_equal(boyer_plus(boyer_x(), boyer_y()), boyer_zero()),
+                boyer_and(boyer_zerop(boyer_x()), boyer_zerop(boyer_y())),
             ),
             (
-                equal(x(), difference(x(), y())),
-                or_(equal(x(), zero()), zerop(y())),
-            ),
-            (equal(times(x(), y()), zero()), or_(zerop(x()), zerop(y()))),
-            (equal(append_(x(), y()), append_(x(), z())), equal(y(), z())),
-            (
-                equal(y(), times(x(), y())),
-                or_(equal(y(), zero()), equal(x(), one())),
+                boyer_equal(
+                    boyer_plus(boyer_x(), boyer_y()),
+                    boyer_plus(boyer_x(), boyer_z()),
+                ),
+                boyer_equal(boyer_y(), boyer_z()),
             ),
             (
-                equal(x(), times(x(), y())),
-                or_(equal(x(), zero()), equal(y(), one())),
+                boyer_equal(boyer_zero(), boyer_difference(boyer_x(), boyer_y())),
+                boyer_not(boyer_lessp(boyer_y(), boyer_z())),
             ),
             (
-                equal(times(x(), y()), one()),
-                and_(equal(x(), one()), equal(y(), one())),
+                boyer_equal(boyer_x(), boyer_difference(boyer_x(), boyer_y())),
+                boyer_or(boyer_equal(boyer_x(), boyer_zero()), boyer_zerop(boyer_y())),
             ),
             (
-                equal(difference(x(), y()), difference(z(), y())),
-                if_(
-                    lessp(x(), y()),
-                    not_(lessp(y(), z())),
-                    if_(lessp(z(), y()), not_(lessp(y(), x())), equal(x(), z())),
+                boyer_equal(boyer_x(), boyer_difference(boyer_x(), boyer_y())),
+                boyer_or(boyer_equal(boyer_x(), boyer_zero()), boyer_zerop(boyer_y())),
+            ),
+            (
+                boyer_equal(boyer_times(boyer_x(), boyer_y()), boyer_zero()),
+                boyer_or(boyer_zerop(boyer_x()), boyer_zerop(boyer_y())),
+            ),
+            (
+                boyer_equal(
+                    boyer_append(boyer_x(), boyer_y()),
+                    boyer_append(boyer_x(), boyer_z()),
+                ),
+                boyer_equal(boyer_y(), boyer_z()),
+            ),
+            (
+                boyer_equal(boyer_y(), boyer_times(boyer_x(), boyer_y())),
+                boyer_or(
+                    boyer_equal(boyer_y(), boyer_zero()),
+                    boyer_equal(boyer_x(), boyer_one()),
                 ),
             ),
             (
-                equal(lessp(x(), y()), z()),
-                if_(
-                    lessp(x(), y()),
-                    equal(boyer_true(), z()),
-                    equal(boyer_false(), z()),
+                boyer_equal(boyer_x(), boyer_times(boyer_x(), boyer_y())),
+                boyer_or(
+                    boyer_equal(boyer_x(), boyer_zero()),
+                    boyer_equal(boyer_y(), boyer_one()),
+                ),
+            ),
+            (
+                boyer_equal(boyer_times(boyer_x(), boyer_y()), boyer_one()),
+                boyer_and(
+                    boyer_equal(boyer_x(), boyer_one()),
+                    boyer_equal(boyer_y(), boyer_one()),
+                ),
+            ),
+            (
+                boyer_equal(
+                    boyer_difference(boyer_x(), boyer_y()),
+                    boyer_difference(boyer_z(), boyer_y()),
+                ),
+                boyer_if(
+                    boyer_lessp(boyer_x(), boyer_y()),
+                    boyer_not(boyer_lessp(boyer_y(), boyer_z())),
+                    boyer_if(
+                        boyer_lessp(boyer_z(), boyer_y()),
+                        boyer_not(boyer_lessp(boyer_y(), boyer_x())),
+                        boyer_equal(boyer_x(), boyer_z()),
+                    ),
+                ),
+            ),
+            (
+                boyer_equal(boyer_lessp(boyer_x(), boyer_y()), boyer_z()),
+                boyer_if(
+                    boyer_lessp(boyer_x(), boyer_y()),
+                    boyer_equal(boyer_true(), boyer_z()),
+                    boyer_equal(boyer_false(), boyer_z()),
                 ),
             ),
         ]
+        .into()
     })
 }
 
-fn _even_<'a>(a: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::_EVEN, vec![a], &|| {
+fn boyer_f<'a>(a: Term<'a>) -> Term<'a> {
+    Term::Fun(Id::F, Rc::new(vec![a].into()), &|| List::Nil)
+}
+
+fn boyer_implies<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
+    Term::Fun(Id::IMPLIES, Rc::new(vec![a, b].into()), &|| {
         vec![(
-            _even_(x()),
-            if_(zerop(x()), boyer_true(), _odd_(_sub1(x()))),
+            boyer_implies(boyer_x(), boyer_y()),
+            boyer_if(
+                boyer_x(),
+                boyer_if(boyer_y(), boyer_true(), boyer_false()),
+                boyer_true(),
+            ),
         )]
+        .into()
     })
 }
 
-fn _exp_<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::_EXP, vec![a, b], &|| {
+fn boyer_length<'a>(a: Term<'a>) -> Term<'a> {
+    Term::Fun(Id::LENGTH, Rc::new(vec![a].into()), &|| {
         vec![
             (
-                _exp_(x(), plus(y(), z())),
-                times(_exp_(x(), y()), _exp_(x(), z())),
+                boyer_length(boyer_reverse(boyer_x())),
+                boyer_length(boyer_x()),
             ),
             (
-                _exp_(x(), plus(y(), z())),
-                times(_exp_(x(), y()), _exp_(x(), z())),
+                boyer_length(boyer_cons(
+                    boyer_x(),
+                    boyer_cons(
+                        boyer_y(),
+                        boyer_cons(boyer_z(), boyer_cons(boyer_y(), boyer_w())),
+                    ),
+                )),
+                boyer_plus(boyer_four(), boyer_length(boyer_w())),
             ),
-            (_exp_(x(), times(y(), z())), _exp_(_exp_(x(), y()), z())),
         ]
+        .into()
     })
 }
 
-fn f<'a>(a: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::F, vec![a], &|| vec![])
-}
-
-fn _gcd_<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::_GCD, vec![a, b], &|| {
+fn boyer_lessp<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
+    Term::Fun(Id::LESSP, Rc::new(vec![a, b].into()), &|| {
         vec![
-            (_gcd_(x(), y()), _gcd_(y(), x())),
             (
-                _gcd_(times(x(), z()), times(y(), z())),
-                times(z(), _gcd_(x(), y())),
+                boyer_lessp(boyer_remainder(boyer_x(), boyer_y()), boyer_y()),
+                boyer_not(boyer_zerop(boyer_y())),
+            ),
+            (
+                boyer_lessp(boyer_quotient(boyer_x(), boyer_y()), boyer_x()),
+                boyer_and(
+                    boyer_not(boyer_zerop(boyer_x())),
+                    boyer_lessp(boyer_one(), boyer_y()),
+                ),
+            ),
+            (
+                boyer_lessp(
+                    boyer_plus(boyer_x(), boyer_y()),
+                    boyer_plus(boyer_x(), boyer_z()),
+                ),
+                boyer_lessp(boyer_y(), boyer_z()),
+            ),
+            (
+                boyer_lessp(
+                    boyer_times(boyer_x(), boyer_z()),
+                    boyer_times(boyer_y(), boyer_z()),
+                ),
+                boyer_and(
+                    boyer_not(boyer_zerop(boyer_z())),
+                    boyer_lessp(boyer_x(), boyer_y()),
+                ),
+            ),
+            (
+                boyer_lessp(boyer_y(), boyer_plus(boyer_x(), boyer_y())),
+                boyer_not(boyer_zerop(boyer_x())),
             ),
         ]
+        .into()
     })
 }
 
-fn _greatereqp<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::_GREATEREQP, vec![a, b], &|| {
-        vec![(_greatereqp(x(), y()), not_(lessp(x(), y())))]
+fn boyer_member<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
+    Term::Fun(Id::MEMBER, Rc::new(vec![a, b].into()), &|| {
+        vec![
+            (
+                boyer_member(boyer_x(), boyer_append(boyer_y(), boyer_z())),
+                boyer_or(
+                    boyer_member(boyer_x(), boyer_y()),
+                    boyer_member(boyer_x(), boyer_z()),
+                ),
+            ),
+            (
+                boyer_member(boyer_x(), boyer_reverse(boyer_y())),
+                boyer_member(boyer_x(), boyer_y()),
+            ),
+        ]
+        .into()
     })
 }
 
-fn implies<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::IMPLIES, vec![a, b], &|| {
+fn boyer_or<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
+    Term::Fun(Id::OR, Rc::new(vec![a, b].into()), &|| {
         vec![(
-            implies(x(), y()),
-            if_(x(), if_(y(), boyer_true(), boyer_false()), boyer_true()),
+            boyer_or(boyer_x(), boyer_y()),
+            boyer_if(
+                boyer_x(),
+                boyer_true(),
+                boyer_if(boyer_y(), boyer_true(), boyer_false()),
+            ),
         )]
+        .into()
     })
 }
 
-fn _iff<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::_IFF, vec![a, b], &|| {
-        vec![(_iff(x(), y()), and_(implies(x(), y()), implies(y(), x())))]
-    })
-}
-
-fn length_<'a>(a: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::LENGTH, vec![a], &|| {
-        vec![
-            (length_(reverse_(x())), length_(x())),
-            (
-                length_(cons(x(), cons(y(), cons(z(), cons(y(), w()))))),
-                plus(four(), length_(w())),
-            ),
-        ]
-    })
-}
-
-fn _lesseqp<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::_LESSEQP, vec![a, b], &|| {
-        vec![(_lesseqp(x(), y()), not_(lessp(y(), x())))]
-    })
-}
-
-fn lessp<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::LESSP, vec![a, b], &|| {
-        vec![
-            (lessp(remainder(x(), y()), y()), not_(zerop(y()))),
-            (
-                lessp(quotient(x(), y()), x()),
-                and_(not_(zerop(x())), lessp(one(), y())),
-            ),
-            (lessp(plus(x(), y()), plus(x(), z())), lessp(y(), z())),
-            (
-                lessp(times(x(), z()), times(y(), z())),
-                and_(not_(zerop(z())), lessp(x(), y())),
-            ),
-            (lessp(y(), plus(x(), y())), not_(zerop(x()))),
-        ]
-    })
-}
-
-fn _nilp<'a>(a: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::_NILP, vec![a], &|| {
-        vec![(_nilp(x()), equal(x(), nil()))]
-    })
-}
-
-fn _listp<'a>(a: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::_LISTP, vec![a], &|| {
-        vec![(_listp(x()), or_(_nilp(x()), _consp(x())))]
-    })
-}
-
-fn member<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::MEMBER, vec![a, b], &|| {
+fn boyer_plus<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
+    Term::Fun(Id::PLUS, Rc::new(vec![a, b].into()), &|| {
         vec![
             (
-                member(x(), append_(y(), z())),
-                or_(member(x(), y()), member(x(), z())),
+                boyer_plus(boyer_plus(boyer_x(), boyer_y()), boyer_z()),
+                boyer_plus(boyer_x(), boyer_plus(boyer_y(), boyer_z())),
             ),
-            (member(x(), reverse_(y())), member(x(), y())),
+            (
+                boyer_plus(
+                    boyer_remainder(boyer_x(), boyer_y()),
+                    boyer_times(boyer_y(), boyer_quotient(boyer_x(), boyer_y())),
+                ),
+                boyer_x(),
+            ),
+            (
+                boyer_plus(boyer_x(), boyer_add1(boyer_y())),
+                boyer_add1(boyer_plus(boyer_x(), boyer_y())),
+            ),
         ]
+        .into()
     })
 }
 
-fn _nlistp<'a>(a: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::_NLISTP, vec![a], &|| {
-        vec![(_nlistp(x()), not_(_listp(x())))]
+fn boyer_quotient<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
+    Term::Fun(Id::QUOTIENT, Rc::new(vec![a, b].into()), &|| {
+        vec![
+            (
+                boyer_quotient(
+                    boyer_plus(boyer_x(), boyer_plus(boyer_x(), boyer_y())),
+                    boyer_two(),
+                ),
+                boyer_plus(boyer_x(), boyer_quotient(boyer_y(), boyer_two())),
+            ),
+            (
+                boyer_quotient(boyer_times(boyer_y(), boyer_x()), boyer_y()),
+                boyer_if(boyer_zerop(boyer_y()), boyer_zero(), boyer_x()),
+            ),
+        ]
+        .into()
     })
 }
 
-fn _odd_<'a>(a: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::_ODD, vec![a], &|| {
-        vec![(_odd_(x()), _even_(_sub1(x())))]
+fn boyer_remainder<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
+    Term::Fun(Id::REMAINDER, Rc::new(vec![a, b].into()), &|| {
+        vec![
+            (boyer_remainder(boyer_x(), boyer_one()), boyer_zero()),
+            (boyer_remainder(boyer_x(), boyer_x()), boyer_zero()),
+            (
+                boyer_remainder(boyer_times(boyer_x(), boyer_y()), boyer_x()),
+                boyer_zero(),
+            ),
+            (
+                boyer_remainder(boyer_times(boyer_x(), boyer_y()), boyer_y()),
+                boyer_zero(),
+            ),
+        ]
+        .into()
     })
 }
 
-fn or_<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::OR, vec![a, b], &|| {
+fn boyer_reverse<'a>(a: Term<'a>) -> Term<'a> {
+    Term::Fun(Id::REVERSE, Rc::new(vec![a].into()), &|| {
         vec![(
-            or_(x(), y()),
-            if_(x(), boyer_true(), if_(y(), boyer_true(), boyer_false())),
+            boyer_reverse(boyer_append(boyer_x(), boyer_y())),
+            boyer_append(boyer_reverse(boyer_y()), boyer_reverse(boyer_x())),
         )]
+        .into()
     })
 }
 
-fn plus<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::PLUS, vec![a, b], &|| {
-        vec![
-            (plus(plus(x(), y()), z()), plus(x(), plus(y(), z()))),
-            (
-                plus(remainder(x(), y()), times(y(), quotient(x(), y()))),
-                x(),
-            ),
-            (plus(x(), add1(y())), add1(plus(x(), y()))),
-        ]
-    })
-}
-
-fn quotient<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::QUOTIENT, vec![a, b], &|| {
+fn boyer_times<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
+    Term::Fun(Id::TIMES, Rc::new(vec![a, b].into()), &|| {
         vec![
             (
-                quotient(plus(x(), plus(x(), y())), two()),
-                plus(x(), quotient(y(), two())),
+                boyer_times(boyer_x(), boyer_plus(boyer_y(), boyer_z())),
+                boyer_plus(
+                    boyer_times(boyer_x(), boyer_y()),
+                    boyer_times(boyer_x(), boyer_z()),
+                ),
             ),
-            (quotient(times(y(), x()), y()), if_(zerop(y()), zero(), x())),
-        ]
-    })
-}
-
-fn remainder<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::REMAINDER, vec![a, b], &|| {
-        vec![
-            (remainder(x(), one()), zero()),
-            (remainder(x(), x()), zero()),
-            (remainder(times(x(), y()), x()), zero()),
-            (remainder(times(x(), y()), y()), zero()),
-        ]
-    })
-}
-
-fn reverse_<'a>(a: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::REVERSE, vec![a], &|| {
-        vec![(
-            reverse_(append_(x(), y())),
-            append_(reverse_(y()), reverse_(x())),
-        )]
-    })
-}
-
-fn _sub1<'a>(a: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::_SUB1, vec![a], &|| vec![(_sub1(add1(x())), x())])
-}
-
-fn times<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::TIMES, vec![a, b], &|| {
-        vec![
             (
-                times(x(), plus(y(), z())),
-                plus(times(x(), y()), times(x(), z())),
+                boyer_times(boyer_times(boyer_x(), boyer_y()), boyer_z()),
+                boyer_times(boyer_x(), boyer_times(boyer_y(), boyer_z())),
             ),
-            (times(times(x(), y()), z()), times(x(), times(y(), z()))),
             (
-                times(x(), difference(y(), z())),
-                difference(times(y(), x()), times(z(), x())),
+                boyer_times(boyer_x(), boyer_difference(boyer_y(), boyer_z())),
+                boyer_difference(
+                    boyer_times(boyer_y(), boyer_x()),
+                    boyer_times(boyer_z(), boyer_x()),
+                ),
             ),
-            (times(x(), add1(y())), plus(x(), times(x(), y()))),
+            (
+                boyer_times(boyer_x(), boyer_add1(boyer_y())),
+                boyer_plus(boyer_x(), boyer_times(boyer_x(), boyer_y())),
+            ),
         ]
+        .into()
     })
 }
 
-fn zerop<'a>(a: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::ZEROP, vec![a], &|| {
-        vec![(zerop(x()), equal(x(), zero()))]
+fn boyer_zerop<'a>(a: Term<'a>) -> Term<'a> {
+    Term::Fun(Id::ZEROP, Rc::new(vec![a].into()), &|| {
+        vec![(boyer_zerop(boyer_x()), boyer_equal(boyer_x(), boyer_zero()))].into()
     })
+}
+
+fn find<'a>(vid: &Id, ls: List<(Id, Term<'a>)>) -> (bool, Term<'a>) {
+    match ls {
+        List::Nil => (false, Term::ERROR),
+        List::Cons((vid2, val2), bs) => {
+            if *vid == vid2 {
+                (true, val2)
+            } else {
+                find(vid, Rc::unwrap_or_clone(bs))
+            }
+        }
+    }
 }
 
 fn one_way_unify1<'a>(
     t1: Term<'a>,
     t2: Term<'a>,
-    subst: Vec<(Id, Term<'a>)>,
-) -> (bool, Vec<(Id, Term<'a>)>) {
-    match (t1, t2) {
-        (t1, Term::Var(vid2)) => {
-            if let Some((_, v2)) = subst.iter().find(|(id, _)| *id == vid2) {
-                (t1 == *v2, subst)
+    subst: List<(Id, Term<'a>)>,
+) -> (bool, List<(Id, Term<'a>)>) {
+    match t2 {
+        Term::Var(vid2) => {
+            let (found, v2) = find(&vid2, subst.clone());
+            if found {
+                (t1 == v2, subst)
             } else {
-                let mut new_subst = subst;
-                new_subst.insert(0, (vid2, t1));
-                (true, new_subst)
+                (true, List::Cons((vid2, t1), Rc::new(subst)))
             }
         }
-        (Term::Fun(f1, as1, _), Term::Fun(f2, as2, _)) => {
-            if f1 == f2 {
-                one_way_unify1_lst(as1, as2, subst)
+        Term::Fun(f2, as2, _) => {
+            if let Term::Fun(f1, as1, _) = t1 {
+                if f1 == f2 {
+                    one_way_unify1_lst(Rc::unwrap_or_clone(as1), Rc::unwrap_or_clone(as2), subst)
+                } else {
+                    (false, List::Nil)
+                }
             } else {
-                (false, vec![])
+                (false, List::Nil)
             }
         }
-        _ => (false, vec![]),
+        _ => (false, List::Nil),
     }
 }
 
 fn one_way_unify1_lst<'a>(
-    mut tts1: Vec<Term<'a>>,
-    mut tts2: Vec<Term<'a>>,
-    subst: Vec<(Id, Term<'a>)>,
-) -> (bool, Vec<(Id, Term<'a>)>) {
-    if tts1.is_empty() && tts2.is_empty() {
-        return (true, subst);
+    tts1: List<Term<'a>>,
+    tts2: List<Term<'a>>,
+    subst: List<(Id, Term<'a>)>,
+) -> (bool, List<(Id, Term<'a>)>) {
+    match (tts1, tts2) {
+        (List::Nil, List::Nil) => (true, subst),
+        (List::Nil, _) => (false, subst),
+        (_, List::Nil) => (false, subst),
+        (List::Cons(t1, tts1), List::Cons(t2, tts2)) => {
+            let (hd_ok, subst_) = one_way_unify1(t1, t2, subst);
+            let (tl_ok, subst__) =
+                one_way_unify1_lst(Rc::unwrap_or_clone(tts1), Rc::unwrap_or_clone(tts2), subst_);
+            (hd_ok && tl_ok, subst__)
+        }
     }
-    if tts1.is_empty() || tts2.is_empty() {
-        return (false, subst);
-    }
-
-    let t1 = tts1.remove(0);
-    let t2 = tts2.remove(0);
-    let (hd_ok, subst_) = one_way_unify1(t1, t2, subst);
-    let (tl_ok, subst__) = one_way_unify1_lst(tts1, tts2, subst_);
-    (hd_ok && tl_ok, subst__)
 }
 
-fn one_way_unify<'a>(t1: Term<'a>, t2: Term<'a>) -> (bool, Vec<(Id, Term<'a>)>) {
-    one_way_unify1(t1, t2, vec![])
+fn one_way_unify<'a>(t1: Term<'a>, t2: Term<'a>) -> (bool, List<(Id, Term<'a>)>) {
+    one_way_unify1(t1, t2, List::Nil)
 }
 
-fn rewrite_with_lemmas<'a>(t: Term<'a>, mut lss: Vec<(Term<'a>, Term<'a>)>) -> Term<'a> {
-    if lss.is_empty() {
-        return t;
-    }
-    let (lhs, rhs) = lss.remove(0);
-
-    let (unified, subst) = one_way_unify(t.clone(), lhs);
-    if unified {
-        rewrite(apply_subst(subst, rhs))
-    } else {
-        rewrite_with_lemmas(t, lss)
+fn rewrite_with_lemmas<'a>(t: Term<'a>, lss: List<(Term<'a>, Term<'a>)>) -> Term<'a> {
+    match lss {
+        List::Nil => t,
+        List::Cons((lhs, rhs), lss) => {
+            let (unified, subst) = one_way_unify(t.clone(), lhs);
+            if unified {
+                rewrite(apply_subst(subst, rhs))
+            } else {
+                rewrite_with_lemmas(t, Rc::unwrap_or_clone(lss))
+            }
+        }
     }
 }
 
@@ -535,68 +717,61 @@ fn rewrite<'a>(t: Term<'a>) -> Term<'a> {
     match t {
         Term::Var(v) => Term::Var(v),
         Term::Fun(f, args, lemmas) => rewrite_with_lemmas(
-            Term::Fun(f, args.into_iter().map(rewrite).collect(), lemmas),
+            Term::Fun(f, Rc::new(Rc::unwrap_or_clone(args).map(rewrite)), lemmas),
             lemmas(),
         ),
-        Term::_ERROR => Term::_ERROR,
+        Term::ERROR => Term::ERROR,
     }
 }
 
-fn truep<'a>(x: &Term<'a>, l: &[Term<'a>]) -> bool {
+fn truep<'a>(x: &Term<'a>, l: &List<Term<'a>>) -> bool {
     match x {
         Term::Fun(Id::TRUE, _, _) => true,
-        _ => l.iter().find(|t| *t == x).is_some(),
+        _ => l.contains(x),
     }
 }
 
-fn falsep<'a>(x: &Term<'a>, l: &[Term<'a>]) -> bool {
+fn falsep<'a>(x: &Term<'a>, l: &List<Term<'a>>) -> bool {
     match x {
         Term::Fun(Id::FALSE, _, _) => true,
-        _ => l.iter().find(|t| *t == x).is_some(),
+        _ => l.contains(x),
     }
 }
 
-fn tautologyp<'a>(x: Term<'a>, true_lst: Vec<Term<'a>>, false_lst: Vec<Term<'a>>) -> bool {
+fn tautologyp<'a>(x: Term<'a>, true_lst: List<Term<'a>>, false_lst: List<Term<'a>>) -> bool {
     if truep(&x, &true_lst) {
         true
     } else if falsep(&x, &false_lst) {
         false
-    } else {
-        match x {
-            Term::Fun(Id::IF, mut args, _) => {
-                if args.len() != 3 {
-                    return false;
-                }
+    } else if let Term::Fun(Id::IF, args, _) = x {
+        let (cond, t, e) = match Rc::unwrap_or_clone(args).three() {
+            None => return false,
+            Some(cs) => cs,
+        };
 
-                let cond = args.remove(0);
-                let t = args.remove(0);
-                let e = args.remove(0);
-
-                if truep(&cond, &true_lst) {
-                    return tautologyp(t, true_lst, false_lst);
-                }
-
-                if falsep(&cond, &false_lst) {
-                    return tautologyp(t, true_lst, false_lst);
-                }
-
-                let mut new_tru = true_lst.clone();
-                new_tru.insert(0, cond.clone());
-
-                let mut new_fls = false_lst.clone();
-                new_fls.insert(0, cond);
-
-                tautologyp(t, new_tru, false_lst) && tautologyp(e, true_lst, new_fls)
-            }
-            _ => false,
+        if truep(&cond, &true_lst) {
+            return tautologyp(t, true_lst, false_lst);
         }
+
+        if falsep(&cond, &false_lst) {
+            return tautologyp(t, true_lst, false_lst);
+        }
+
+        let new_tru = List::Cons(cond.clone(), Rc::new(true_lst.clone()));
+
+        let new_fls = List::Cons(cond, Rc::new(false_lst.clone()));
+
+        tautologyp(t, new_tru, false_lst) && tautologyp(e, true_lst, new_fls)
+    } else {
+        false
     }
 }
 
-fn apply_subst<'a>(subst: Vec<(Id, Term<'a>)>, t: Term<'a>) -> Term<'a> {
+fn apply_subst<'a>(subst: List<(Id, Term<'a>)>, t: Term<'a>) -> Term<'a> {
     match t {
         Term::Var(vid) => {
-            if let Some((_, value)) = subst.into_iter().find(|(id, _)| vid == *id) {
+            let (found, value) = find(&vid, subst);
+            if found {
                 value
             } else {
                 Term::Var(vid)
@@ -604,61 +779,91 @@ fn apply_subst<'a>(subst: Vec<(Id, Term<'a>)>, t: Term<'a>) -> Term<'a> {
         }
         Term::Fun(f, args, ls) => Term::Fun(
             f,
-            args.into_iter()
-                .map(|t| apply_subst(subst.clone(), t))
-                .collect(),
+            Rc::new(Rc::unwrap_or_clone(args).map(|t| apply_subst(subst.clone(), t))),
             ls,
         ),
-        Term::_ERROR => Term::_ERROR,
+        Term::ERROR => Term::ERROR,
     }
 }
 
 fn tautp<'a>(x: Term<'a>) -> bool {
-    tautologyp(rewrite(x), vec![], vec![])
+    tautologyp(rewrite(x), List::Nil, List::Nil)
 }
 
 fn test0<'a>(xxxx: Term<'a>) -> bool {
     let subst0 = vec![
-        (Id::X, f(plus(plus(a(), b()), plus(c(), zero())))),
-        (Id::Y, f(times(times(a(), b()), plus(c(), d())))),
-        (Id::Z, f(reverse_(append_(append_(a(), b()), nil())))),
-        (Id::U, equal(plus(a(), b()), difference(x(), y()))),
-        (Id::W, lessp(remainder(a(), b()), member(a(), length_(b())))),
-    ];
-    let theorem = implies(
-        and_(
-            implies(xxxx, y()),
-            and_(
-                implies(y(), z()),
-                and_(implies(z(), u()), implies(u(), w())),
+        (
+            Id::X,
+            boyer_f(boyer_plus(
+                boyer_plus(boyer_a(), boyer_b()),
+                boyer_plus(boyer_c(), boyer_zero()),
+            )),
+        ),
+        (
+            Id::Y,
+            boyer_f(boyer_times(
+                boyer_times(boyer_a(), boyer_b()),
+                boyer_plus(boyer_c(), boyer_d()),
+            )),
+        ),
+        (
+            Id::Z,
+            boyer_f(boyer_reverse(boyer_append(
+                boyer_append(boyer_a(), boyer_b()),
+                boyer_nil(),
+            ))),
+        ),
+        (
+            Id::U,
+            boyer_equal(
+                boyer_plus(boyer_a(), boyer_b()),
+                boyer_difference(boyer_x(), boyer_y()),
             ),
         ),
-        implies(x(), w()),
+        (
+            Id::W,
+            boyer_lessp(
+                boyer_remainder(boyer_a(), boyer_b()),
+                boyer_member(boyer_a(), boyer_length(boyer_b())),
+            ),
+        ),
+    ]
+    .into();
+    let theorem = boyer_implies(
+        boyer_and(
+            boyer_implies(xxxx, boyer_y()),
+            boyer_and(
+                boyer_implies(boyer_y(), boyer_z()),
+                boyer_and(
+                    boyer_implies(boyer_z(), boyer_u()),
+                    boyer_implies(boyer_u(), boyer_w()),
+                ),
+            ),
+        ),
+        boyer_implies(boyer_x(), boyer_w()),
     );
     tautp(apply_subst(subst0, theorem))
 }
 
-fn replicate_term<'a>(n: u64, t: Term<'a>) -> Vec<Term<'a>> {
-    let mut ts = Vec::with_capacity(n as usize);
-    for _ in 0..n {
-        ts.push(t.clone());
+fn replicate_term<'a>(n: u64, t: Term<'a>) -> List<Term<'a>> {
+    if n == 0 {
+        List::Nil
+    } else {
+        List::Cons(t.clone(), Rc::new(replicate_term(n - 1, t)))
     }
-    ts
 }
 
 fn test_boyer_nofib(n: u64) -> bool {
     let ts = replicate_term(n, Term::Var(Id::X));
-    ts.into_iter().all(|t| test0(t))
+    ts.all(|t| test0(t))
 }
 
-fn main_loop(iters: u64, n: u64) -> i64 {
-    let res = test_boyer_nofib(n);
-    if iters == 1 {
-        println!("{}", if res { 1 } else { -1 });
-        0
-    } else {
-        main_loop(iters - 1, n)
+fn main_loop(iters: u64, n: u64) {
+    let mut res = test_boyer_nofib(n);
+    for _ in 1..iters {
+        res = test_boyer_nofib(n)
     }
+    println!("{}", if res { 1 } else { -1 });
 }
 
 fn main() {
@@ -674,5 +879,5 @@ fn main() {
         .expect("Missing Argument n")
         .parse::<u64>()
         .expect("n must be a number");
-    std::process::exit(main_loop(iters, n) as i32)
+    main_loop(iters, n)
 }

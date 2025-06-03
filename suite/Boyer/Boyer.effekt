@@ -7,7 +7,7 @@ type Id {
   B()
   C()
   D()
-  X ()
+  X()
   Y()
   Z()
   U()
@@ -16,38 +16,24 @@ type Id {
   AND()
   APPEND()
   CONS()
-  CONSP()
   DIFFERENCE()
-  DIVIDES()
   EQUAL()
-  EVEN()
-  EXP()
   F ()
   FALSE()
   FOUR()
-  GCD()
-  GREATEREQP()
-  GREATERP()
   IF()
-  IFF ()
   IMPLIES ()
   LENGTH()
-  LESSEQP()
   LESSP()
-  LISTP()
   MEMBER()
   NIL()
-  NILP()
-  NLISTP()
   NOT()
-  ODD()
   ONE()
   OR()
   PLUS()
   QUOTIENT()
   REMAINDER()
   REVERSE()
-  SUB1()
   TIMES()
   TRUE()
   TWO()
@@ -89,56 +75,30 @@ def id_equal(id1:Id,id2:Id) : Bool = {
 		case (APPEND(),_) => false
 		case (CONS(),CONS()) => true
 		case (CONS(),_) => false
-		case (CONSP(),CONSP()) => true
-		case (CONSP(),_) => false
 		case (DIFFERENCE(),DIFFERENCE()) => true
 		case (DIFFERENCE(),_) => false
-		case (DIVIDES(),DIVIDES()) => true
-		case (DIVIDES(),_) => false
 		case (EQUAL(),EQUAL()) => true
 		case (EQUAL(),_) => false
-		case (EVEN(),EVEN()) => true
-		case (EVEN(),_) => false
-		case (EXP(),EXP()) => true
-		case (EXP(),_) => false
 		case (F (),F ()) => true
 		case (F (),_) => false
 		case (FALSE(),FALSE()) => true
 		case (FALSE(),_) => false
 		case (FOUR(),FOUR()) => true
 		case (FOUR(),_) => false
-		case (GCD(),GCD()) => true
-		case (GCD(),_) => false
-		case (GREATEREQP(),GREATEREQP()) => true
-		case (GREATEREQP(),_) => false
-		case (GREATERP(),GREATERP()) => true
-		case (GREATERP(),_) => false
 		case (IF(),IF()) => true
 		case (IF(),_) => false
-		case (IFF (),IFF ()) => true
-		case (IFF (),_) => false
 		case (IMPLIES (),IMPLIES ()) => true
 		case (IMPLIES (),_) => false
 		case (LENGTH(),LENGTH()) => true
 		case (LENGTH(),_) => false
-		case (LESSEQP(),LESSEQP()) => true
-		case (LESSEQP(),_) => false
 		case (LESSP(),LESSP()) => true
 		case (LESSP(),_) => false
-		case (LISTP(),LISTP()) => true
-		case (LISTP(),_) => false
 		case (MEMBER(),MEMBER()) => true
 		case (MEMBER(),_) => false
 		case (NIL(),NIL()) => true
 		case (NIL(),_) => false
-		case (NILP(),NILP()) => true
-		case (NILP(),_) => false
-		case (NLISTP(),NLISTP()) => true
-		case (NLISTP(),_) => false
 		case (NOT(),NOT()) => true
 		case (NOT(),_) => false
-		case (ODD(),ODD()) => true
-		case (ODD(),_) => false
 		case (ONE(),ONE()) => true
 		case (ONE(),_) => false
 		case (OR(),OR()) => true
@@ -151,8 +111,6 @@ def id_equal(id1:Id,id2:Id) : Bool = {
 		case (REMAINDER(),_) => false
 		case (REVERSE(),REVERSE()) => true
 		case (REVERSE(),_) => false
-		case (SUB1(),SUB1()) => true
-		case (SUB1(),_) => false
 		case (TIMES(),TIMES()) => true
 		case (TIMES(),_) => false
 		case (TRUE(),TRUE()) => true
@@ -274,11 +232,7 @@ def rewrite(x:Term) : Term = {
   }
 }
 
-def rewrite_with_lemmas(t:Term,lss:List[(Term,Term)]) : Term = {
-  rewrite_with_lemmas_helper(t,lss)
-}
-
-def rewrite_with_lemmas_helper(term:Term,lss:List[(Term,Term)]) : Term = {
+def rewrite_with_lemmas(term:Term,lss:List[(Term,Term)]) : Term = {
   lss match {
     case Nil() => term
     case Cons((lhs,rhs),ls) => 
@@ -286,7 +240,7 @@ def rewrite_with_lemmas_helper(term:Term,lss:List[(Term,Term)]) : Term = {
       if (unified) {
         rewrite(apply_subst(subst,rhs))
       } else {
-        rewrite_with_lemmas_helper(term,ls)
+        rewrite_with_lemmas(term,ls)
       }
   }
 }
@@ -628,6 +582,7 @@ def boyer_reverse_(a:Term) : Term = {
     )
   ]})
 }
+
 def boyer_subst0() : List[(Id,Term)] = { 
   [
   (X(),boyer_f(boyer_plus(boyer_plus(boyer_a(),boyer_b()),boyer_plus(boyer_c(),boyer_zero())))),

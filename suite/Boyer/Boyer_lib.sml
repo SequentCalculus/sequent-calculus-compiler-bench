@@ -1,12 +1,11 @@
 structure Boyer = struct 
   datatype Id = A | B | C | D | X | Y | Z | U | W 
-              | ADD1 | AND | APPEND | CONS | CONSP 
-              | DIFFERENCE | DIVIDES | EQUAL | EVEN | EXP 
-              | F | FALSE | FOUR | GCD | GREATEREQP | GREATERP 
-              | IF | IFF | IMPLIES | LENGTH | LESSEQP | LESSP 
-              | LISTP | MEMBER | NIL | NILP | NLISTP | NOT 
-              | ODD | ONE | OR | PLUS | QUOTIENT | REMAINDER 
-              | REVERSE | SUB1 | TIMES | TRUE | TWO | ZERO | ZEROP
+              | ADD1 | AND | APPEND | CONS |  DIFFERENCE | EQUAL  
+              | F | FALSE | FOUR 
+              | IF | IMPLIES | LENGTH | LESSP 
+              | MEMBER | NIL | NOT 
+              | ONE | OR | PLUS | QUOTIENT | REMAINDER 
+              | REVERSE | TIMES | TRUE | TWO | ZERO | ZEROP
 
   datatype Term = Var of Id 
                 | Func of Id * (Term list) * (unit -> (Term * Term) list)
@@ -27,38 +26,24 @@ structure Boyer = struct
        | (AND,AND) => true
        | (APPEND,APPEND) => true
        | (CONS,CONS) => true
-       | (CONSP,CONSP) => true
        | (DIFFERENCE,DIFFERENCE) => true
-       | (DIVIDES,DIVIDES) => true
        | (EQUAL,EQUAL) => true
-       | (EVEN,EVEN) => true
-       | (EXP,EXP) => true
        | (F,F) => true
        | (FALSE,FALSE) => true
        | (FOUR,FOUR) => true
-       | (GCD,GCD) => true
-       | (GREATEREQP,GREATEREQP) => true
-       | (GREATERP,GREATERP) => true
        | (IF,IF) => true
-       | (IFF,IFF) => true
        | (IMPLIES,IMPLIES) => true
        | (LENGTH,LENGTH) => true
-       | (LESSEQP,LESSEQP) => true
        | (LESSP,LESSP) => true 
-       | (LISTP,LISTP) => true
        | (MEMBER,MEMBER) => true
        | (NIL,NIL) => true
-       | (NILP,NILP) => true
-       | (NLISTP,NLISTP) => true
        | (NOT,NOT) => true
-       | (ODD,ODD) => true
        | (ONE,ONE) => true
        | (OR,OR) => true
        | (PLUS,PLUS) => true
        | (QUOTIENT,QUOTIENT) => true
        | (REMAINDER,REMAINDER) => true
        | (REVERSE,REVERSE) => true
-       | (SUB1,SUB1) => true
        | (TIMES,TIMES) => true
        | (TRUE,TRUE) => true
        | (TWO,TWO) => true
@@ -147,8 +132,6 @@ structure Boyer = struct
            rewrite x) args ), lemmas)) (lemmas())
        | ERROR => ERROR 
   and rewrite_with_lemmas term lss =
-  rewrite_with_lemmas_helper term lss
-  and rewrite_with_lemmas_helper term lss =
   case lss of 
        nil => term
      | (lhs,rhs)::ls => 
@@ -157,7 +140,7 @@ structure Boyer = struct
            if unified then 
              rewrite (apply_subst subst rhs) 
            else 
-             rewrite_with_lemmas_helper term ls 
+             rewrite_with_lemmas term ls 
          end
 
 
