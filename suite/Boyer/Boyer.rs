@@ -84,16 +84,6 @@ where
 
 impl<T> Eq for List<T> where T: Eq {}
 
-impl<T> From<Vec<T>> for List<T> {
-    fn from(mut v: Vec<T>) -> List<T> {
-        if v.is_empty() {
-            return List::Nil;
-        }
-        let fst = v.remove(0);
-        List::Cons(fst, Rc::new(v.into()))
-    }
-}
-
 #[derive(PartialEq, Eq, Clone, Copy)]
 enum Id {
     A,
@@ -211,19 +201,22 @@ fn boyer_zero<'a>() -> Term<'a> {
 
 fn boyer_one<'a>() -> Term<'a> {
     Term::Fun(Id::ONE, Rc::new(List::Nil), &|| {
-        vec![(boyer_one(), boyer_add1(boyer_zero()))].into()
+        List::Cons((boyer_one(), boyer_add1(boyer_zero())), Rc::new(List::Nil))
     })
 }
 
 fn boyer_two<'a>() -> Term<'a> {
     Term::Fun(Id::TWO, Rc::new(List::Nil), &|| {
-        vec![(boyer_two(), boyer_add1(boyer_one()))].into()
+        List::Cons((boyer_two(), boyer_add1(boyer_one())), Rc::new(List::Nil))
     })
 }
 
 fn boyer_four<'a>() -> Term<'a> {
     Term::Fun(Id::FOUR, Rc::new(List::Nil), &|| {
-        vec![(boyer_four(), boyer_add1(boyer_add1(boyer_two())))].into()
+        List::Cons(
+            (boyer_four(), boyer_add1(boyer_add1(boyer_two()))),
+            Rc::new(List::Nil),
+        )
     })
 }
 
@@ -236,403 +229,614 @@ fn boyer_add1<'a>(a: Term<'a>) -> Term<'a> {
 }
 
 fn boyer_if<'a>(a: Term<'a>, b: Term<'a>, c: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::IF, Rc::new(vec![a, b, c].into()), &|| {
-        vec![(
-            boyer_if(
-                boyer_if(boyer_x(), boyer_y(), boyer_z()),
-                boyer_u(),
-                boyer_w(),
-            ),
-            boyer_if(
-                boyer_x(),
-                boyer_if(boyer_y(), boyer_u(), boyer_w()),
-                boyer_if(boyer_z(), boyer_u(), boyer_w()),
-            ),
-        )]
-        .into()
-    })
+    Term::Fun(
+        Id::IF,
+        Rc::new(List::Cons(
+            a,
+            Rc::new(List::Cons(b, Rc::new(List::Cons(c, Rc::new(List::Nil))))),
+        )),
+        &|| {
+            List::Cons(
+                (
+                    boyer_if(
+                        boyer_if(boyer_x(), boyer_y(), boyer_z()),
+                        boyer_u(),
+                        boyer_w(),
+                    ),
+                    boyer_if(
+                        boyer_x(),
+                        boyer_if(boyer_y(), boyer_u(), boyer_w()),
+                        boyer_if(boyer_z(), boyer_u(), boyer_w()),
+                    ),
+                ),
+                Rc::new(List::Nil),
+            )
+        },
+    )
 }
 
 fn boyer_not<'a>(a: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::NOT, Rc::new(vec![a].into()), &|| {
-        vec![(
-            boyer_not(boyer_x()),
-            boyer_if(boyer_x(), boyer_true(), boyer_false()),
-        )]
-        .into()
+    Term::Fun(Id::NOT, Rc::new(List::Cons(a, Rc::new(List::Nil))), &|| {
+        List::Cons(
+            (
+                boyer_not(boyer_x()),
+                boyer_if(boyer_x(), boyer_true(), boyer_false()),
+            ),
+            Rc::new(List::Nil),
+        )
     })
 }
 
 fn boyer_and<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::AND, Rc::new(vec![a, b].into()), &|| {
-        vec![(
-            boyer_and(boyer_x(), boyer_y()),
-            boyer_if(
-                boyer_x(),
-                boyer_if(boyer_y(), boyer_true(), boyer_false()),
-                boyer_false(),
-            ),
-        )]
-        .into()
-    })
+    Term::Fun(
+        Id::AND,
+        Rc::new(List::Cons(a, Rc::new(List::Cons(b, Rc::new(List::Nil))))),
+        &|| {
+            List::Cons(
+                (
+                    boyer_and(boyer_x(), boyer_y()),
+                    boyer_if(
+                        boyer_x(),
+                        boyer_if(boyer_y(), boyer_true(), boyer_false()),
+                        boyer_false(),
+                    ),
+                ),
+                Rc::new(List::Nil),
+            )
+        },
+    )
 }
 
 fn boyer_append<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::APPEND, Rc::new(vec![a, b].into()), &|| {
-        vec![(
-            boyer_append(boyer_append(boyer_x(), boyer_y()), boyer_z()),
-            boyer_append(boyer_x(), boyer_append(boyer_y(), boyer_z())),
-        )]
-        .into()
-    })
+    Term::Fun(
+        Id::APPEND,
+        Rc::new(List::Cons(a, Rc::new(List::Cons(b, Rc::new(List::Nil))))),
+        &|| {
+            List::Cons(
+                (
+                    boyer_append(boyer_append(boyer_x(), boyer_y()), boyer_z()),
+                    boyer_append(boyer_x(), boyer_append(boyer_y(), boyer_z())),
+                ),
+                Rc::new(List::Nil),
+            )
+        },
+    )
 }
 
 fn boyer_cons<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::CONS, Rc::new(vec![a, b].into()), &|| List::Nil)
+    Term::Fun(
+        Id::CONS,
+        Rc::new(List::Cons(a, Rc::new(List::Cons(b, Rc::new(List::Nil))))),
+        &|| List::Nil,
+    )
 }
 
 fn boyer_difference<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::DIFFERENCE, Rc::new(vec![a, b].into()), &|| {
-        vec![
-            (boyer_difference(boyer_x(), boyer_x()), boyer_zero()),
-            (
-                boyer_difference(boyer_plus(boyer_x(), boyer_y()), boyer_x()),
-                boyer_y(),
-            ),
-            (
-                boyer_difference(boyer_plus(boyer_y(), boyer_x()), boyer_x()),
-                boyer_y(),
-            ),
-            (
-                boyer_difference(
-                    boyer_plus(boyer_x(), boyer_y()),
-                    boyer_plus(boyer_x(), boyer_z()),
-                ),
-                boyer_difference(boyer_y(), boyer_z()),
-            ),
-            (
-                boyer_difference(
-                    boyer_plus(boyer_y(), boyer_plus(boyer_x(), boyer_z())),
-                    boyer_x(),
-                ),
-                boyer_plus(boyer_y(), boyer_z()),
-            ),
-            (
-                boyer_difference(boyer_add1(boyer_plus(boyer_y(), boyer_z())), boyer_z()),
-                boyer_add1(boyer_y()),
-            ),
-            (
-                boyer_difference(boyer_add1(boyer_add1(boyer_x())), boyer_two()),
-                boyer_x(),
-            ),
-        ]
-        .into()
-    })
+    Term::Fun(
+        Id::DIFFERENCE,
+        Rc::new(List::Cons(a, Rc::new(List::Cons(b, Rc::new(List::Nil))))),
+        &|| {
+            List::Cons(
+                (boyer_difference(boyer_x(), boyer_x()), boyer_zero()),
+                Rc::new(List::Cons(
+                    (
+                        boyer_difference(boyer_plus(boyer_x(), boyer_y()), boyer_x()),
+                        boyer_y(),
+                    ),
+                    Rc::new(List::Cons(
+                        (
+                            boyer_difference(boyer_plus(boyer_y(), boyer_x()), boyer_x()),
+                            boyer_y(),
+                        ),
+                        Rc::new(List::Cons(
+                            (
+                                boyer_difference(
+                                    boyer_plus(boyer_x(), boyer_y()),
+                                    boyer_plus(boyer_x(), boyer_z()),
+                                ),
+                                boyer_difference(boyer_y(), boyer_z()),
+                            ),
+                            Rc::new(List::Cons(
+                                (
+                                    boyer_difference(
+                                        boyer_plus(boyer_y(), boyer_plus(boyer_x(), boyer_z())),
+                                        boyer_x(),
+                                    ),
+                                    boyer_plus(boyer_y(), boyer_z()),
+                                ),
+                                Rc::new(List::Cons(
+                                    (
+                                        boyer_difference(
+                                            boyer_add1(boyer_plus(boyer_y(), boyer_z())),
+                                            boyer_z(),
+                                        ),
+                                        boyer_add1(boyer_y()),
+                                    ),
+                                    Rc::new(List::Cons(
+                                        (
+                                            boyer_difference(
+                                                boyer_add1(boyer_add1(boyer_x())),
+                                                boyer_two(),
+                                            ),
+                                            boyer_x(),
+                                        ),
+                                        Rc::new(List::Nil),
+                                    )),
+                                )),
+                            )),
+                        )),
+                    )),
+                )),
+            )
+        },
+    )
 }
 
 fn boyer_equal<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::EQUAL, Rc::new(vec![a, b].into()), &|| {
-        vec![
-            (
-                boyer_equal(boyer_plus(boyer_x(), boyer_y()), boyer_zero()),
-                boyer_and(boyer_zerop(boyer_x()), boyer_zerop(boyer_y())),
-            ),
-            (
-                boyer_equal(
-                    boyer_plus(boyer_x(), boyer_y()),
-                    boyer_plus(boyer_x(), boyer_z()),
+    Term::Fun(
+        Id::EQUAL,
+        Rc::new(List::Cons(a, Rc::new(List::Cons(b, Rc::new(List::Nil))))),
+        &|| {
+            List::Cons(
+                (
+                    boyer_equal(boyer_plus(boyer_x(), boyer_y()), boyer_zero()),
+                    boyer_and(boyer_zerop(boyer_x()), boyer_zerop(boyer_y())),
                 ),
-                boyer_equal(boyer_y(), boyer_z()),
-            ),
-            (
-                boyer_equal(boyer_zero(), boyer_difference(boyer_x(), boyer_y())),
-                boyer_not(boyer_lessp(boyer_y(), boyer_z())),
-            ),
-            (
-                boyer_equal(boyer_x(), boyer_difference(boyer_x(), boyer_y())),
-                boyer_or(boyer_equal(boyer_x(), boyer_zero()), boyer_zerop(boyer_y())),
-            ),
-            (
-                boyer_equal(boyer_x(), boyer_difference(boyer_x(), boyer_y())),
-                boyer_or(boyer_equal(boyer_x(), boyer_zero()), boyer_zerop(boyer_y())),
-            ),
-            (
-                boyer_equal(boyer_times(boyer_x(), boyer_y()), boyer_zero()),
-                boyer_or(boyer_zerop(boyer_x()), boyer_zerop(boyer_y())),
-            ),
-            (
-                boyer_equal(
-                    boyer_append(boyer_x(), boyer_y()),
-                    boyer_append(boyer_x(), boyer_z()),
-                ),
-                boyer_equal(boyer_y(), boyer_z()),
-            ),
-            (
-                boyer_equal(boyer_y(), boyer_times(boyer_x(), boyer_y())),
-                boyer_or(
-                    boyer_equal(boyer_y(), boyer_zero()),
-                    boyer_equal(boyer_x(), boyer_one()),
-                ),
-            ),
-            (
-                boyer_equal(boyer_x(), boyer_times(boyer_x(), boyer_y())),
-                boyer_or(
-                    boyer_equal(boyer_x(), boyer_zero()),
-                    boyer_equal(boyer_y(), boyer_one()),
-                ),
-            ),
-            (
-                boyer_equal(boyer_times(boyer_x(), boyer_y()), boyer_one()),
-                boyer_and(
-                    boyer_equal(boyer_x(), boyer_one()),
-                    boyer_equal(boyer_y(), boyer_one()),
-                ),
-            ),
-            (
-                boyer_equal(
-                    boyer_difference(boyer_x(), boyer_y()),
-                    boyer_difference(boyer_z(), boyer_y()),
-                ),
-                boyer_if(
-                    boyer_lessp(boyer_x(), boyer_y()),
-                    boyer_not(boyer_lessp(boyer_y(), boyer_z())),
-                    boyer_if(
-                        boyer_lessp(boyer_z(), boyer_y()),
-                        boyer_not(boyer_lessp(boyer_y(), boyer_x())),
-                        boyer_equal(boyer_x(), boyer_z()),
+                Rc::new(List::Cons(
+                    (
+                        boyer_equal(
+                            boyer_plus(boyer_x(), boyer_y()),
+                            boyer_plus(boyer_x(), boyer_z()),
+                        ),
+                        boyer_equal(boyer_y(), boyer_z()),
                     ),
-                ),
-            ),
-            (
-                boyer_equal(boyer_lessp(boyer_x(), boyer_y()), boyer_z()),
-                boyer_if(
-                    boyer_lessp(boyer_x(), boyer_y()),
-                    boyer_equal(boyer_true(), boyer_z()),
-                    boyer_equal(boyer_false(), boyer_z()),
-                ),
-            ),
-        ]
-        .into()
-    })
+                    Rc::new(List::Cons(
+                        (
+                            boyer_equal(boyer_zero(), boyer_difference(boyer_x(), boyer_y())),
+                            boyer_not(boyer_lessp(boyer_y(), boyer_z())),
+                        ),
+                        Rc::new(List::Cons(
+                            (
+                                boyer_equal(boyer_x(), boyer_difference(boyer_x(), boyer_y())),
+                                boyer_or(
+                                    boyer_equal(boyer_x(), boyer_zero()),
+                                    boyer_zerop(boyer_y()),
+                                ),
+                            ),
+                            Rc::new(List::Cons(
+                                (
+                                    boyer_equal(boyer_x(), boyer_difference(boyer_x(), boyer_y())),
+                                    boyer_or(
+                                        boyer_equal(boyer_x(), boyer_zero()),
+                                        boyer_zerop(boyer_y()),
+                                    ),
+                                ),
+                                Rc::new(List::Cons(
+                                    (
+                                        boyer_equal(
+                                            boyer_times(boyer_x(), boyer_y()),
+                                            boyer_zero(),
+                                        ),
+                                        boyer_or(boyer_zerop(boyer_x()), boyer_zerop(boyer_y())),
+                                    ),
+                                    Rc::new(List::Cons(
+                                        (
+                                            boyer_equal(
+                                                boyer_append(boyer_x(), boyer_y()),
+                                                boyer_append(boyer_x(), boyer_z()),
+                                            ),
+                                            boyer_equal(boyer_y(), boyer_z()),
+                                        ),
+                                        Rc::new(List::Cons(
+                                            (
+                                                boyer_equal(
+                                                    boyer_y(),
+                                                    boyer_times(boyer_x(), boyer_y()),
+                                                ),
+                                                boyer_or(
+                                                    boyer_equal(boyer_y(), boyer_zero()),
+                                                    boyer_equal(boyer_x(), boyer_one()),
+                                                ),
+                                            ),
+                                            Rc::new(List::Cons(
+                                                (
+                                                    boyer_equal(
+                                                        boyer_x(),
+                                                        boyer_times(boyer_x(), boyer_y()),
+                                                    ),
+                                                    boyer_or(
+                                                        boyer_equal(boyer_x(), boyer_zero()),
+                                                        boyer_equal(boyer_y(), boyer_one()),
+                                                    ),
+                                                ),
+                                                Rc::new(List::Cons(
+                                                    (
+                                                        boyer_equal(
+                                                            boyer_times(boyer_x(), boyer_y()),
+                                                            boyer_one(),
+                                                        ),
+                                                        boyer_and(
+                                                            boyer_equal(boyer_x(), boyer_one()),
+                                                            boyer_equal(boyer_y(), boyer_one()),
+                                                        ),
+                                                    ),
+                                                    Rc::new(List::Cons(
+                                                        (
+                                                            boyer_equal(
+                                                                boyer_difference(
+                                                                    boyer_x(),
+                                                                    boyer_y(),
+                                                                ),
+                                                                boyer_difference(
+                                                                    boyer_z(),
+                                                                    boyer_y(),
+                                                                ),
+                                                            ),
+                                                            boyer_if(
+                                                                boyer_lessp(boyer_x(), boyer_y()),
+                                                                boyer_not(boyer_lessp(
+                                                                    boyer_y(),
+                                                                    boyer_z(),
+                                                                )),
+                                                                boyer_if(
+                                                                    boyer_lessp(
+                                                                        boyer_z(),
+                                                                        boyer_y(),
+                                                                    ),
+                                                                    boyer_not(boyer_lessp(
+                                                                        boyer_y(),
+                                                                        boyer_x(),
+                                                                    )),
+                                                                    boyer_equal(
+                                                                        boyer_x(),
+                                                                        boyer_z(),
+                                                                    ),
+                                                                ),
+                                                            ),
+                                                        ),
+                                                        Rc::new(List::Cons(
+                                                            (
+                                                                boyer_equal(
+                                                                    boyer_lessp(
+                                                                        boyer_x(),
+                                                                        boyer_y(),
+                                                                    ),
+                                                                    boyer_z(),
+                                                                ),
+                                                                boyer_if(
+                                                                    boyer_lessp(
+                                                                        boyer_x(),
+                                                                        boyer_y(),
+                                                                    ),
+                                                                    boyer_equal(
+                                                                        boyer_true(),
+                                                                        boyer_z(),
+                                                                    ),
+                                                                    boyer_equal(
+                                                                        boyer_false(),
+                                                                        boyer_z(),
+                                                                    ),
+                                                                ),
+                                                            ),
+                                                            Rc::new(List::Nil),
+                                                        )),
+                                                    )),
+                                                )),
+                                            )),
+                                        )),
+                                    )),
+                                )),
+                            )),
+                        )),
+                    )),
+                )),
+            )
+        },
+    )
 }
 
 fn boyer_f<'a>(a: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::F, Rc::new(vec![a].into()), &|| List::Nil)
+    Term::Fun(Id::F, Rc::new(List::Cons(a, Rc::new(List::Nil))), &|| {
+        List::Nil
+    })
 }
 
 fn boyer_implies<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::IMPLIES, Rc::new(vec![a, b].into()), &|| {
-        vec![(
-            boyer_implies(boyer_x(), boyer_y()),
-            boyer_if(
-                boyer_x(),
-                boyer_if(boyer_y(), boyer_true(), boyer_false()),
-                boyer_true(),
-            ),
-        )]
-        .into()
-    })
+    Term::Fun(
+        Id::IMPLIES,
+        Rc::new(List::Cons(a, Rc::new(List::Cons(b, Rc::new(List::Nil))))),
+        &|| {
+            List::Cons(
+                (
+                    boyer_implies(boyer_x(), boyer_y()),
+                    boyer_if(
+                        boyer_x(),
+                        boyer_if(boyer_y(), boyer_true(), boyer_false()),
+                        boyer_true(),
+                    ),
+                ),
+                Rc::new(List::Nil),
+            )
+        },
+    )
 }
 
 fn boyer_length<'a>(a: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::LENGTH, Rc::new(vec![a].into()), &|| {
-        vec![
-            (
-                boyer_length(boyer_reverse(boyer_x())),
-                boyer_length(boyer_x()),
-            ),
-            (
-                boyer_length(boyer_cons(
-                    boyer_x(),
-                    boyer_cons(
-                        boyer_y(),
-                        boyer_cons(boyer_z(), boyer_cons(boyer_y(), boyer_w())),
+    Term::Fun(
+        Id::LENGTH,
+        Rc::new(List::Cons(a, Rc::new(List::Nil))),
+        &|| {
+            List::Cons(
+                (
+                    boyer_length(boyer_reverse(boyer_x())),
+                    boyer_length(boyer_x()),
+                ),
+                Rc::new(List::Cons(
+                    (
+                        boyer_length(boyer_cons(
+                            boyer_x(),
+                            boyer_cons(
+                                boyer_y(),
+                                boyer_cons(boyer_z(), boyer_cons(boyer_y(), boyer_w())),
+                            ),
+                        )),
+                        boyer_plus(boyer_four(), boyer_length(boyer_w())),
                     ),
+                    Rc::new(List::Nil),
                 )),
-                boyer_plus(boyer_four(), boyer_length(boyer_w())),
-            ),
-        ]
-        .into()
-    })
+            )
+        },
+    )
 }
 
 fn boyer_lessp<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::LESSP, Rc::new(vec![a, b].into()), &|| {
-        vec![
-            (
-                boyer_lessp(boyer_remainder(boyer_x(), boyer_y()), boyer_y()),
-                boyer_not(boyer_zerop(boyer_y())),
-            ),
-            (
-                boyer_lessp(boyer_quotient(boyer_x(), boyer_y()), boyer_x()),
-                boyer_and(
-                    boyer_not(boyer_zerop(boyer_x())),
-                    boyer_lessp(boyer_one(), boyer_y()),
+    Term::Fun(
+        Id::LESSP,
+        Rc::new(List::Cons(a, Rc::new(List::Cons(b, Rc::new(List::Nil))))),
+        &|| {
+            List::Cons(
+                (
+                    boyer_lessp(boyer_remainder(boyer_x(), boyer_y()), boyer_y()),
+                    boyer_not(boyer_zerop(boyer_y())),
                 ),
-            ),
-            (
-                boyer_lessp(
-                    boyer_plus(boyer_x(), boyer_y()),
-                    boyer_plus(boyer_x(), boyer_z()),
-                ),
-                boyer_lessp(boyer_y(), boyer_z()),
-            ),
-            (
-                boyer_lessp(
-                    boyer_times(boyer_x(), boyer_z()),
-                    boyer_times(boyer_y(), boyer_z()),
-                ),
-                boyer_and(
-                    boyer_not(boyer_zerop(boyer_z())),
-                    boyer_lessp(boyer_x(), boyer_y()),
-                ),
-            ),
-            (
-                boyer_lessp(boyer_y(), boyer_plus(boyer_x(), boyer_y())),
-                boyer_not(boyer_zerop(boyer_x())),
-            ),
-        ]
-        .into()
-    })
+                Rc::new(List::Cons(
+                    (
+                        boyer_lessp(boyer_quotient(boyer_x(), boyer_y()), boyer_x()),
+                        boyer_and(
+                            boyer_not(boyer_zerop(boyer_x())),
+                            boyer_lessp(boyer_one(), boyer_y()),
+                        ),
+                    ),
+                    Rc::new(List::Cons(
+                        (
+                            boyer_lessp(
+                                boyer_plus(boyer_x(), boyer_y()),
+                                boyer_plus(boyer_x(), boyer_z()),
+                            ),
+                            boyer_lessp(boyer_y(), boyer_z()),
+                        ),
+                        Rc::new(List::Cons(
+                            (
+                                boyer_lessp(
+                                    boyer_times(boyer_x(), boyer_z()),
+                                    boyer_times(boyer_y(), boyer_z()),
+                                ),
+                                boyer_and(
+                                    boyer_not(boyer_zerop(boyer_z())),
+                                    boyer_lessp(boyer_x(), boyer_y()),
+                                ),
+                            ),
+                            Rc::new(List::Cons(
+                                (
+                                    boyer_lessp(boyer_y(), boyer_plus(boyer_x(), boyer_y())),
+                                    boyer_not(boyer_zerop(boyer_x())),
+                                ),
+                                Rc::new(List::Nil),
+                            )),
+                        )),
+                    )),
+                )),
+            )
+        },
+    )
 }
 
 fn boyer_member<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::MEMBER, Rc::new(vec![a, b].into()), &|| {
-        vec![
-            (
-                boyer_member(boyer_x(), boyer_append(boyer_y(), boyer_z())),
-                boyer_or(
-                    boyer_member(boyer_x(), boyer_y()),
-                    boyer_member(boyer_x(), boyer_z()),
+    Term::Fun(
+        Id::MEMBER,
+        Rc::new(List::Cons(a, Rc::new(List::Cons(b, Rc::new(List::Nil))))),
+        &|| {
+            List::Cons(
+                (
+                    boyer_member(boyer_x(), boyer_append(boyer_y(), boyer_z())),
+                    boyer_or(
+                        boyer_member(boyer_x(), boyer_y()),
+                        boyer_member(boyer_x(), boyer_z()),
+                    ),
                 ),
-            ),
-            (
-                boyer_member(boyer_x(), boyer_reverse(boyer_y())),
-                boyer_member(boyer_x(), boyer_y()),
-            ),
-        ]
-        .into()
-    })
+                Rc::new(List::Cons(
+                    (
+                        boyer_member(boyer_x(), boyer_reverse(boyer_y())),
+                        boyer_member(boyer_x(), boyer_y()),
+                    ),
+                    Rc::new(List::Nil),
+                )),
+            )
+        },
+    )
 }
 
 fn boyer_or<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::OR, Rc::new(vec![a, b].into()), &|| {
-        vec![(
-            boyer_or(boyer_x(), boyer_y()),
-            boyer_if(
-                boyer_x(),
-                boyer_true(),
-                boyer_if(boyer_y(), boyer_true(), boyer_false()),
-            ),
-        )]
-        .into()
-    })
+    Term::Fun(
+        Id::OR,
+        Rc::new(List::Cons(a, Rc::new(List::Cons(b, Rc::new(List::Nil))))),
+        &|| {
+            List::Cons(
+                (
+                    boyer_or(boyer_x(), boyer_y()),
+                    boyer_if(
+                        boyer_x(),
+                        boyer_true(),
+                        boyer_if(boyer_y(), boyer_true(), boyer_false()),
+                    ),
+                ),
+                Rc::new(List::Nil),
+            )
+        },
+    )
 }
 
 fn boyer_plus<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::PLUS, Rc::new(vec![a, b].into()), &|| {
-        vec![
-            (
-                boyer_plus(boyer_plus(boyer_x(), boyer_y()), boyer_z()),
-                boyer_plus(boyer_x(), boyer_plus(boyer_y(), boyer_z())),
-            ),
-            (
-                boyer_plus(
-                    boyer_remainder(boyer_x(), boyer_y()),
-                    boyer_times(boyer_y(), boyer_quotient(boyer_x(), boyer_y())),
+    Term::Fun(
+        Id::PLUS,
+        Rc::new(List::Cons(a, Rc::new(List::Cons(b, Rc::new(List::Nil))))),
+        &|| {
+            List::Cons(
+                (
+                    boyer_plus(boyer_plus(boyer_x(), boyer_y()), boyer_z()),
+                    boyer_plus(boyer_x(), boyer_plus(boyer_y(), boyer_z())),
                 ),
-                boyer_x(),
-            ),
-            (
-                boyer_plus(boyer_x(), boyer_add1(boyer_y())),
-                boyer_add1(boyer_plus(boyer_x(), boyer_y())),
-            ),
-        ]
-        .into()
-    })
+                Rc::new(List::Cons(
+                    (
+                        boyer_plus(
+                            boyer_remainder(boyer_x(), boyer_y()),
+                            boyer_times(boyer_y(), boyer_quotient(boyer_x(), boyer_y())),
+                        ),
+                        boyer_x(),
+                    ),
+                    Rc::new(List::Cons(
+                        (
+                            boyer_plus(boyer_x(), boyer_add1(boyer_y())),
+                            boyer_add1(boyer_plus(boyer_x(), boyer_y())),
+                        ),
+                        Rc::new(List::Nil),
+                    )),
+                )),
+            )
+        },
+    )
 }
 
 fn boyer_quotient<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::QUOTIENT, Rc::new(vec![a, b].into()), &|| {
-        vec![
-            (
-                boyer_quotient(
-                    boyer_plus(boyer_x(), boyer_plus(boyer_x(), boyer_y())),
-                    boyer_two(),
+    Term::Fun(
+        Id::QUOTIENT,
+        Rc::new(List::Cons(a, Rc::new(List::Cons(b, Rc::new(List::Nil))))),
+        &|| {
+            List::Cons(
+                (
+                    boyer_quotient(
+                        boyer_plus(boyer_x(), boyer_plus(boyer_x(), boyer_y())),
+                        boyer_two(),
+                    ),
+                    boyer_plus(boyer_x(), boyer_quotient(boyer_y(), boyer_two())),
                 ),
-                boyer_plus(boyer_x(), boyer_quotient(boyer_y(), boyer_two())),
-            ),
-            (
-                boyer_quotient(boyer_times(boyer_y(), boyer_x()), boyer_y()),
-                boyer_if(boyer_zerop(boyer_y()), boyer_zero(), boyer_x()),
-            ),
-        ]
-        .into()
-    })
+                Rc::new(List::Cons(
+                    (
+                        boyer_quotient(boyer_times(boyer_y(), boyer_x()), boyer_y()),
+                        boyer_if(boyer_zerop(boyer_y()), boyer_zero(), boyer_x()),
+                    ),
+                    Rc::new(List::Nil),
+                )),
+            )
+        },
+    )
 }
 
 fn boyer_remainder<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::REMAINDER, Rc::new(vec![a, b].into()), &|| {
-        vec![
-            (boyer_remainder(boyer_x(), boyer_one()), boyer_zero()),
-            (boyer_remainder(boyer_x(), boyer_x()), boyer_zero()),
-            (
-                boyer_remainder(boyer_times(boyer_x(), boyer_y()), boyer_x()),
-                boyer_zero(),
-            ),
-            (
-                boyer_remainder(boyer_times(boyer_x(), boyer_y()), boyer_y()),
-                boyer_zero(),
-            ),
-        ]
-        .into()
-    })
+    Term::Fun(
+        Id::REMAINDER,
+        Rc::new(List::Cons(a, Rc::new(List::Cons(b, Rc::new(List::Nil))))),
+        &|| {
+            List::Cons(
+                (boyer_remainder(boyer_x(), boyer_one()), boyer_zero()),
+                Rc::new(List::Cons(
+                    (boyer_remainder(boyer_x(), boyer_x()), boyer_zero()),
+                    Rc::new(List::Cons(
+                        (
+                            boyer_remainder(boyer_times(boyer_x(), boyer_y()), boyer_x()),
+                            boyer_zero(),
+                        ),
+                        Rc::new(List::Cons(
+                            (
+                                boyer_remainder(boyer_times(boyer_x(), boyer_y()), boyer_y()),
+                                boyer_zero(),
+                            ),
+                            Rc::new(List::Nil),
+                        )),
+                    )),
+                )),
+            )
+        },
+    )
 }
 
 fn boyer_reverse<'a>(a: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::REVERSE, Rc::new(vec![a].into()), &|| {
-        vec![(
-            boyer_reverse(boyer_append(boyer_x(), boyer_y())),
-            boyer_append(boyer_reverse(boyer_y()), boyer_reverse(boyer_x())),
-        )]
-        .into()
-    })
+    Term::Fun(
+        Id::REVERSE,
+        Rc::new(List::Cons(a, Rc::new(List::Nil))),
+        &|| {
+            List::Cons(
+                (
+                    boyer_reverse(boyer_append(boyer_x(), boyer_y())),
+                    boyer_append(boyer_reverse(boyer_y()), boyer_reverse(boyer_x())),
+                ),
+                Rc::new(List::Nil),
+            )
+        },
+    )
 }
 
 fn boyer_times<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::TIMES, Rc::new(vec![a, b].into()), &|| {
-        vec![
-            (
-                boyer_times(boyer_x(), boyer_plus(boyer_y(), boyer_z())),
-                boyer_plus(
-                    boyer_times(boyer_x(), boyer_y()),
-                    boyer_times(boyer_x(), boyer_z()),
+    Term::Fun(
+        Id::TIMES,
+        Rc::new(List::Cons(a, Rc::new(List::Cons(b, Rc::new(List::Nil))))),
+        &|| {
+            List::Cons(
+                (
+                    boyer_times(boyer_x(), boyer_plus(boyer_y(), boyer_z())),
+                    boyer_plus(
+                        boyer_times(boyer_x(), boyer_y()),
+                        boyer_times(boyer_x(), boyer_z()),
+                    ),
                 ),
-            ),
-            (
-                boyer_times(boyer_times(boyer_x(), boyer_y()), boyer_z()),
-                boyer_times(boyer_x(), boyer_times(boyer_y(), boyer_z())),
-            ),
-            (
-                boyer_times(boyer_x(), boyer_difference(boyer_y(), boyer_z())),
-                boyer_difference(
-                    boyer_times(boyer_y(), boyer_x()),
-                    boyer_times(boyer_z(), boyer_x()),
-                ),
-            ),
-            (
-                boyer_times(boyer_x(), boyer_add1(boyer_y())),
-                boyer_plus(boyer_x(), boyer_times(boyer_x(), boyer_y())),
-            ),
-        ]
-        .into()
-    })
+                Rc::new(List::Cons(
+                    (
+                        boyer_times(boyer_times(boyer_x(), boyer_y()), boyer_z()),
+                        boyer_times(boyer_x(), boyer_times(boyer_y(), boyer_z())),
+                    ),
+                    Rc::new(List::Cons(
+                        (
+                            boyer_times(boyer_x(), boyer_difference(boyer_y(), boyer_z())),
+                            boyer_difference(
+                                boyer_times(boyer_y(), boyer_x()),
+                                boyer_times(boyer_z(), boyer_x()),
+                            ),
+                        ),
+                        Rc::new(List::Cons(
+                            (
+                                boyer_times(boyer_x(), boyer_add1(boyer_y())),
+                                boyer_plus(boyer_x(), boyer_times(boyer_x(), boyer_y())),
+                            ),
+                            Rc::new(List::Nil),
+                        )),
+                    )),
+                )),
+            )
+        },
+    )
 }
 
 fn boyer_zerop<'a>(a: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::ZEROP, Rc::new(vec![a].into()), &|| {
-        vec![(boyer_zerop(boyer_x()), boyer_equal(boyer_x(), boyer_zero()))].into()
-    })
+    Term::Fun(
+        Id::ZEROP,
+        Rc::new(List::Cons(a, Rc::new(List::Nil))),
+        &|| {
+            List::Cons(
+                (boyer_zerop(boyer_x()), boyer_equal(boyer_x(), boyer_zero())),
+                Rc::new(List::Nil),
+            )
+        },
+    )
 }
 
 fn find<'a>(vid: &Id, ls: List<(Id, Term<'a>)>) -> (bool, Term<'a>) {
@@ -791,7 +995,7 @@ fn tautp<'a>(x: Term<'a>) -> bool {
 }
 
 fn test0<'a>(xxxx: Term<'a>) -> bool {
-    let subst0 = vec![
+    let subst0 = List::Cons(
         (
             Id::X,
             boyer_f(boyer_plus(
@@ -799,36 +1003,44 @@ fn test0<'a>(xxxx: Term<'a>) -> bool {
                 boyer_plus(boyer_c(), boyer_zero()),
             )),
         ),
-        (
-            Id::Y,
-            boyer_f(boyer_times(
-                boyer_times(boyer_a(), boyer_b()),
-                boyer_plus(boyer_c(), boyer_d()),
+        Rc::new(List::Cons(
+            (
+                Id::Y,
+                boyer_f(boyer_times(
+                    boyer_times(boyer_a(), boyer_b()),
+                    boyer_plus(boyer_c(), boyer_d()),
+                )),
+            ),
+            Rc::new(List::Cons(
+                (
+                    Id::Z,
+                    boyer_f(boyer_reverse(boyer_append(
+                        boyer_append(boyer_a(), boyer_b()),
+                        boyer_nil(),
+                    ))),
+                ),
+                Rc::new(List::Cons(
+                    (
+                        Id::U,
+                        boyer_equal(
+                            boyer_plus(boyer_a(), boyer_b()),
+                            boyer_difference(boyer_x(), boyer_y()),
+                        ),
+                    ),
+                    Rc::new(List::Cons(
+                        (
+                            Id::W,
+                            boyer_lessp(
+                                boyer_remainder(boyer_a(), boyer_b()),
+                                boyer_member(boyer_a(), boyer_length(boyer_b())),
+                            ),
+                        ),
+                        Rc::new(List::Nil),
+                    )),
+                )),
             )),
-        ),
-        (
-            Id::Z,
-            boyer_f(boyer_reverse(boyer_append(
-                boyer_append(boyer_a(), boyer_b()),
-                boyer_nil(),
-            ))),
-        ),
-        (
-            Id::U,
-            boyer_equal(
-                boyer_plus(boyer_a(), boyer_b()),
-                boyer_difference(boyer_x(), boyer_y()),
-            ),
-        ),
-        (
-            Id::W,
-            boyer_lessp(
-                boyer_remainder(boyer_a(), boyer_b()),
-                boyer_member(boyer_a(), boyer_length(boyer_b())),
-            ),
-        ),
-    ]
-    .into();
+        )),
+    );
     let theorem = boyer_implies(
         boyer_and(
             boyer_implies(xxxx, boyer_y()),
