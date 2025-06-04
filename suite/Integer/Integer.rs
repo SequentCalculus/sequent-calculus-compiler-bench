@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum Either<T, U> {
     Left(T),
     Right(U),
@@ -19,6 +19,16 @@ impl<T> List<T> {
             List::Cons(t, _) => t,
         }
     }
+
+    fn append(self, other: List<T>) -> List<T>
+    where
+        T: Clone,
+    {
+        match self {
+            List::Nil => other,
+            List::Cons(t1, ts) => List::Cons(t1, Rc::new(Rc::unwrap_or_clone(ts).append(other))),
+        }
+    }
 }
 
 fn enum_from_then_to(from: i64, then: i64, t: i64) -> List<i64> {
@@ -29,50 +39,31 @@ fn enum_from_then_to(from: i64, then: i64, t: i64) -> List<i64> {
     }
 }
 
-fn bench_lscomp2(
+fn apply_op_inner(
     ls: List<i64>,
-    t1: List<i64>,
     a: i64,
-    op: &impl Fn(i64, i64) -> Either<i64, bool>,
-    bstart: i64,
-    bstep: i64,
-    blim: i64,
-) -> List<Either<i64, bool>> {
-    match ls {
-        List::Nil => bench_lscomp1(t1, bstart, bstep, blim, op),
-        List::Cons(b, t2) => List::Cons(
-            op(a, b),
-            Rc::new(bench_lscomp2(
-                t1,
-                Rc::unwrap_or_clone(t2),
-                a,
-                op,
-                bstart,
-                bstep,
-                blim,
-            )),
-        ),
-    }
-}
-
-fn bench_lscomp1(
-    ls: List<i64>,
-    bstart: i64,
-    bstep: i64,
-    blim: i64,
     op: &impl Fn(i64, i64) -> Either<i64, bool>,
 ) -> List<Either<i64, bool>> {
     match ls {
         List::Nil => List::Nil,
-        List::Cons(a, t1) => bench_lscomp2(
-            enum_from_then_to(bstart, bstart + bstep, blim),
-            Rc::unwrap_or_clone(t1),
-            a,
-            op,
-            bstart,
-            bstep,
-            blim,
+        List::Cons(b, t2) => List::Cons(
+            op(a, b),
+            Rc::new(apply_op_inner(Rc::unwrap_or_clone(t2), a, op)),
         ),
+    }
+}
+
+fn apply_op(
+    ls: List<i64>,
+    astart: i64,
+    astep: i64,
+    alim: i64,
+    op: &impl Fn(i64, i64) -> Either<i64, bool>,
+) -> List<Either<i64, bool>> {
+    match ls {
+        List::Nil => List::Nil,
+        List::Cons(a, t1) => apply_op_inner(enum_from_then_to(astart, astart + astep, alim), a, op)
+            .append(apply_op(Rc::unwrap_or_clone(t1), astart, astep, alim, op)),
     }
 }
 
@@ -81,31 +72,24 @@ fn integerbench(
     astart: i64,
     astep: i64,
     alim: i64,
-    bstart: i64,
-    bstep: i64,
-    blim: i64,
 ) -> List<Either<i64, bool>> {
-    bench_lscomp1(
+    apply_op(
         enum_from_then_to(astart, astart + astep, alim),
-        bstart,
-        bstep,
-        blim,
+        astart,
+        astep,
+        alim,
         op,
     )
 }
 
 fn runbench(
     jop: &impl Fn(i64, i64) -> Either<i64, bool>,
-    iop: &impl Fn(i64, i64) -> Either<i64, bool>,
     astart: i64,
     astep: i64,
     alim: i64,
-    _: i64,
-    _: i64,
-    _: i64,
 ) -> List<Either<i64, bool>> {
-    let _ = integerbench(iop, astart, astep, alim, astart, astep, alim);
-    integerbench(jop, astart, astep, alim, astart, astep, alim)
+    let _ = integerbench(jop, astart, astep, alim);
+    integerbench(jop, astart, astep, alim)
 }
 
 fn runalltests(
@@ -127,106 +111,16 @@ fn runalltests(
     let z_leq = &|a, b| Either::Right(a <= b);
     let z_geq = &|a, b| Either::Right(a >= b);
 
-    let _ = runbench(
-        z_add,
-        &|a, b| Either::Left(a + b),
-        astart,
-        astep,
-        alim,
-        astart,
-        astep,
-        alim,
-    );
-    let _ = runbench(
-        z_sub,
-        &|a, b| Either::Left(a - b),
-        astart,
-        astep,
-        alim,
-        astart,
-        astep,
-        alim,
-    );
-    let _ = runbench(
-        z_mul,
-        &|a, b| Either::Left(a * b),
-        astart,
-        astep,
-        alim,
-        astart,
-        astep,
-        alim,
-    );
-    let _ = runbench(
-        z_div,
-        &|a, b| Either::Left(a / b),
-        astart,
-        astep,
-        alim,
-        astart,
-        astep,
-        alim,
-    );
-    let _ = runbench(
-        z_mod,
-        &|a, b| Either::Left(a % b),
-        astart,
-        astep,
-        alim,
-        astart,
-        astep,
-        alim,
-    );
-    let _ = runbench(
-        z_equal,
-        &|a, b| Either::Right(a == b),
-        astart,
-        astep,
-        alim,
-        astart,
-        astep,
-        alim,
-    );
-    let _ = runbench(
-        z_lt,
-        &|a, b| Either::Right(a < b),
-        astart,
-        astep,
-        alim,
-        astart,
-        astep,
-        alim,
-    );
-    let _ = runbench(
-        z_leq,
-        &|a, b| Either::Right(a <= b),
-        astart,
-        astep,
-        alim,
-        astart,
-        astep,
-        alim,
-    );
-    let _ = runbench(
-        z_gt,
-        &|a, b| Either::Right(a > b),
-        astart,
-        astep,
-        alim,
-        astart,
-        astep,
-        alim,
-    );
-    runbench(
-        z_geq,
-        &|a, b| Either::Right(a >= b),
-        astart,
-        astep,
-        alim,
-        astart,
-        astep,
-        alim,
-    )
+    let _ = runbench(z_add, astart, astep, alim);
+    let _ = runbench(z_sub, astart, astep, alim);
+    let _ = runbench(z_mul, astart, astep, alim);
+    let _ = runbench(z_div, astart, astep, alim);
+    let _ = runbench(z_mod, astart, astep, alim);
+    let _ = runbench(z_equal, astart, astep, alim);
+    let _ = runbench(z_lt, astart, astep, alim);
+    let _ = runbench(z_leq, astart, astep, alim);
+    let _ = runbench(z_gt, astart, astep, alim);
+    runbench(z_geq, astart, astep, alim)
 }
 
 fn test_integer_nofib(n: i64) -> List<Either<i64, bool>> {
@@ -246,14 +140,12 @@ fn print_either(e: Either<i64, bool>) {
     }
 }
 
-fn main_loop(iters: u64, n: i64) -> i64 {
-    let res = test_integer_nofib(n);
-    if iters == 1 {
-        print_either(res.head());
-        0
-    } else {
-        main_loop(iters - 1, n)
+fn main_loop(iters: u64, n: i64) {
+    let mut res = test_integer_nofib(n);
+    for _ in 0..iters {
+        res = test_integer_nofib(n);
     }
+    print_either(res.head());
 }
 
 fn main() {
@@ -269,5 +161,5 @@ fn main() {
         .expect("Missing Argument n")
         .parse::<i64>()
         .expect("n must be a number");
-    std::process::exit(main_loop(iters, n) as i32)
+    main_loop(iters, n)
 }

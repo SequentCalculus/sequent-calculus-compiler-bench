@@ -7,27 +7,28 @@ structure Integer = struct
     then from::(enum_from_then_to th ((2*th) - from) to)
     else nil
 
-  fun bench_lscomp1 ls bstart bstep blim op_ = 
+  fun apply_op ls astart astep alim op_ = 
     case ls of 
          nil => nil
-       | a::t1 => bench_lscomp2 
-       (enum_from_then_to bstart (bstart+bstep) blim) 
-       t1 a op_ bstart bstep blim
-  and bench_lscomp2 ls t1 a op_ bstart bstep blim =
+       | a::t1 => 
+           (apply_op_inner (enum_from_then_to astart (astart+astep) alim) a op_)
+            @ 
+            (apply_op t1 astart astep alim op_)
+  and apply_op_inner ls a op_ =
   case ls of 
        nil => nil
      | b::t2 => (op_ (a,b)) 
-     :: (bench_lscomp2 t2 t1 a op_ bstart bstep blim)
+     :: (apply_op_inner t2 a op_)
 
-  fun integerbench op_ astart astep alim bstart bstep blim = 
-    bench_lscomp1 
+  fun integerbench op_ astart astep alim = 
+    apply_op 
     (enum_from_then_to astart (astart+astep) alim)
-    bstart bstep blim op_
+    astart astep alim op_
 
-  fun runbench jop iop astart astep alim bstart bstep blim = 
-  let val res1 = integerbench iop astart astep alim astart astep alim
+  fun runbench jop astart astep alim = 
+  let val res1 = integerbench jop astart astep alim 
   in 
-    integerbench jop astart astep alim astart astep alim
+    integerbench jop astart astep alim 
   end
 
   fun runalltests astart astep alim = 
@@ -43,27 +44,17 @@ structure Integer = struct
     val z_geq = fn (a,b) => Right (a>=b)
 
     val add =
-      runbench z_add (fn (a,b) => Left (a+b)) 
-      astart astep alim astart astep alim
-    val sub = runbench z_sub (fn (a,b) => Left (a-b))
-    astart astep alim astart astep alim
-    val mul = runbench z_mul (fn (a,b) => Left (a*b))
-    astart astep alim astart astep alim
-    val div_ = runbench z_mul (fn (a,b) => Left (a div b))
-    astart astep alim astart astep alim
-    val mod_ = runbench z_mod (fn (a,b) => Left (a mod b))
-    astart astep alim astart astep alim
-    val equal = runbench z_equal (fn (a,b) => Left (a mod b))
-    astart astep alim astart astep alim
-    val lt = runbench z_lt (fn (a,b) => Right (a<b))
-    astart astep alim astart astep alim
-    val leq = runbench z_leq (fn (a,b) => Right (a<=b))
-    astart astep alim astart astep alim
-    val gt = runbench z_gt (fn (a,b) => Right (a>b))
-    astart astep alim astart astep alim
+      runbench z_add astart astep alim 
+    val sub = runbench z_sub astart astep alim 
+    val mul = runbench z_mul astart astep alim 
+    val div_ = runbench z_mul astart astep alim 
+    val mod_ = runbench z_mod astart astep alim 
+    val equal = runbench z_equal astart astep alim
+    val lt = runbench z_lt astart astep alim
+    val leq = runbench z_leq astart astep alim 
+    val gt = runbench z_gt astart astep alim 
   in
-    runbench z_geq (fn (a,b) => Right (a>=b))
-    astart astep alim astart astep alim
+    runbench z_geq astart astep alim 
   end
 
   fun test_integer_nofib n = 

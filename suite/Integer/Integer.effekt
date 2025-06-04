@@ -13,27 +13,31 @@ def enum_from_then_to(from:Int,then:Int,to:Int) : List[Int] = {
   }
 }
 
-def bench_lscomp2(ls:List[Int],t1:List[Int],a:Int,bstart:Int,bstep:Int,blim:Int) {op : (Int,Int) => Either[Int,Bool] } : List[Either[Int,Bool]] = {
+def apply_op_inner(ls:List[Int],a:Int) {op : (Int,Int) => Either[Int,Bool] } : List[Either[Int,Bool]] = {
   ls match{
-    case Nil() => bench_lscomp1(t1,bstart,bstep,blim) {op}
-    case Cons(b,t2) => Cons(op(a,b),bench_lscomp2(t2,t1,a,bstart,bstep,blim) { op })
+    case Nil() => Nil() 
+    case Cons(b,t2) => Cons(op(a,b),apply_op_inner(t2,a) { op })
   }
 }
 
-def bench_lscomp1(ls:List[Int],bstart:Int,bstep:Int,blim:Int) { op:(Int,Int) => Either[Int,Bool] } : List[Either[Int,Bool]] = {
+def apply_op(ls:List[Int],astart:Int,astep:Int,alim:Int) { op:(Int,Int) => Either[Int,Bool] } : List[Either[Int,Bool]] = {
   ls match{
     case Nil() => Nil()
-    case Cons(a,t1) => bench_lscomp2(enum_from_then_to(bstart,bstart + bstep, blim), t1, a, bstart, bstep, blim) {op}
+    case Cons(a,t1) => 
+      append(
+        apply_op_inner(enum_from_then_to(astart,astart + astep, alim), a) {op},
+        apply_op(t1,astart,astep,alim) {op}
+      )
   }
 }
 
-def integerbench(astart:Int,astep:Int,alim:Int,bstart:Int,bstep:Int,blim:Int) { op: (Int,Int) => Either[Int,Bool] } : List[Either[Int,Bool]] = {
-  bench_lscomp1(enum_from_then_to(astart,astart + astep, alim), bstart, bstep, blim) { op }
+def integerbench(astart:Int,astep:Int,alim:Int) { op: (Int,Int) => Either[Int,Bool] } : List[Either[Int,Bool]] = {
+  apply_op(enum_from_then_to(astart,astart + astep, alim), astart, astep, alim) { op }
 }
 
-def runbench(astart:Int,astep:Int,alim:Int,bstart:Int,bstep:Int,blim:Int) { jop : (Int,Int) => Either[Int,Bool] } { iop : (Int,Int) => Either[Int,Bool] } : List[Either[Int,Bool]] = {
-  val res1 = integerbench(astart,astep,alim,astart,astep,alim) {iop}
-  integerbench(astart,astep,alim,astart,astep,alim) {iop}
+def runbench(astart:Int,astep:Int,alim:Int) { jop : (Int,Int) => Either[Int,Bool] } : List[Either[Int,Bool]] = {
+  val res1 = integerbench(astart,astep,alim) {jop}
+  integerbench(astart,astep,alim) {jop}
 }
 
 def runalltests(astart:Int,astep:Int,alim:Int) : List[Either[Int,Bool]] = {
@@ -48,17 +52,17 @@ def runalltests(astart:Int,astep:Int,alim:Int) : List[Either[Int,Bool]] = {
   val z_gt: (Int,Int) => Either[Int,Bool] at {} = box { (a,b) => Right(a>b) }
   val z_geq: (Int,Int) => Either[Int,Bool] at {} = box { (a,b) => Right(a>=b) }
 
-  val add = runbench(astart,astep,alim,astart,astep,alim) { z_add } { (a,b) => Left(a + b) }
-  val sub = runbench(astart,astep,alim,astart,astep,alim) { z_sub } { (a,b) => Left(a - b) }
-  val mul = runbench(astart,astep,alim,astart,astep,alim) { z_mul } { (a,b) => Left(a * b) }
-  val div = runbench(astart,astep,alim,astart,astep,alim) { z_div } { (a,b) => Left(a / b) }
-  val mod = runbench(astart,astep,alim,astart,astep,alim) { z_mod } { (a,b) => Left(mod(a, b)) }
-  val equal = runbench(astart,astep,alim,astart,astep,alim) { z_equal } { (a,b) => Right(a==b) }
-  val lt = runbench(astart,astep,alim,astart,astep,alim) { z_lt } { (a,b) => Right(a<b) }
-  val leq = runbench(astart,astep,alim,astart,astep,alim) { z_leq } { (a,b) => Right(a<=b) }
-  val gt = runbench(astart,astep,alim,astart,astep,alim) { z_gt } { (a,b) => Right(a>b) }
-  val geq = runbench(astart,astep,alim,astart,astep,alim) { z_geq } { (a,b) => Right(a>=b) }
-  runbench(astart,astep,alim,astart,astep,alim) { z_geq } { (a,b) => Right(a>=b) }
+  val add = runbench(astart,astep,alim) { z_add } 
+  val sub = runbench(astart,astep,alim) { z_sub } 
+  val mul = runbench(astart,astep,alim) { z_mul } 
+  val div = runbench(astart,astep,alim) { z_div } 
+  val mod = runbench(astart,astep,alim) { z_mod }
+  val equal = runbench(astart,astep,alim) { z_equal }
+  val lt = runbench(astart,astep,alim) { z_lt } 
+  val leq = runbench(astart,astep,alim) { z_leq }
+  val gt = runbench(astart,astep,alim) { z_gt } 
+  val geq = runbench(astart,astep,alim) { z_geq }
+  runbench(astart,astep,alim) { z_geq } 
 }
 
 def test_integer_nofib(n:Int) : List[Either[Int,Bool]] = {

@@ -14,26 +14,26 @@ let rec enum_from_then_to from th to_ =
     from::enum_from_then_to th ((2*th) - from) to_
   else []
 
-let rec bench_lscomp1 ls bstart bstep blim op_ = 
+let rec apply_op ls astart astep alim op_ = 
   match ls with 
     | [] -> []
     | a :: t1 -> 
-        bench_lscomp2 
-          (enum_from_then_to bstart (bstart+bstep) blim)
-          t1 a op_ bstart bstep blim
-and bench_lscomp2 ls t1 a op_ bstart bstep blim = 
+        List.append
+          (apply_op_inner (enum_from_then_to astart (astart+astep) alim) a op_)
+          (apply_op t1 astart astep alim op_)
+and apply_op_inner ls a op_ = 
   match ls with 
     | [] -> []
-    | b::t2 -> op_ (a,b) :: bench_lscomp2 t2 t1 a op_ bstart bstep blim
+    | b::t2 -> op_ (a,b) :: apply_op_inner t2 a op_
 
-let integerbench op_ astart astep alim bstart bstep blim =
-   bench_lscomp1 
+let integerbench op_ astart astep alim =
+   apply_op 
     (enum_from_then_to astart (astart+astep) alim)
-     bstart bstep blim op_
+     astart astep alim op_
 
-let runbench jop iop astart astep alim bstart bstep blim =
-  let _ = integerbench iop astart astep alim astart astep alim in 
-  integerbench jop astart astep alim astart astep alim
+let runbench jop astart astep alim =
+  let _ = integerbench jop astart astep alim in 
+  integerbench jop astart astep alim
 
 let runalltests astart astep alim = 
   let z_add = fun (a,b) -> Left (a+b) in 
@@ -48,26 +48,16 @@ let runalltests astart astep alim =
   let z_geq = fun (a,b) -> Right (a>=b) in
 
   let _ =
-    runbench z_add (fun (a,b) -> Left (a+b)) 
-    astart astep alim astart astep alim in 
-  let _ = runbench z_sub (fun (a,b) -> Left (a-b))
-  astart astep alim astart astep alim in
-  let _ = runbench z_mul (fun (a,b) -> Left (a*b))
-  astart astep alim astart astep alim in 
-  let _ = runbench z_div (fun (a,b) -> Left (a /b))
-  astart astep alim astart astep alim in
-  let _ = runbench z_mod (fun (a,b) -> Left (a mod b))
-  astart astep alim astart astep alim in
-  let _ = runbench z_equal (fun (a,b) -> Left (a mod b))
-  astart astep alim astart astep alim in
-  let _ = runbench z_lt (fun (a,b) -> Right (a<b))
-  astart astep alim astart astep alim in
-  let _ = runbench z_leq (fun (a,b) -> Right (a<=b))
-  astart astep alim astart astep alim in
-  let _ = runbench z_gt (fun (a,b) -> Right (a>b))
-  astart astep alim astart astep alim in 
-  runbench z_geq (fun (a,b) -> Right (a>=b)) 
-  astart astep alim astart astep alim
+    runbench z_add  astart astep alim in 
+  let _ = runbench z_sub astart astep alim in
+  let _ = runbench z_mul astart astep alim in 
+  let _ = runbench z_div astart astep alim in
+  let _ = runbench z_mod astart astep alim in
+  let _ = runbench z_equal astart astep alim in
+  let _ = runbench z_lt astart astep alim in
+  let _ = runbench z_leq astart astep alim in
+  let _ = runbench z_gt astart astep alim in 
+  runbench z_geq  astart astep alim 
 
 
 let test_integer_nofib n = 

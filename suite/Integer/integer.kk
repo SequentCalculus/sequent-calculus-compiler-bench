@@ -10,42 +10,39 @@ fun enum_from_then_to(from:int64,then_:int64,to:int64): div list<int64>{
     Nil
 }
 
-fun bench_lscomp2(
-  ls:list<int64>,t1:list<int64>,a:int64,
-  op:(int64,int64) -> either<int64,bool>,
-  bstart:int64,bstep:int64,blim:int64
-  ): div list<either<int64,bool>>{
+fun apply_op_inner(
+  ls:list<int64>,a:int64,
+  op:(int64,int64) -> either<int64,bool>): total list<either<int64,bool>> {
   match ls 
-    Nil -> bench_lscomp1(t1,bstart,bstep,blim,op)
-    Cons(b,t2) -> Cons(op(a,b),bench_lscomp2(t2,t1,a,op,bstart,bstep,blim))
+    Nil -> Nil 
+    Cons(b,t2) -> Cons(op(a,b),apply_op_inner(t2,a,op))
 }
 
-fun bench_lscomp1(
+fun apply_op(
   ls:list<int64>,
-  bstart:int64,bstep:int64,blim:int64,
+  astart:int64,astep:int64,alim:int64,
   op:(int64,int64) -> either<int64,bool>
   ) : div list<either<int64,bool>>{
   match ls 
     Nil -> Nil
-    Cons(a,t1) -> bench_lscomp2(enum_from_then_to(bstart,bstart + bstep, blim), t1,a,op,bstart,bstep,blim)
+    Cons(a,t1) -> 
+      append(
+        apply_op_inner(enum_from_then_to(astart,astart + astep, alim), a,op),
+        apply_op(t1,astart,astep,alim,op)
+      )
 }
 
 fun integerbench(
   op:(int64,int64) -> either<int64,bool>,
-  astart:int64,astep:int64,alim:int64,
-  bstart:int64,bstep:int64,blim:int64
-  ): div list<either<int64,bool>>{
-  bench_lscomp1(enum_from_then_to(astart,astart + astep,alim),bstart,bstep,blim,op)
+  astart:int64,astep:int64,alim:int64): div list<either<int64,bool>>{
+  apply_op(enum_from_then_to(astart,astart + astep,alim),astart,astep,alim,op)
 }
 
 fun runbench(
   jop:(int64,int64) -> either<int64,bool>,
-  iop:(int64,int64) -> either<int64,bool>,
-  astart:int64,astep:int64,alim:int64,
-  bstart:int64,bstep:int64,blim:int64
-  ): div list<either<int64,bool>>{
-  val _ = integerbench(iop,astart,astep,alim,astart,astep,alim)
-  integerbench(jop,astart,astep,alim,astart,astep,alim)
+  astart:int64,astep:int64,alim:int64): div list<either<int64,bool>>{
+  val _ = integerbench(jop,astart,astep,alim)
+  integerbench(jop,astart,astep,alim)
 }
 
 fun runalltests(astart:int64,astep:int64,alim:int64): div list<either<int64,bool>>{
@@ -60,16 +57,16 @@ fun runalltests(astart:int64,astep:int64,alim:int64): div list<either<int64,bool
   val z_gt: (int64,int64) -> total either<int64,bool> = fn(a, b) Right(a<b) 
   val z_geq: (int64,int64) -> total either<int64,bool> = fn(a, b) Right(a<=b) 
 
-  val add = runbench(z_add, fn(a, b) Left(a + b), astart, astep, alim, astart, astep, alim)
-  val sub = runbench(z_sub, fn(a, b) Left(a - b), astart, astep, alim, astart, astep, alim)
-  val mul = runbench(z_mul, fn(a, b) Left(a * b), astart, astep, alim, astart, astep, alim)
-  val div = runbench(z_div, fn(a, b) Left(a / b), astart, astep, alim, astart, astep, alim)
-  val mod = runbench(z_mod, fn(a, b) Left(a % b), astart, astep, alim, astart, astep, alim)
-  val equal = runbench(z_equal, fn(a,b) Right(a==b), astart, astep, alim, astart, astep, alim)
-  val lt = runbench(z_lt, fn(a,b) Right(a<b), astart, astep, alim, astart, astep, alim)
-  val leq = runbench(z_leq, fn(a,b) Right(a<=b), astart, astep, alim, astart, astep, alim)
-  val gt = runbench(z_gt, fn(a,b) Right(a<b), astart, astep, alim, astart, astep, alim)
-  runbench(z_geq, fn(a,b) Right(a<=b), astart, astep, alim, astart, astep, alim)
+  val add = runbench(z_add, astart, astep, alim)
+  val sub = runbench(z_sub, astart, astep, alim)
+  val mul = runbench(z_mul, astart, astep, alim)
+  val div = runbench(z_div, astart, astep, alim)
+  val mod = runbench(z_mod, astart, astep, alim)
+  val equal = runbench(z_equal, astart, astep, alim)
+  val lt = runbench(z_lt, astart, astep, alim)
+  val leq = runbench(z_leq, astart, astep, alim)
+  val gt = runbench(z_gt,astart, astep, alim)
+  runbench(z_geq, astart, astep, alim)
 }
 
 fun test_integer_nofib(n:int64): div list<either<int64,bool>>{
