@@ -44,15 +44,11 @@ def rev(l: List[i64]): List[i64] {
   rev_loop(l, Nil)
 }
 
-def map_loop(f: Fun[Pair[i64, i64], i64], l: List[Pair[i64, i64]], acc: List[i64]): List[i64] {
-  l.case[Pair[i64, i64]] {
-    Nil => rev(acc),
-    Cons(p, ps) => map_loop(f, ps, Cons(f.Apply[Pair[i64, i64], i64](p), acc))
-  }
-}
-
 def map(f: Fun[Pair[i64, i64], i64], l: List[Pair[i64, i64]]): List[i64] {
-  map_loop(f, l, Nil)
+  l.case[Pair[i64, i64]] {
+    Nil => Nil,
+    Cons(p, ps) => Cons(f.Apply[Pair[i64, i64], i64](p), map(f,ps))
+  }
 }
 
 def algb1(xss: List[i64], yss: List[Pair[i64, i64]]): List[i64] {
@@ -61,16 +57,17 @@ def algb1(xss: List[i64], yss: List[Pair[i64, i64]]): List[i64] {
     Cons(x, xs) => algb1(xs, algb2(x, 0, 0, yss))
   }
 }
-def algb_listcomp_fun(listcomp_fun_para: List[i64]): List[Pair[i64, i64]] {
-  listcomp_fun_para.case[i64] {
+
+def add_zero(ls: List[i64]): List[Pair[i64, i64]] {
+  ls.case[i64] {
     Nil => Nil,
-    Cons(listcomp_fun_ls_h, listcomp_fun_ls_t) =>
-      Cons(Pair(listcomp_fun_ls_h, 0), algb_listcomp_fun(listcomp_fun_ls_t))
+    Cons(h, tl) =>
+      Cons(Pair(h, 0), add_zero(tl))
   }
 }
 
 def algb(xs: List[i64], ys: List[i64]): List[i64] {
-    Cons(0, algb1(xs, algb_listcomp_fun(ys)))
+    Cons(0, algb1(xs, add_zero(ys)))
 }
 
 def findk(k: i64, km: i64, m: i64, ls: List[Pair[i64, i64]]): i64 {

@@ -198,14 +198,12 @@ fn test_lcss_nofib() -> List<i64> {
     lcss_main(1, 2, 200, 100, 101, 300)
 }
 
-fn main_loop(iters: u64) -> i64 {
-    let res = test_lcss_nofib();
-    if iters == 1 {
-        println!("{}", res.head());
-        0
-    } else {
-        main_loop(iters - 1)
+fn main_loop(iters: u64) {
+    let mut res = test_lcss_nofib();
+    for _ in 1..iters {
+        res = test_lcss_nofib();
     }
+    println!("{}", res.head());
 }
 
 fn main() {
@@ -216,5 +214,5 @@ fn main() {
         .expect("Missing Argument iterations")
         .parse::<u64>()
         .expect("Iterations must be a number");
-    std::process::exit(main_loop(iters) as i32)
+    main_loop(iters)
 }

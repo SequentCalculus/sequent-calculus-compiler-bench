@@ -54,14 +54,14 @@ fun algb1(xss:list<int64>,yss:list<(int64,int64)>): div list<int64>{
     Cons(x,xs) -> algb1(xs,algb2(x,0.int64,0.int64,yss))
 }
 
-fun algb_listcomp(xs:list<int64>): div list<(int64,int64)>{
+fun add_zero(xs:list<int64>): div list<(int64,int64)>{
   match xs
     Nil -> Nil
-    Cons(h,t) -> Cons((h,0.int64),algb_listcomp(t))
+    Cons(h,t) -> Cons((h,0.int64),add_zero(t))
 }
 
 fun algb(xs:list<int64>,ys:list<int64>): div list<int64>{
-  Cons(0.int64,algb1(xs,algb_listcomp(ys)))
+  Cons(0.int64,algb1(xs,add_zero(ys)))
 }
 
 fun algc(m:int64,n:int64,xs:list<int64>,ys:list<int64>): div (list<int64> -> div list<int64>) {

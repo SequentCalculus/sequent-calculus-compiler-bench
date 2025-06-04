@@ -20,7 +20,7 @@
 | IterateIncrement      | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         |
 | SudanGoto             | ✔️ | N/A  | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         |
 | Cryptarithm1          | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         |
-| Lcss                  | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            | 
+| Lcss                  | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         | 
 | SumRange              | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            | 
 | Deriv                 | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            | Rust version significantly slower |
 | Life                  | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            | 

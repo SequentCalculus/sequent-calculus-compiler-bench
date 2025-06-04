@@ -63,16 +63,16 @@ def algb1(xss:List[Int],yss:List[(Int,Int)]) : List[Int] = {
   }
 }
 
-def algb_listcomp_fun(listcomp_fun_para:List[Int]) : List[(Int,Int)] = {
-  listcomp_fun_para match{
+def add_zero(ls:List[Int]) : List[(Int,Int)] = {
+  ls match{
     case Nil() => Nil() 
-    case Cons(listcomp_fun_ls_h,listcomp_fun_ls_t) => 
-      Cons((listcomp_fun_ls_h,0),algb_listcomp_fun(listcomp_fun_ls_t))
+    case Cons(h,t) => 
+      Cons((h,0),add_zero(t))
   }
 }
 
 def algb(xss:List[Int],ys:List[Int]) : List[Int] = {
-  Cons(0,algb1(xss,algb_listcomp_fun(ys)))
+  Cons(0,algb1(xss,add_zero(ys)))
 }
 
 def algc(m:Int,n:Int,xs:List[Int],ys:List[Int]) : List[Int] => List[Int] at {} = {

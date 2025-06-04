@@ -43,13 +43,13 @@ structure Lcss = struct
          nil => map (fn (_,x) => x) yss 
        | (x::xs) => algb1 xs (algb2 x 0 0 yss)
 
-  fun algb_listcomp listcomp_para = 
-    case listcomp_para of 
+  fun add_zero ls = 
+    case ls of 
          nil => nil
-       | (h::t) => (h,0)::(algb_listcomp t)
+       | (h::t) => (h,0)::(add_zero t)
 
   fun algb xs ys = 
-    0::(algb1 xs (algb_listcomp ys))
+    0::(algb1 xs (add_zero ys))
 
   fun algc m n xs ys = 
     if null ys 

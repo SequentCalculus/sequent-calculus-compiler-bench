@@ -41,13 +41,13 @@ let rec algb1 xss yss =
     | [] -> List.map (fun (_,x) -> x) yss
     | x::xs -> algb1 xs (algb2 x 0 0 yss)
 
-let rec algb_listcomp listcomp_para = 
-  match listcomp_para with 
+let rec add_zero ls = 
+  match ls with 
     | [] -> []
-    | h::t -> (h,0)::algb_listcomp t 
+    | h::t -> (h,0)::add_zero t 
 
 let algb xs ys = 
-  0 :: (algb1 xs (algb_listcomp ys))
+  0 :: (algb1 xs (add_zero ys))
 
 let rec algc m n xs ys = 
   if List.is_empty ys then fun x -> x 
