@@ -87,16 +87,16 @@ let rec init_tree f x =
   Node(x, List.map (fun y -> init_tree f y) (f x))
 
 
-let rec mk_lscomp ls ss = 
+let rec to_assign ls ss = 
   match ls with 
     | [] -> [] 
-    | j::t1 -> (Assign((max_level ss) +1,j)::ss)::(mk_lscomp t1 ss)
+    | j::t1 -> (Assign((max_level ss) +1,j)::ss)::(to_assign t1 ss)
 
 
 let mk_tree (CSP(vars,vals,_)) = 
   let next = fun ss -> 
     if max_level ss < vars then
-      mk_lscomp (enum_from_to 1 vals) ss
+      to_assign (enum_from_to 1 vals) ss
     else []
   in 
   init_tree next []
@@ -129,17 +129,9 @@ let earliest_inconsistency (CSP(_,_,rel)) aas =
           | b::bs_ -> Some(level a, level b)
         )
 
-let rec wipe_lscomp ls = 
-  match ls with 
-    | [] -> []
-    | vs::t1 -> 
-        if List.for_all known_conflict vs 
-        then vs::(wipe_lscomp t1)
-        else wipe_lscomp t1
-
 let domain_wipeout csp t = 
   let f8 = fun ((as_,cs),tbl) ->
-    let wiped_domains = wipe_lscomp tbl in 
+    let wiped_domains = List.filter (fun x -> List.for_all known_conflict x) tbl in 
     let cs_ = 
       if List.is_empty wiped_domains then cs
       else Known (collect (List.hd wiped_domains))
@@ -169,29 +161,29 @@ let lookup_cache csp t =
   in 
   map_tree (fun x -> f5 (csp,x)) t
 
-let rec empty_lscomp1 ls vals = 
+let rec n_unknown ls n = 
   match ls with 
     | [] -> []
     | n::t1 -> 
-        (empty_lscomp2 (enum_from_to 1 vals)) 
-        :: (empty_lscomp1 t1 vals) 
-and empty_lscomp2 ls = 
+        (to_unknown (enum_from_to 1 n)) 
+        :: (n_unknown t1 n) 
+and to_unknown ls = 
   match ls with
     | [] -> []
-    | _::t2 -> Unknown::(empty_lscomp2 t2)
+    | _::t2 -> Unknown::(to_unknown t2)
 and empty_table (CSP(vars,vals,_)) = 
-  []::(empty_lscomp1 (enum_from_to 1 vars) vals)
+  []::(n_unknown (enum_from_to 1 vars) vals)
 
-let rec fill_lscomp2 ls varrr = 
+let rec to_pairs ls varrr = 
   match ls with 
     | [] -> []
-    | valll::t2 -> (varrr,valll) :: (fill_lscomp2 t2 varrr)
+    | valll::t2 -> (varrr,valll) :: (to_pairs t2 varrr)
 
-let rec fill_lscomp1 ls vals = 
+let rec n_pairs ls vals = 
   match ls with 
     | [] -> []
     | varrr::t1 -> 
-        (fill_lscomp2 (enum_from_to 1 vals) varrr)::(fill_lscomp1 t1 vals)
+        (to_pairs (enum_from_to 1 vals) varrr)::(n_pairs t1 vals)
 
 let fill_table s (CSP(vars,vals,rel)) tbl = 
   match s with 
@@ -208,7 +200,7 @@ let fill_table s (CSP(vars,vals,rel)) tbl =
         zip_with 
           (fun (x,y) -> zip_with f4 x y)
           tbl
-          (fill_lscomp1 (enum_from_to (var_+1) vars) vals)
+          (n_pairs (enum_from_to (var_+1) vars) vals)
 
 
 

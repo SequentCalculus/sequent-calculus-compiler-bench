@@ -219,10 +219,10 @@ def init_tree(x:List[Assign]) { f:List[Assign] => List[List[Assign]] } : Node[Li
 
 }
 
-def mk_lscomp1(ls:List[Int],ss:List[Assign]) : List[List[Assign]] = {
+def to_assign(ls:List[Int],ss:List[Assign]) : List[List[Assign]] = {
   ls match{
     case Nil() => Nil()
-    case Cons(j,t1) => Cons(Cons(Assign(max_level(ss) + 1,j),ss),mk_lscomp1(t1,ss))
+    case Cons(j,t1) => Cons(Cons(Assign(max_level(ss) + 1,j),ss),to_assign(t1,ss))
   }
 }
 
@@ -231,7 +231,7 @@ def mk_tree(csp:CSP) : Node[List[Assign]] = {
     case CSP(vars,vals,rel) => 
       init_tree(Nil()) { ss =>
         if (max_level(ss) < vars){
-          mk_lscomp1(enum_from_to(1,vals),ss)
+          to_assign(enum_from_to(1,vals),ss)
         }else{
           Nil()
         }
@@ -247,25 +247,13 @@ def collect(ls:List[ConflictSet]) : List[Int] = {
   }
 }
 
-def wipe_lscomp1(ls:List[List[ConflictSet]]) : List[List[ConflictSet]] = {
-  ls match{
-    case Nil() => Nil()
-    case Cons(vs,t1) => 
-      if (list::all(vs) { x => known_conflict(x) }){
-        Cons(vs,wipe_lscomp1(t1))
-      }else{
-        wipe_lscomp1(t1)
-      }
-  }
-}
-
 def domain_wipeout(csp:CSP,t:Node[((List[Assign],ConflictSet),List[List[ConflictSet]])]) : Node[(List[Assign],ConflictSet)] = { 
   csp match{
     case CSP(vars,vals,rel) => 
       map_tree(t){ tup => tup match {case (p,tbl) =>
         p match{ 
           case (as_,cs) => 
-            val wiped_domains = wipe_lscomp1(tbl)
+            val wiped_domains = filter(tbl) { x => list::all(x) { known_conflict } } 
             val cs_ = if (list::isEmpty(wiped_domains)){
               cs
             }else{
@@ -336,17 +324,17 @@ def known_conflict(c:ConflictSet) : Bool = {
   }
 }
 
-def fill_lscomp2(ls:List[Int],varrr:Int) : List[(Int,Int)] = {
+def to_pairs(ls:List[Int],varrr:Int) : List[(Int,Int)] = {
   ls match{
     case Nil() => Nil()
-    case Cons(valll,t2) => Cons((varrr,valll),fill_lscomp2(t2,varrr))
+    case Cons(valll,t2) => Cons((varrr,valll),to_pairs(t2,varrr))
   }
 }
 
-def fill_lscomp1(ls:List[Int],vals:Int) : List[List[(Int,Int)]] = {
+def n_pairs(ls:List[Int],vals:Int) : List[List[(Int,Int)]] = {
   ls match{
     case Nil() => Nil()
-    case Cons(varrr,t1) => Cons(fill_lscomp2(enum_from_to(1,vals),varrr),fill_lscomp1(t1,vals))
+    case Cons(varrr,t1) => Cons(to_pairs(enum_from_to(1,vals),varrr),n_pairs(t1,vals))
   }
 }
 
@@ -356,7 +344,7 @@ def fill_table(s:List[Assign],csp:CSP,tbl:List[List[ConflictSet]]) : List[List[C
     case Cons(Assign(var_,val_),as_) => 
       csp match{
         case CSP(vars,vals,rel) => 
-          list::zipWith(tbl,fill_lscomp1(enum_from_to(var_ + 1,vars),vals)) { (x,y) => list::zipWith(x,y) { (cs,varval) => 
+          list::zipWith(tbl,n_pairs(enum_from_to(var_ + 1,vars),vals)) { (x,y) => list::zipWith(x,y) { (cs,varval) => 
             (cs,varval) match{
               case (Known(_),_) => cs
               case (Unknown(),(varr,vall)) => 
@@ -371,24 +359,24 @@ def fill_table(s:List[Assign],csp:CSP,tbl:List[List[ConflictSet]]) : List[List[C
   }
 }
 
-def empt_lscomp2(ls:List[Int]) : List[ConflictSet] = {
+def to_unknown(ls:List[Int]) : List[ConflictSet] = {
   ls match{
     case Nil() => Nil()
-    case Cons(m,t2) => Cons(Unknown(),empt_lscomp2(t2))
+    case Cons(m,t2) => Cons(Unknown(),to_unknown(t2))
   }
 }
 
-def empt_lscomp1(ls:List[Int],vals:Int) : List[List[ConflictSet]] = {
+def n_unknown(ls:List[Int],n:Int) : List[List[ConflictSet]] = {
   ls match{
     case Nil() => Nil()
-    case Cons(n,t1) => Cons(empt_lscomp2(enum_from_to(1,vals)),empt_lscomp1(t1,vals))
+    case Cons(n,t1) => Cons(to_unknown(enum_from_to(1,n)),n_unknown(t1,n))
   }
 }
 
 
 def empty_table(csp:CSP) : List[List[ConflictSet]] = { 
   csp match{
-    case CSP(vars,vals,rel) => Cons(Nil(),empt_lscomp1(enum_from_to(1,vars),vals))
+    case CSP(vars,vals,rel) => Cons(Nil(),n_unknown(enum_from_to(1,vars),vals))
   }
 }
 

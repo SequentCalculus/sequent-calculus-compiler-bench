@@ -417,25 +417,13 @@ fn collect_conflict(ls: List<ConflictSet>) -> List<i64> {
     }
 }
 
-fn wipe_lscomp(ls: List<List<ConflictSet>>) -> List<List<ConflictSet>> {
-    match ls {
-        List::Nil => List::Nil,
-        List::Cons(vs, t1) => {
-            if vs.all(&|x| known_conflict(&x)) {
-                List::Cons(vs, Rc::new(wipe_lscomp(Rc::unwrap_or_clone(t1))))
-            } else {
-                wipe_lscomp(Rc::unwrap_or_clone(t1))
-            }
-        }
-    }
-}
-
 fn domain_wipeout(
     _: &CSP,
     t: Node<((List<Assign>, ConflictSet), List<List<ConflictSet>>)>,
 ) -> Node<(List<Assign>, ConflictSet)> {
     let f8 = |((as_, cs), tbl)| {
-        let wiped_domains = wipe_lscomp(tbl);
+        let tbl: List<List<ConflictSet>> = tbl;
+        let wiped_domains = tbl.filter(&|x| x.all(&|x| known_conflict(&x)));
         let cs_ = if wiped_domains.is_empty() {
             cs
         } else {
@@ -455,7 +443,7 @@ fn init_tree(
     Node { lab: x, children }
 }
 
-fn mk_lscomp(ls: List<i64>, ass: List<Assign>) -> List<List<Assign>> {
+fn to_assign(ls: List<i64>, ass: List<Assign>) -> List<List<Assign>> {
     match ls {
         List::Nil => List::Nil,
         List::Cons(j, t1) => List::Cons(
@@ -466,7 +454,7 @@ fn mk_lscomp(ls: List<i64>, ass: List<Assign>) -> List<List<Assign>> {
                 },
                 Rc::new(ass.clone()),
             ),
-            Rc::new(mk_lscomp(Rc::unwrap_or_clone(t1), ass)),
+            Rc::new(to_assign(Rc::unwrap_or_clone(t1), ass)),
         ),
     }
 }
@@ -474,7 +462,7 @@ fn mk_lscomp(ls: List<i64>, ass: List<Assign>) -> List<List<Assign>> {
 fn mk_tree(csp: &CSP) -> Node<List<Assign>> {
     let next = |ss: List<Assign>| {
         if max_level(&ss) < csp.vars {
-            mk_lscomp(List::enum_from_to(1, csp.vals), ss)
+            to_assign(List::enum_from_to(1, csp.vals), ss)
         } else {
             List::Nil
         }
@@ -597,14 +585,12 @@ fn test_constraints_nofib(n: i64) -> List<i64> {
         .into()
 }
 
-fn main_loop(iters: u64, n: i64) -> i64 {
-    let res = test_constraints_nofib(n);
-    if iters == 1 {
-        println!("{}", res.head());
-        0
-    } else {
-        main_loop(iters - 1, n)
+fn main_loop(iters: u64, n: i64) {
+    let mut res = test_constraints_nofib(n);
+    for _ in 1..iters {
+        res = test_constraints_nofib(n);
     }
+    println!("{}", res.head());
 }
 
 fn main() {
@@ -620,5 +606,5 @@ fn main() {
         .expect("Missing Argument n")
         .parse::<i64>()
         .expect("m must be a number");
-    std::process::exit(main_loop(iters, n) as i32)
+    main_loop(iters, n)
 }

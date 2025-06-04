@@ -83,16 +83,16 @@ structure Constraints = struct
   fun init_tree f x = 
     Node(x,map (fn y => init_tree f y) (f x))
 
-  fun mk_lscomp ls ss = 
+  fun to_assign ls ss = 
     case ls of 
          nil => nil
        | j::t1 => 
-           (Assign((max_level ss) +1,j)::ss)::(mk_lscomp t1 ss)
+           (Assign((max_level ss) +1,j)::ss)::(to_assign t1 ss)
 
   fun mk_tree (CSP (vars,vals,rel)) = 
   let val next = fn ss => 
   if max_level(ss) < vars 
-  then mk_lscomp (enum_from_to 1 vals) ss
+  then to_assign (enum_from_to 1 vals) ss
   else nil
            in
              init_tree next nil
@@ -124,17 +124,9 @@ structure Constraints = struct
                  nil => NONE
                | b::bs_ => SOME (level a, level b))
 
-  fun wipe_lscomp ls = 
-    case ls of 
-         nil => nil
-       | vs::t1 => 
-           if List.all (fn x => known_conflict(x)) vs
-           then vs::(wipe_lscomp t1)
-           else wipe_lscomp t1
-
   fun domain_wipeout (CSP (vars,vals,rel)) t = 
   let val f8 = fn ((as_,cs),tbl) => 
-  let val wiped_domains = wipe_lscomp tbl
+  let val wiped_domains = List.filter (fn x => List.all known_conflict x) tbl
     val cs_ = 
       if null wiped_domains 
       then cs 
@@ -169,30 +161,30 @@ structure Constraints = struct
            map_tree (fn x => f5 (csp,x)) t
          end
 
-  fun empty_lscomp1 ls vals = 
+  fun n_unknown ls vals = 
     case ls of 
          nil => nil
        | (n::t1) => 
-           (empty_lscomp2 (enum_from_to 1 vals)) 
-           :: (empty_lscomp1 t1 vals)
-  and empty_lscomp2 ls = 
+           (to_unknown (enum_from_to 1 vals)) 
+           :: (n_unknown t1 vals)
+  and to_unknown ls = 
   case ls of 
        nil => nil
-     | (_::t2) => Unknown::(empty_lscomp2 t2)
+     | (_::t2) => Unknown::(to_unknown t2)
   fun empty_table (CSP (vars,vals,rel)) = 
-    nil::(empty_lscomp1 (enum_from_to 1 vars) vals)
+    nil::(n_unknown (enum_from_to 1 vars) vals)
 
-  fun fill_lscomp2 ls varrr = 
+  fun to_pairs ls varrr = 
     case ls of 
          nil => nil
-       | valll::t2 => (varrr,valll)::(fill_lscomp2 t2 varrr)
+       | valll::t2 => (varrr,valll)::(to_pairs t2 varrr)
 
-  fun fill_lscomp1 ls vals = 
+  fun n_pairs ls n = 
     case ls of 
          nil => nil
        | varrr::t1 => 
-           (fill_lscomp2 (enum_from_to 1 vals) varrr) 
-           :: (fill_lscomp1 t1 vals)
+           (to_pairs (enum_from_to 1 n) varrr) 
+           :: (n_pairs t1 n)
 
   fun fill_table s (CSP (vars,vals,rel)) tbl = 
     case s of 
@@ -209,7 +201,7 @@ structure Constraints = struct
     zip_with 
     (fn (x,y) => zip_with f4 x y)
     tbl 
-    (fill_lscomp1 (enum_from_to (var_+1) vars) vals)
+    (n_pairs (enum_from_to (var_+1) vars) vals)
   end
 
   fun cache_checks csp tbl n = 

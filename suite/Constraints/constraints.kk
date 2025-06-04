@@ -158,19 +158,10 @@ fun collect(ls:list<conflictset>): div list<int64> {
     Cons(Unknown,_) -> Nil
 }
 
-fun wipe_lscomp(ls:list<list<conflictset>>): total list<list<conflictset>>{
-    match ls
-      Nil -> Nil
-      Cons(vs,t1) -> 
-        if all(vs,fn(x) known_conflict(x)) then
-          Cons(vs,wipe_lscomp(t1))
-        else
-          wipe_lscomp(t1)
-}
 
 fun domain_wipeout(csp:csp,t:node<((list<assign>,conflictset),list<list<conflictset>>)>): <div,exn> node<(list<assign>,conflictset)>{
   val f8 = fn(((as_,cs),tbl))
-    val wiped_domains = wipe_lscomp(tbl)
+    val wiped_domains = filter(tbl,fn(x) all(x,known_conflict))
     val cs_ = 
       if (is-empty(wiped_domains)) then
         cs
@@ -180,33 +171,33 @@ fun domain_wipeout(csp:csp,t:node<((list<assign>,conflictset),list<list<conflict
   map_tree(f8,t)
 }
 
-fun empt_lscomp2(ls:list<int64>): total list<conflictset>{
+fun to_unknown(ls:list<int64>): total list<conflictset>{
   match ls
     Nil -> Nil
-    Cons(_,t2) -> Cons(Unknown,empt_lscomp2(t2))
+    Cons(_,t2) -> Cons(Unknown,to_unknown(t2))
 }
 
-fun empt_lscomp1(ls:list<int64>,vals:int64): div list<list<conflictset>> {
+fun n_unknown(ls:list<int64>,n:int64): div list<list<conflictset>> {
   match ls 
     Nil -> Nil
-    Cons(_,t1) -> Cons(empt_lscomp2(enum_from_to(1.int64, vals)), empt_lscomp1(t1,vals))
+    Cons(_,t1) -> Cons(to_unknown(enum_from_to(1.int64, n)), n_unknown(t1,n))
 }
 
 fun empty_table(csp:csp): div list<list<conflictset>> {
   match csp
-    Csp(vars,vals,_) -> Cons(Nil,empt_lscomp1(enum_from_to(1.int64, vars), vals))
+    Csp(vars,vals,_) -> Cons(Nil,n_unknown(enum_from_to(1.int64, vars), vals))
 }
 
-fun fill_lscomp2(ls:list<int64>,varrr:int64): total list<(int64,int64)> {
+fun to_pairs(ls:list<int64>,varrr:int64): total list<(int64,int64)> {
   match ls 
     Nil -> Nil
-    Cons(valll,t2) -> Cons((varrr,valll),fill_lscomp2(t2,varrr))
+    Cons(valll,t2) -> Cons((varrr,valll),to_pairs(t2,varrr))
 }
 
-fun fill_lscomp1(ls:list<int64>,vals:int64) : div list<list<(int64,int64)>>{
+fun n_pairs(ls:list<int64>,vals:int64) : div list<list<(int64,int64)>>{
   match ls
     Nil -> Nil
-    Cons(varrr,t1) -> Cons(fill_lscomp2(enum_from_to(1.int64, vals), varrr), fill_lscomp1(t1,vals))
+    Cons(varrr,t1) -> Cons(to_pairs(enum_from_to(1.int64, vals), varrr), n_pairs(t1,vals))
 }
 
 fun fill_table(s:list<assign>,csp:csp,tbl:list<list<conflictset>>) : <div,exn> list<list<conflictset>> {
@@ -223,7 +214,7 @@ fun fill_table(s:list<assign>,csp:csp,tbl:list<list<conflictset>>) : <div,exn> l
                   Known(Cons(var_,Cons(varr,Nil)))
                 else
                   cs
-          zipwith(tbl,fill_lscomp1(enum_from_to(var_ + 1.int64,vars),vals),fn(x,y) -> zipwith(x,y,f4))
+          zipwith(tbl,n_pairs(enum_from_to(var_ + 1.int64,vars),vals),fn(x,y) -> zipwith(x,y,f4))
 }
 
 fun cache_checks(csp:csp,tbl:list<list<conflictset>>,n:node<list<assign>>): <div,exn> node<(list<assign>,list<list<conflictset>>)>{
@@ -248,10 +239,10 @@ fun init_tree(f:list<assign> -> div list<list<assign>>,x:list<assign>): div node
   Node(x,map(f(x),fn(y) -> init_tree(f,y)))
 }
 
-fun mk_lscomp1(ls:list<int64>,ss:list<assign>): total list<list<assign>> {
+fun to_assign(ls:list<int64>,ss:list<assign>): total list<list<assign>> {
   match ls 
     Nil -> Nil
-    Cons(j,t1) -> Cons(Cons(Assign(max_level(ss) + 1.int64, j), ss), mk_lscomp1(t1,ss))
+    Cons(j,t1) -> Cons(Cons(Assign(max_level(ss) + 1.int64, j), ss), to_assign(t1,ss))
 }
 
 fun mk_tree(csp:csp) : div node<list<assign>> {
@@ -259,7 +250,7 @@ fun mk_tree(csp:csp) : div node<list<assign>> {
     Csp(vars,vals,_) -> 
       val next = fn(ss) 
         if (max_level(ss) < vars) then 
-          mk_lscomp1(enum_from_to(1.int64,vals),ss)
+          to_assign(enum_from_to(1.int64,vals),ss)
         else
           Nil
       init_tree(next,Nil)
