@@ -32,38 +32,31 @@ def condition(thirywelvn:List[Int]) : Bool = {
   }
 }
 
-def add_lscomp(p1:List[List[Int]],k:Int): List[List[Int]] = { 
+def push_k(p1:List[List[Int]],k:Int): List[List[Int]] = { 
   p1 match{
     case Nil() => Nil()
-    case Cons(h1,t1) => Cons(Cons(k,h1),add_lscomp(t1,k))
+    case Cons(h1,t1) => Cons(Cons(k,h1),push_k(t1,k))
   }
 }
 
 def addj(j:Int,ls:List[Int]) : List[List[Int]] = {
   ls match{
     case Nil() => Cons(Cons(j,Nil()),Nil())
-    case Cons(k,ks) => Cons(Cons(j,Cons(k,ks)),add_lscomp(addj(j,ks),k))
+    case Cons(k,ks) => Cons(Cons(j,Cons(k,ks)),push_k(addj(j,ks),k))
   }
 }
 
-def perm_lscomp2(p2:List[List[Int]],t1:List[List[Int]],j:Int) : List[List[Int]] = {
-  p2 match{
-    case Nil() => perm_lscomp1(t1,j)
-    case Cons(r,t2) => Cons(r,perm_lscomp2(t2,t1,j))
-  }
-}
-
-def perm_lscomp1(p1:List[List[Int]],j:Int) : List[List[Int]] = { 
+def addj_lsg(p1:List[List[Int]],j:Int) : List[List[Int]] = { 
   p1 match {
     case Nil() => Nil()
-    case Cons(pjs,t1) => perm_lscomp2(addj(j,pjs),t1,j)
+    case Cons(pjs,t1) => list::append(addj(j,pjs),addj_lsg(t1,j))
   }
 }
 
 def permutations(ls:List[Int]) : List[List[Int]] = {
   ls match {
     case Nil() => Cons(Nil(),Nil())
-    case Cons(j,js) => perm_lscomp1(permutations(js),j)
+    case Cons(j,js) => addj_lsg(permutations(js),j)
   }
 }
 

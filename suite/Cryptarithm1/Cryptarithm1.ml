@@ -16,19 +16,15 @@ let rec addj j ls =
     | [] -> (j::[])::[]
     | k::ks -> (j::k::ks) :: (List.map (fun h1 -> k::h1) (addj j ks))
 
-let rec perm_lscomp1 p1 j = 
+let rec addj_lsg p1 j = 
   match p1 with 
     | [] -> []
-    | pjs::t1 -> perm_lscomp2 (addj j pjs) t1 j
-and perm_lscomp2 p2 t1 j = 
-  match p2 with 
-    | [] -> perm_lscomp1 t1 j
-    | r::t2 -> r::perm_lscomp2 t2 t1 j
+    | pjs::t1 -> List.append (addj j pjs) (addj_lsg t1 j)
 
 let rec permutations ls = 
   match ls with 
     | [] -> []::[]
-    | j::js -> perm_lscomp1 (permutations js) j
+    | j::js -> addj_lsg (permutations js) j
 
 let test_cryptarithm_nofib n = 
   List.map (fun i -> 

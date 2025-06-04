@@ -19,19 +19,15 @@ structure Cryptarithm1 = struct
          nil => (j::nil)::nil
        | k::ks => (j::k::ks)::(map (fn h1 => k::h1) (addj j ks))
 
-  fun perm_lscomp1 p1 j = 
+  fun addj_ls p1 j = 
     case p1 of 
          nil => nil
-       | pjs::t1 => perm_lscomp2 (addj j pjs) t1 j
-  and perm_lscomp2 p2 t1 j = 
-  case p2 of 
-       nil => perm_lscomp1 t1 j 
-     | r::t2 => r::(perm_lscomp2 t2 t1 j)
+       | pjs::t1 => (addj j pjs) @ (addj_ls t1 j)
 
   fun permutations ls = 
     case ls of 
          nil => nil::nil
-       | j::js => perm_lscomp1 (permutations js) j
+       | j::js => addj_ls (permutations js) j
 
   fun test_cryptarithm_nofib n = 
     map (fn i => 

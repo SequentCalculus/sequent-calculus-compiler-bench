@@ -10,34 +10,28 @@ fun enum_from_to(from:int64,to:int64): div list<int64>{
     Nil
 }
 
-fun add_lscomp(p1:list<list<int64>>,k:int64): total list<list<int64>>{
+fun push_k(p1:list<list<int64>>,k:int64): total list<list<int64>>{
   match p1
     Nil -> Nil
-    Cons(h1,t1) -> Cons(Cons(k,h1),add_lscomp(t1,k))
+    Cons(h1,t1) -> Cons(Cons(k,h1),push_k(t1,k))
 }
 
 fun addj(j:int64,ls:list<int64>): total list<list<int64>>{
   match ls
     Nil -> Cons(Cons(j,Nil),Nil)
-    Cons(k,ks) -> Cons(Cons(j,Cons(k,ks)),add_lscomp(addj(j,ks),k))
+    Cons(k,ks) -> Cons(Cons(j,Cons(k,ks)),push_k(addj(j,ks),k))
 }
 
-fun perm_lscomp2(p2:list<list<int64>>,t1:list<list<int64>>,j:int64): div list<list<int64>>{
-  match p2
-    Nil -> perm_lscomp1(t1,j)
-    Cons(r,t2) -> Cons(r,perm_lscomp2(t2,t1,j))
-}
-
-fun perm_lscomp1(p1:list<list<int64>>,j:int64): div list<list<int64>>{
+fun addj_ls(p1:list<list<int64>>,j:int64): div list<list<int64>>{
   match p1 
     Nil -> Nil
-    Cons(pjs,t1) -> perm_lscomp2(addj(j,pjs),t1,j)
+    Cons(pjs,t1) -> append(addj(j,pjs),addj_ls(t1,j))
 }
 
 fun permutations(ls:list<int64>): div list<list<int64>>{
   match ls
     Nil -> Cons(Nil,Nil)
-    Cons(j,js) -> perm_lscomp1(permutations(js),j)
+    Cons(j,js) -> addj_ls(permutations(js),j)
 }
 
 fun expand(a:int64,b:int64,c:int64,d:int64,e:int64,f:int64) : total int64{

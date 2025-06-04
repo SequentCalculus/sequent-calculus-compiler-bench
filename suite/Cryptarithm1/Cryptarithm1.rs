@@ -45,6 +45,16 @@ impl<A> List<A> {
         }
     }
 
+    fn append(self, other: List<A>) -> List<A>
+    where
+        A: Clone,
+    {
+        match self {
+            List::Nil => other,
+            List::Cons(a, as_) => List::Cons(a, Rc::new(Rc::unwrap_or_clone(as_).append(other))),
+        }
+    }
+
     fn filter(self, f: &impl Fn(&A) -> bool) -> List<A>
     where
         A: Clone,
@@ -104,12 +114,12 @@ fn condition(thirywelvn: &List<i64>) -> bool {
     expand(t, h, i, r, t, y) + 5 * expand(t, w, e, l, v, e) == expand(n, i, n, e, t, y)
 }
 
-fn add_lscomp(p1: List<List<i64>>, k: i64) -> List<List<i64>> {
+fn push_k(p1: List<List<i64>>, k: i64) -> List<List<i64>> {
     match p1 {
         List::Nil => List::Nil,
         List::Cons(h1, t1) => List::Cons(
             List::Cons(k, Rc::new(h1)),
-            Rc::new(add_lscomp(Rc::unwrap_or_clone(t1), k)),
+            Rc::new(push_k(Rc::unwrap_or_clone(t1), k)),
         ),
     }
 }
@@ -119,29 +129,22 @@ fn addj(j: i64, ls: List<i64>) -> List<List<i64>> {
         List::Nil => List::Cons(List::Cons(j, Rc::new(List::Nil)), Rc::new(List::Nil)),
         List::Cons(k, ks) => List::Cons(
             List::Cons(j, Rc::new(List::Cons(k, ks.clone()))),
-            Rc::new(add_lscomp(addj(j, Rc::unwrap_or_clone(ks)), k)),
+            Rc::new(push_k(addj(j, Rc::unwrap_or_clone(ks)), k)),
         ),
     }
 }
 
-fn perm_lscomp2(p2: List<List<i64>>, t1: List<List<i64>>, j: i64) -> List<List<i64>> {
-    match p2 {
-        List::Nil => perm_lscomp1(t1, j),
-        List::Cons(r, t2) => List::Cons(r, Rc::new(perm_lscomp2(Rc::unwrap_or_clone(t2), t1, j))),
-    }
-}
-
-fn perm_lscomp1(p1: List<List<i64>>, j: i64) -> List<List<i64>> {
+fn addj_ls(p1: List<List<i64>>, j: i64) -> List<List<i64>> {
     match p1 {
         List::Nil => List::Nil,
-        List::Cons(pjs, t1) => perm_lscomp2(addj(j, pjs), Rc::unwrap_or_clone(t1), j),
+        List::Cons(pjs, t1) => addj(j, pjs).append(addj_ls(Rc::unwrap_or_clone(t1), j)),
     }
 }
 
 fn permutations(ls: List<i64>) -> List<List<i64>> {
     match ls {
         List::Nil => List::Cons(List::Nil, Rc::new(List::Nil)),
-        List::Cons(j, ls) => perm_lscomp1(permutations(Rc::unwrap_or_clone(ls)), j),
+        List::Cons(j, ls) => addj_ls(permutations(Rc::unwrap_or_clone(ls)), j),
     }
 }
 

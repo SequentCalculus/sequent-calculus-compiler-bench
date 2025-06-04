@@ -18,8 +18,8 @@
 | Sudan                 | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         |
 | Cpstak                | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         | 
 | IterateIncrement      | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         |
-| SudanGoto             | ✔️ | N/A  | ✔️  | ✔️    | ✔️     |       | ✔️    |            |
-| Cryptarithm1          | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            |
+| SudanGoto             | ✔️ | N/A  | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         |
+| Cryptarithm1          | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         |
 | Lcss                  | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            | 
 | SumRange              | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            | 
 | Deriv                 | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            | Rust version significantly slower |
