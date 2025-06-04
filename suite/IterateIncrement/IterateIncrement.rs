@@ -1,19 +1,17 @@
 fn iterate(i: i64, f: &dyn Fn(i64) -> i64, a: i64) -> i64 {
-    if i == 0 {
-        a
-    } else {
-        iterate(i - 1, f, f(a))
+    let mut res = a;
+    for _ in 0..i {
+        res = f(a)
     }
+    res
 }
 
-fn main_loop(iters: u64, n: i64) -> i64 {
-    let res = iterate(n, &|x| x + 1, 0);
-    if iters == 1 {
-        println!("{}", res);
-        0
-    } else {
-        main_loop(iters - 1, n)
+fn main_loop(iters: u64, n: i64) {
+    let mut res = iterate(n, &|x| x + 1, 0);
+    for _ in 1..iters {
+        res = iterate(n, &|x| x + 1, 0);
     }
+    println!("{}", res);
 }
 
 fn main() {
@@ -29,5 +27,5 @@ fn main() {
         .expect("Missing Argument n")
         .parse::<i64>()
         .expect("n must be a number");
-    std::process::exit(main_loop(iters, n) as i32)
+    main_loop(iters, n)
 }
