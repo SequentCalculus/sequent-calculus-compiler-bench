@@ -9,14 +9,12 @@ fn sudan(n: u64, x: u64, y: u64) -> u64 {
     }
 }
 
-fn main_loop(iters: u64, n: u64, x: u64, y: u64) -> i64 {
-    let res = sudan(n, x, y);
-    if iters == 1 {
-        println!("{}", res);
-        0
-    } else {
-        main_loop(iters - 1, n, x, y)
+fn main_loop(iters: u64, n: u64, x: u64, y: u64) {
+    let mut res = sudan(n, x, y);
+    for _ in 1..iters {
+        res = sudan(n, x, y);
     }
+    println!("{}", res);
 }
 
 fn main() {
@@ -43,5 +41,5 @@ fn main() {
         .parse::<u64>()
         .expect("y must be a number");
 
-    std::process::exit(main_loop(iters, n, x, y) as i32)
+    main_loop(iters, n, x, y)
 }
