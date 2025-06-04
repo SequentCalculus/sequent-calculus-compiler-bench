@@ -42,22 +42,23 @@ fun gcd_e(x:int64,y:int64): div (int64,int64,int64){
     g((1.int64, 0.int64, x),(0.int64, 1.int64, y))
 }
 
-fun test_lscomp2(p2:list<int64>,t1:list<int64>,ms:list<int64>,h1:int64): div list<(int64,int64)>{
-  match p2
-    Nil -> test_lscomp1(t1,ms)
-    Cons(h2,t2) -> Cons((h1,h2),test_lscomp2(t2,t1,ms,h1))
-  }
+fun to_pair(i:int64,l:list<int64>) : total list<(int64,int64)>{
+  match l
+    Nil -> Nil
+    Cons(j,js) -> Cons((i,j),to_pair(i,js))
+}
 
-fun test_lscomp1(p1:list<int64>,ms:list<int64>): div list<(int64,int64)> { 
+fun cartesian_product(p1:list<int64>,m1:list<int64>): list<(int64,int64)> {
   match p1
     Nil -> Nil
-    Cons(h1,t1) -> test_lscomp2(ms,t1,ms,h1)
+    Cons(h1,t1) -> append(to_pair(h1,m1),cartesian_product(t1,m1))
 }
+
 
 fun test(d:int64): <div,exn> int64{
   val ns = enum_from_to(5000.int64, 5000.int64 + d)
   val ms = enum_from_to(10000.int64, 10000.int64 + d)
-  val tripls = map(test_lscomp1(ns,ms),fn((x,y)) (x,y,gcd_e(x,y)))
+  val tripls = map(cartesian_product(ns,ms),fn((x,y)) (x,y,gcd_e(x,y)))
   val rs = map(tripls,fn((_,_,(gg,u,v))) abs((gg + u) + v))
   max_(rs)
 }

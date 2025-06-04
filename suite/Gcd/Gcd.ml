@@ -21,19 +21,20 @@ let rec g (u1,u2,u3) (v1,v2,v3) =
 let gcd_e x y =
   if x=0 then (y,0,1) else g (1,0,x) (0,1,y)
 
-let rec test_lscomp2 p2 t1 ms h1 = 
-  match p2 with 
-    | [] -> test_lscomp1 t1 ms
-    | h2::t2 -> (h1,h2) :: test_lscomp2 t2 t1 ms h1
-and test_lscomp1 p1 ms = 
-  match p1 with 
+let rec to_pair i l = 
+  match l with
     | [] -> []
-    | h1::t1 -> test_lscomp2 ms t1 ms h1
+    | j::js -> (i,j)::(to_pair i js)
+
+let rec cartesian_product p1 m1 = 
+  match p1 with 
+    | [] -> [] 
+    | h1::t1 -> List.append (to_pair h1 m1) (cartesian_product t1 m1)
 
 let test d =
   let ns = enum_from_to 5000 (5000+d) in 
   let ms = enum_from_to 10000 (10000+d) in 
-  let tripls = List.map (fun (x,y) -> (x,y,gcd_e x y)) (test_lscomp1 ns ms) in 
+  let tripls = List.map (fun (x,y) -> (x,y,gcd_e x y)) (cartesian_product ns ms) in 
   let rs = List.map (fun (d1,d2,(gg,u,v)) -> abs (gg+u+v)) tripls in 
   max rs 
 

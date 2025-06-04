@@ -27,20 +27,22 @@ structure Gcd = struct
   fun gcd_e x y = 
     if x=0 then (y,0,1) else g (1,0,x) (0,1,y)
 
-  fun test_lscomp2 p2 t1 ms h1 = 
-    case p2 of 
-         nil => test_lscomp1 t1 ms
-       | h2::t2 => (h1,h2) :: (test_lscomp2 t2 t1 ms h1)
-  and test_lscomp1 p1 ms = 
-  case p1 of 
-       nil => nil
-     | h1::t1 => test_lscomp2 ms t1 ms h1
+  fun to_pair i ls = 
+    case ls of 
+         nil => nil
+       | j::js => (i,j)::(to_pair i js)
+
+  fun cartesian_product p1 ms = 
+    case p1 of 
+         nil => nil
+       | h1::t1 => (to_pair h1 ms) @ (cartesian_product t1 ms)
+
 
   fun test d = 
   let val ns = enum_from_to 5000 (5000+d)
     val ms = enum_from_to 10000 (10000+d)
     val tripls = 
-      map (fn (x,y) => (x,y,gcd_e x y)) (test_lscomp1 ns ms)
+      map (fn (x,y) => (x,y,gcd_e x y)) (cartesian_product ns ms)
     val rs = 
       map (fn (d1,d2,(gg,u,v)) => abs (gg+u+v)) tripls
       in 

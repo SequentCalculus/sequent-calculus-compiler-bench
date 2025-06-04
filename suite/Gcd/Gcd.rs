@@ -7,6 +7,16 @@ enum List<A> {
 }
 
 impl<A> List<A> {
+    fn append(self, other: List<A>) -> List<A>
+    where
+        A: Clone,
+    {
+        match self {
+            List::Nil => other,
+            List::Cons(a, as_) => List::Cons(a, Rc::new(Rc::unwrap_or_clone(as_).append(other))),
+        }
+    }
+
     fn from_iterator<T>(t: T) -> List<A>
     where
         T: Iterator<Item = A>,
@@ -70,20 +80,19 @@ fn gcd_e(x: i64, y: i64) -> (i64, i64, i64) {
     }
 }
 
-fn lscomp2(p2: List<i64>, t1: List<i64>, ms: List<i64>, h1: i64) -> List<(i64, i64)> {
-    match p2 {
-        List::Nil => lscomp1(t1, ms),
-        List::Cons(h2, t2) => List::Cons(
-            (h1, h2),
-            Rc::new(lscomp2(Rc::unwrap_or_clone(t2), t1, ms, h1)),
-        ),
+fn to_pair(i: i64, l: List<i64>) -> List<(i64, i64)> {
+    match l {
+        List::Nil => List::Nil,
+        List::Cons(j, js) => List::Cons((i, j), Rc::new(to_pair(i, Rc::unwrap_or_clone(js)))),
     }
 }
 
-fn lscomp1(p1: List<i64>, ms: List<i64>) -> List<(i64, i64)> {
+fn cartesian_product(p1: List<i64>, m1: List<i64>) -> List<(i64, i64)> {
     match p1 {
         List::Nil => List::Nil,
-        List::Cons(h1, t1) => lscomp2(ms.clone(), Rc::unwrap_or_clone(t1), ms, h1),
+        List::Cons(h1, t1) => {
+            to_pair(h1, m1.clone()).append(cartesian_product(Rc::unwrap_or_clone(t1), m1))
+        }
     }
 }
 
@@ -91,19 +100,17 @@ fn test_gcd_nofib(d: i64) -> i64 {
     let ns: List<i64> = List::from_iterator(5000..=(5000 + d));
     let ms: List<i64> = List::from_iterator(10000..=(10000 + d));
     let tripls: List<(i64, i64, (i64, i64, i64))> =
-        lscomp1(ns, ms).map(&|(x, y)| (x, y, gcd_e(x, y)));
+        cartesian_product(ns, ms).map(&|(x, y)| (x, y, gcd_e(x, y)));
     let rs: List<i64> = tripls.map(&|(_, _, (gg, u, v))| (gg + u + v).abs());
     rs.max()
 }
 
-fn main_loop(iters: u64, n: i64) -> i64 {
-    let res = test_gcd_nofib(n);
-    if iters == 1 {
-        println!("{}", res);
-        0
-    } else {
-        main_loop(iters - 1, n)
+fn main_loop(iters: u64, n: i64) {
+    let mut res = test_gcd_nofib(n);
+    for _ in 1..iters {
+        res = test_gcd_nofib(n);
     }
+    println!("{}", res);
 }
 
 fn main() {
@@ -119,5 +126,5 @@ fn main() {
         .expect("Missing Argument n")
         .parse::<i64>()
         .expect("n must be a number");
-    std::process::exit(main_loop(iters, n) as i32)
+    main_loop(iters, n)
 }
