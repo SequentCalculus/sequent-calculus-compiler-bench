@@ -106,13 +106,12 @@ fn f(n: u64, perms: List<List<u64>>, x: List<u64>) -> (List<List<u64>>, List<u64
 }
 
 fn loop_p(j: u64, perms: List<List<u64>>, x: List<u64>, n: u64) -> (List<List<u64>>, List<u64>) {
-    if j == 0 {
-        p(n - 1, perms, x)
-    } else {
-        let (perms, x) = p(n - 1, perms, x);
-        let (perms, x) = f(n, perms, x);
-        loop_p(j - 1, perms, x, n)
+    let (mut perms, mut x) = p(n - 1, perms, x);
+    for _ in 0..j {
+        (perms, x) = p(n - 1, perms, x);
+        (perms, x) = f(n, perms, x);
     }
+    (perms, x)
 }
 
 fn p(n: u64, perms: List<List<u64>>, x: List<u64>) -> (List<List<u64>>, List<u64>) {
@@ -137,12 +136,11 @@ fn loop_run(
     work: &impl Fn() -> List<List<u64>>,
     result: &impl Fn(List<List<u64>>) -> bool,
 ) -> bool {
-    let res = result(work());
-    if iters == 0 {
-        res
-    } else {
-        loop_run(iters - 1, work, result)
+    let mut res = result(work());
+    for _ in 0..iters {
+        res = result(work());
     }
+    res
 }
 
 fn run_benchmark(
@@ -153,12 +151,11 @@ fn run_benchmark(
     loop_run(iters, work, result)
 }
 
-fn loop_work(m: u64, perms: List<List<u64>>) -> List<List<u64>> {
-    if m == 0 {
-        perms
-    } else {
-        loop_work(m - 1, permutations(perms.head()))
+fn loop_work(m: u64, mut perms: List<List<u64>>) -> List<List<u64>> {
+    for _ in 0..m {
+        perms = permutations(perms.head())
     }
+    perms
 }
 
 fn factorial(n: u64) -> u64 {
@@ -179,14 +176,12 @@ fn perm9(m: u64, n: u64) -> bool {
     )
 }
 
-fn main_loop(iters: u64, m: u64, n: u64) -> i64 {
-    let res = perm9(m, n);
-    if iters == 1 {
-        println!("{}", if res { 1 } else { 0 });
-        0
-    } else {
-        main_loop(iters - 1, n, m)
+fn main_loop(iters: u64, m: u64, n: u64) {
+    let mut res = perm9(m, n);
+    for _ in 1..iters {
+        res = perm9(m, n);
     }
+    println!("{}", if res { 1 } else { 0 });
 }
 
 fn main() {
@@ -207,5 +202,5 @@ fn main() {
         .expect("Missing Argument n")
         .parse::<u64>()
         .expect("m must be a number");
-    std::process::exit(main_loop(iters, m, n) as i32)
+    main_loop(iters, m, n)
 }

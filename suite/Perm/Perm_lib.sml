@@ -7,15 +7,15 @@ structure Perm = struct
   fun factorial n = 
     if n=1 then 1 else n*(factorial (n-1))
 
-  fun loop_sum2 y sum = 
-    if null y then sum else 
-      loop_sum2 (tl y) (sum + (hd y))
+  fun loop_sum y = 
+    case y of
+       [] => 0
+      | is::iss => is + (loop_sum iss)
 
-  fun loop_sum1 x sum = 
-    if null x then sum else 
-      loop_sum1 (tl x) (loop_sum2 (hd x) sum)
-
-  fun sumlists x = loop_sum1 x 0
+  fun sumlists x = 
+    case x of
+       [] => 0
+      | is::iss => (loop_sum is) + (sumlists iss)
 
   fun list_tail x n = 
     if n=0 then x else list_tail (tl x) (n-1)

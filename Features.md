@@ -10,7 +10,7 @@
 | Nqueens               | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         |
 | Boyer                 | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         |
 | Fish                  | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         |         
-| Perm                  | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            | Rust version significantly faster |
+| Perm                  | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         | Rust version significantly faster |
 | Gcd                   | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            |
 | Primes                | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            | 
 | Constraints           | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            |

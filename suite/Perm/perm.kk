@@ -44,20 +44,17 @@ fun permutations(x0:list<int64>): <div,exn> list<list<int64>>{
   final_perms
 }
 
-fun loop_sum2(y:list<int64>,sum:int64): total int64{
-  match y
-    Nil -> sum
-    Cons(h,t) -> loop_sum2(t,sum + h)
-}
 
-fun loop_sum1(x:list<list<int64>>,sum:int64): total int64{
-  match x
-    Nil -> sum
-    Cons(h,t) -> loop_sum1(t,loop_sum2(h,sum))
+fun loop_sum(y:list<int64>): total int64 {
+  match y 
+    Nil -> 0.int64
+    Cons(i,is) -> i + loop_sum(is)
 }
 
 fun sumlists(x:list<list<int64>>): total int64{
-  loop_sum1(x,0.int64)
+  match x
+     Nil -> 0.int64
+     Cons(is,iss) -> loop_sum(is) + sumlists(iss)
 }
 
 fun loop_one2n(n:int64,p:list<int64>): div list<int64>{

@@ -6,15 +6,13 @@ let rec loop_one2n n p =
 
 let one2n n = loop_one2n n []
 
-let rec loop_sum2 y sum = 
-  if List.is_empty y then sum
-  else loop_sum2 (List.tl y) (sum+ (List.hd y))
+let rec loop_sum y = match y with 
+  | [] -> 0 
+  | i::is -> i + (loop_sum is)
 
-let rec loop_sum1 x sum = 
-  if List.is_empty x then sum 
-  else loop_sum1 (List.tl x) (loop_sum2 (List.hd x) sum)
-
-let sumlists x = loop_sum1 x 0
+let rec sumlists x = match x with
+  | [] -> 0
+  | is::iss -> (loop_sum is) + (sumlists iss)
 
 let rec rev_loop x n y = 
   if n=0 then y else 

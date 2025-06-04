@@ -37,22 +37,18 @@ def length[A](ls:List[A]) : Int = {
   }
 }
 
-def loop_sum2(y:List[Int],sum:Int) : Int = {
+def loop_sum(y:List[Int]): Int = {
   y match{
-    case Nil() => sum
-    case Cons(hd,tl) => loop_sum2(tl,sum + hd)
-  }
-}
-
-def loop_sum1(x:List[List[Int]],sum:Int) : Int = {
-  x match{
-    case Nil() => sum
-    case Cons(hd,tl) => loop_sum1(tl,loop_sum2(hd,sum))
+    case Nil() => 0
+    case Cons(i,is_) => i + loop_sum(is_)
   }
 }
 
 def sumlists(x:List[List[Int]]) : Int = {  
-  loop_sum1(x,0)
+  x match {
+    case Nil() => 0
+    case Cons(is_,iss) => loop_sum(is_) + sumlists(iss)
+  }
 }
 
 def loop_one2n(n:Int,p:List[Int]) : List[Int] ={

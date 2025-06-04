@@ -4,12 +4,6 @@ data List[A] { Nil, Cons(a: A, as: List[A]) }
 data Pair[A, B] { Tup(a: A, b: B) }
 codata Fun[A, B] { Apply(a: A): B }
 
-def empty_i(l: List[i64]): Bool {
-  l.case[i64] {
-    Nil => True,
-    Cons(i, is) => False
-  }
-}
 
 def tail_i(l: List[i64]): List[i64] {
   l.case[i64] {
@@ -36,19 +30,6 @@ def len_i(l: List[i64]): i64 {
   len_i_loop(l, 0)
 }
 
-def empty_l(l: List[List[i64]]): Bool {
-  l.case[List[i64]] {
-    Nil => True,
-    Cons(is, iss) => False
-  }
-}
-
-def tail_l(l: List[List[i64]]): List[List[i64]] {
-  l.case[List[i64]] {
-    Nil => Nil, //should give a runtime error
-    Cons(is, iss) => iss
-  }
-}
 
 def head_l(l: List[List[i64]]): List[i64] {
   l.case[List[i64]] {
@@ -108,22 +89,18 @@ def permutations(x0: List[i64]): List[List[i64]] {
   }
 }
 
-def loop_sum2(y: List[i64], sum: i64): i64 {
-  empty_i(y).case {
-    True => sum,
-    False => loop_sum2(tail_i(y), sum + head_i(y))
-  }
-}
-
-def loop_sum1(x: List[List[i64]], sum: i64): i64 {
-  empty_l(x).case {
-    True => sum,
-    False => loop_sum1(tail_l(x), loop_sum2(head_l(x), sum))
+def loop_sum(y: List[i64]): i64 {
+  y.case[i64]{
+    Nil => 0,
+    Cons(i,is) => 1+loop_sum(is)
   }
 }
 
 def sumlists(x: List[List[i64]]): i64 {
-  loop_sum1(x, 0)
+  x.case[List[i64]]{
+    Nil => 0,
+    Cons(is,iss) => loop_sum(is) + sumlists(iss)
+  }
 }
 
 def loop_one2n(n: i64, p: List[i64]): List[i64] {
