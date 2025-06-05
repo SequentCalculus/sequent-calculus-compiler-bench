@@ -7,27 +7,19 @@ def tail(x:List[Int]) : List[Int] = {
   }
 }
 
-def len_loop(l:List[Int],acc:Int) : Int = {
-  l match{
-    case Nil() => acc
-    case Cons(_,xs) => len_loop(xs,acc + 1)
-  }
-}
-
 def len(l:List[Int]) : Int = {
-  len_loop(l,0)
-}
-
-def list_n_loop(n:Int,a:List[Int]) : List[Int] = {
-  if (n==0){
-    a
-  }else{
-    list_n_loop(n - 1,Cons(n,a))
+  l match{
+    case Nil() => 0
+    case Cons(_,xs) => 1 + len(xs)
   }
 }
 
 def list_n(n:Int) : List[Int] = {
-  list_n_loop(n,Nil())
+  if (n==0){
+    Nil()
+  }else{
+    Cons(n,list_n(n - 1))
+  }
 }
 
 def shorterp(x:List[Int],y:List[Int]) :Bool = {

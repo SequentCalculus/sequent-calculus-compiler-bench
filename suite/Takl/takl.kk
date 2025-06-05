@@ -3,15 +3,11 @@ module takl
 import std/os/env
 import std/num/int64
 
-fun list_n_loop(n:int64,a:list<int64>): div list<int64>{
-  if n == 0.int64 then
-    a 
-  else 
-    list_n_loop(n - 1.int64,Cons(n,a))
-}
-
 fun list_n(n:int64): div list<int64>{
-  list_n_loop(n,Nil)
+  if n == 0.int64 then
+    Nil
+  else 
+    Cons(n,list_n(n - 1.int64))
 }
 
 fun shorterp(x:list<int64>,y:list<int64>): div bool{

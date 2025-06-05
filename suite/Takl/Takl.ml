@@ -1,7 +1,5 @@
-let rec list_n_loop n a = 
-  if n=0 then a else list_n_loop (n-1) (n::a)
-
-let list_n n = list_n_loop n []
+let rec list_n n = 
+  if n=0 then [] else n :: (list_n (n-1))
 
 let rec shorterp x y = 
   if List.is_empty y then false 

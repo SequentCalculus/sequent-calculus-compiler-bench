@@ -30,11 +30,11 @@
 | Tak                   | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         | 
 | EraseUnused           | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         |
 | MatchOptions          | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         | Rust version significantly faster |
-| TakGoto               | ✔️ | N/A  | ✔️  | ✔️    | ✔️     |       | ✔️    |            | 
-| Evenodd               | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            | 
-| EvenoddGoto           | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            |
-| Merge                 | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            | Rust version about 10x slower |
-| Takl                  | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            | 
+| TakGoto               | ✔️ | N/A  | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         | 
+| Evenodd               | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         | 
+| EvenoddGoto           | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         |
+| Merge                 | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         | Rust version about 10x slower |
+| Takl                  | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         | 
 | Minimax               | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            | 
 | FactorialAccumulator  | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            | 
 | Motzkin               | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            | 

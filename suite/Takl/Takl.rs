@@ -35,14 +35,10 @@ impl<A> List<A> {
 
 impl List<u64> {
     fn n(n: u64) -> List<u64> {
-        List::n_loop(n, List::Nil)
-    }
-
-    fn n_loop(n: u64, a: List<u64>) -> List<u64> {
         if n == 0 {
-            a
+            List::Nil
         } else {
-            List::n_loop(n - 1, List::Cons(n, Rc::new(a)))
+            List::Cons(n, Rc::new(List::n(n - 1)))
         }
     }
 }
@@ -59,14 +55,12 @@ fn mas(x: List<u64>, y: List<u64>, z: List<u64>) -> List<u64> {
     }
 }
 
-fn main_loop(iters: u64, x: u64, y: u64, z: u64) -> i64 {
-    let res = mas(List::n(x), List::n(y), List::n(z)).len();
-    if iters == 1 {
-        println!("{}", res);
-        0
-    } else {
-        main_loop(iters - 1, x, y, z)
+fn main_loop(iters: u64, x: u64, y: u64, z: u64) {
+    let mut res = mas(List::n(x), List::n(y), List::n(z)).len();
+    for _ in 1..iters {
+        res = mas(List::n(x), List::n(y), List::n(z)).len();
     }
+    println!("{}", res);
 }
 
 fn main() {
@@ -93,5 +87,5 @@ fn main() {
         .parse::<u64>()
         .expect("z must be a number");
 
-    std::process::exit(main_loop(iters, x, y, z) as i32)
+    main_loop(iters, x, y, z)
 }
