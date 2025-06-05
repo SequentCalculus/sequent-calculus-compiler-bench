@@ -1,7 +1,7 @@
 import args 
 
 def sum(start:Int,stop:Int) { f:Int=>Int} : Int = {
-  if (stop<1){ 
+  if (start > stop ){ 
     0
   }else{
     f(start) + sum(start + 1,stop) { f }

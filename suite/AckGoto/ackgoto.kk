@@ -28,7 +28,7 @@ fun main_loop(iters:int64,m:int64,n:int64) : <console,div> () {
       ctl ret(i) i
     ack(m,n)
   if iters==1.int64 then 
-    println("done")
+    println(res)
   else 
     main_loop(iters - 1.int64,m,n) 
 }
