@@ -35,9 +35,9 @@
 | EvenoddGoto           | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         |
 | Merge                 | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         | Rust version about 10x slower |
 | Takl                  | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         | 
-| Minimax               | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            | 
-| FactorialAccumulator  | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            | 
-| Motzkin               | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            | 
+| Minimax               | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         | 
+| FactorialAccumulator  | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         | 
+| Motzkin               | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         | 
  
 # Nofib
 

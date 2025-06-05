@@ -109,50 +109,10 @@ def rev(l: List[i64]): List[i64] {
   rev_acc(l, Nil)
 }
 
-def rev_i_board_acc(l: List[List[Option[Player]]], acc: List[List[Option[Player]]]): List[List[Option[Player]]] {
-  l.case[List[Option[Player]]] {
-    Nil => acc,
-    Cons(x, xs) => rev_i_board_acc(xs, Cons(x, acc))
-  }
-}
-
-def rev_i_board(l: List[List[Option[Player]]]): List[List[Option[Player]]] {
-  rev_i_board_acc(l, Nil)
-}
-
-def rev_board_tree_acc(
-  l: List[RoseTree[Pair[List[Option[Player]], i64]]],
-  acc: List[RoseTree[Pair[List[Option[Player]], i64]]]
-): List[RoseTree[Pair[List[Option[Player]], i64]]] {
-  l.case[RoseTree[Pair[List[Option[Player]], i64]]] {
-    Nil => acc,
-    Cons(x, xs) => rev_board_tree_acc(xs, Cons(x, acc))
-  }
-}
-
-def rev_board_tree(l: List[RoseTree[Pair[List[Option[Player]], i64]]]): List[RoseTree[Pair[List[Option[Player]], i64]]] {
-  rev_board_tree_acc(l, Nil)
-}
-
-def map_i_board_acc(l: List[i64], f: Fun[i64, List[Option[Player]]], acc: List[List[Option[Player]]]): List[List[Option[Player]]] {
-  l.case[i64] {
-    Nil => rev_i_board(acc),
-    Cons(x, xs) => map_i_board_acc(xs, f, Cons(f.Apply[i64, List[Option[Player]]](x), acc))
-  }
-}
-
 def map_i_board(l: List[i64], f: Fun[i64, List[Option[Player]]]): List[List[Option[Player]]] {
-  map_i_board_acc(l, f, Nil)
-}
-
-def map_board_tree_acc(
-  l: List[List[Option[Player]]],
-  f: Fun[List[Option[Player]], RoseTree[Pair[List[Option[Player]], i64]]],
-  acc: List[RoseTree[Pair[List[Option[Player]], i64]]]
-): List[RoseTree[Pair[List[Option[Player]], i64]]] {
-  l.case[List[Option[Player]]] {
-    Nil => rev_board_tree(acc),
-    Cons(x, xs) => map_board_tree_acc(xs, f, Cons(f.Apply[List[Option[Player]], RoseTree[Pair[List[Option[Player]], i64]]](x), acc))
+  l.case[i64] {
+    Nil => Nil,
+    Cons(x, xs) => Cons(f.Apply[i64, List[Option[Player]]](x), map_i_board(xs,f))
   }
 }
 
@@ -160,17 +120,9 @@ def map_board_tree(
   l: List[List[Option[Player]]],
   f: Fun[List[Option[Player]], RoseTree[Pair[List[Option[Player]], i64]]]
 ): List[RoseTree[Pair[List[Option[Player]], i64]]] {
-  map_board_tree_acc(l, f, Nil)
-}
-
-def map_tree_i_acc(
-  l: List[RoseTree[Pair[List[Option[Player]], i64]]],
-  f: Fun[RoseTree[Pair[List[Option[Player]], i64]], i64],
-  acc: List[i64]
-): List[i64] {
-  l.case[RoseTree[Pair[List[Option[Player]], i64]]] {
-    Nil => rev(acc),
-    Cons(x, xs) => map_tree_i_acc(xs, f, Cons(f.Apply[RoseTree[Pair[List[Option[Player]], i64]], i64](x), acc))
+  l.case[List[Option[Player]]] {
+    Nil => Nil,
+    Cons(x, xs) => Cons(f.Apply[List[Option[Player]], RoseTree[Pair[List[Option[Player]], i64]]](x), map_board_tree(xs,f))
   }
 }
 
@@ -178,7 +130,10 @@ def map_tree_i(
   l: List[RoseTree[Pair[List[Option[Player]], i64]]],
   f: Fun[RoseTree[Pair[List[Option[Player]], i64]], i64]
 ): List[i64] {
-  map_tree_i_acc(l, f, Nil)
+  l.case[RoseTree[Pair[List[Option[Player]], i64]]] {
+    Nil => Nil,
+    Cons(x, xs) => Cons(f.Apply[RoseTree[Pair[List[Option[Player]], i64]], i64](x), map_tree_i(xs,f))
+  }
 }
 
 def tabulate_loop(n: i64, len: i64, f: Fun[Unit, Option[Player]]): List[Option[Player]] {

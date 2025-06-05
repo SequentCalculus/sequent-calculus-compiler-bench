@@ -1,15 +1,11 @@
 import args 
 
-def sum_loop(i:Int,tot:Int,stop:Int) { f:Int=>Int } : Int = {
-  if (stop<i){
-    tot
-  }else{
-    sum_loop(i + 1, f(i) + tot, stop) {f}
-  }
-}
-
 def sum(start:Int,stop:Int) { f:Int=>Int} : Int = {
-  sum_loop(start,0,stop) { f }
+  if (stop<1){ 
+    0
+  }else{
+    f(start) + sum(start + 1,stop) { f }
+  }
 }
 
 def motz(n:Int) : Int = {

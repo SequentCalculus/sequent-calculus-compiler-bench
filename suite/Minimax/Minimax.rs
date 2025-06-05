@@ -326,14 +326,12 @@ fn minimax(p: Player, board: List<Option<Player>>) -> RoseTree<(List<Option<Play
     }
 }
 
-fn main_loop(iters: u64) -> i64 {
-    let res = minimax(Player::X, empty());
-    if iters == 1 {
-        println!("{}", res.top().1);
-        0
-    } else {
-        main_loop(iters - 1)
+fn main_loop(iters: u64) {
+    let mut res = minimax(Player::X, empty());
+    for _ in 1..iters {
+        res = minimax(Player::X, empty());
     }
+    println!("{}", res.top().1);
 }
 
 fn main() {
@@ -344,5 +342,5 @@ fn main() {
         .expect("Missing Argument iterations")
         .parse::<u64>()
         .expect("Iterations must be a number");
-    std::process::exit(main_loop(iters) as i32)
+    main_loop(iters)
 }

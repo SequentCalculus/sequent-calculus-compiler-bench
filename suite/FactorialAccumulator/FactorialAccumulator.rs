@@ -6,14 +6,12 @@ fn factorial(a: i64, i: i64) -> i64 {
     }
 }
 
-fn main_loop(iters: u64, n: i64) -> i64 {
-    let res = factorial(1, n);
-    if iters == 1 {
-        println!("{}", res);
-        0
-    } else {
-        main_loop(iters - 1, n)
+fn main_loop(iters: u64, n: i64) {
+    let mut res = factorial(1, n);
+    for _ in 1..iters {
+        res = factorial(1, n);
     }
+    println!("{}", res);
 }
 
 fn main() {
@@ -29,5 +27,5 @@ fn main() {
         .expect("Missing Argument n")
         .parse::<i64>()
         .expect("n must be a number");
-    std::process::exit(main_loop(iters, n) as i32)
+    main_loop(iters, n)
 }
