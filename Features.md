@@ -25,11 +25,11 @@
 | Deriv                 | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         | Rust version significantly slower |
 | Life                  | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         | 
 | TailFib               | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         | 
-| Divrec                | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            | 
-| LookupTree            | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            | Rust version about 10x slower | 
-| Tak                   | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    |            | 
-| EraseUnused           | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    |            |
-| MatchOptions          | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    |            | Rust version significantly faster |
+| Divrec                | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         | 
+| LookupTree            | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         | Rust version about 10x slower | 
+| Tak                   | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         | 
+| EraseUnused           | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         |
+| MatchOptions          | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         | Rust version significantly faster |
 | TakGoto               | ✔️ | N/A  | ✔️  | ✔️    | ✔️     |       | ✔️    |            | 
 | Evenodd               | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            | 
 | EvenoddGoto           | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            |

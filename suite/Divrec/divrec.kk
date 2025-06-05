@@ -3,15 +3,11 @@ module divrec
 import std/os/env
 import std/num/int64
 
-fun create_n_loop(n:int64,acc:list<()>): div list<()>{
-  if n == 0.int64 then 
-    acc 
-  else 
-    create_n_loop(n - 1.int64, Cons((),acc))
-}
-
 fun create_n(n:int64): div list<()> {
-  create_n_loop(n,Nil)
+  if n == 0.int64 then 
+    Nil 
+  else 
+    Cons((),create_n(n - 1.int64))
 }
 
 fun rec_div2(ls:list<()>): exn list<()>{

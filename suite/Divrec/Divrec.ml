@@ -1,10 +1,10 @@
 exception OddNumber 
 
-let rec create_n_loop n acc = 
-  if n=0 then acc
-  else create_n_loop (n-1) (()::acc)
-
-let create_n n = create_n_loop n []
+let rec create_n n = 
+  if n=0 then
+    [] 
+  else 
+    ()::(create_n (n - 1))
 
 let rec rec_div2 l =
   match l with 

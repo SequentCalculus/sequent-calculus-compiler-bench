@@ -11,18 +11,11 @@ impl<A> List<A> {
     where
         A: Default,
     {
-        List::create_n_loop(n, List::Nil)
-    }
-
-    fn create_n_loop(n: u64, acc: List<A>) -> List<A>
-    where
-        A: Default,
-    {
-        if n == 0 {
-            acc
-        } else {
-            List::create_n_loop(n - 1, List::Cons(A::default(), Rc::new(acc)))
+        let mut ls = List::Nil;
+        for _ in 0..n {
+            ls = List::Cons(A::default(), Rc::new(ls));
         }
+        ls
     }
 
     fn len(&self) -> usize {
@@ -43,14 +36,13 @@ fn rec_div2(l: List<()>) -> List<()> {
     }
 }
 
-fn main_loop(iters: u64, n: u64) -> i64 {
-    let res = rec_div2(List::create_n(n)).len();
-    if iters == 1 {
-        println!("{}", res);
-        0
-    } else {
-        main_loop(iters - 1, n)
+fn main_loop(iters: u64, n: u64) {
+    let mut res = rec_div2(List::create_n(n)).len();
+    for _ in 1..iters {
+        res = rec_div2(List::create_n(n)).len();
     }
+
+    println!("{}", res);
 }
 
 fn main() {
@@ -66,5 +58,5 @@ fn main() {
         .expect("Missing Argument n")
         .parse::<u64>()
         .expect("n must be a number");
-    std::process::exit(main_loop(iters, n) as i32)
+    main_loop(iters, n)
 }

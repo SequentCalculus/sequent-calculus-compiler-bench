@@ -6,14 +6,12 @@ fn tak(x: i64, y: i64, z: i64) -> i64 {
     }
 }
 
-fn main_loop(iters: u64, x: i64, y: i64, z: i64) -> i64 {
-    let res = tak(x, y, z);
-    if iters == 1 {
-        println!("{}", res);
-        0
-    } else {
-        main_loop(iters - 1, x, y, z)
+fn main_loop(iters: u64, x: i64, y: i64, z: i64) {
+    let mut res = tak(x, y, z);
+    for _ in 1..iters {
+        res = tak(x, y, z);
     }
+    println!("{}", res);
 }
 
 fn main() {
@@ -39,5 +37,5 @@ fn main() {
         .expect("Missing Argument z")
         .parse::<i64>()
         .expect("z must be a number");
-    std::process::exit(main_loop(iters, x, y, z) as i32)
+    main_loop(iters, x, y, z)
 }

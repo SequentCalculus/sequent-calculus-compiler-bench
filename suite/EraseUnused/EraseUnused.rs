@@ -22,14 +22,12 @@ fn useless(n: i64) -> i64 {
     i
 }
 
-fn main_loop(iters: u64, n: i64) -> i64 {
-    for i in 0..=iters {
-        let res = useless(n);
-        if i == iters {
-            println!("{}", res);
-        }
+fn main_loop(iters: u64, n: i64) {
+    let mut res = useless(n);
+    for _ in 0..=iters {
+        res = useless(n);
     }
-    0
+    println!("{}", res);
 }
 
 fn main() {
@@ -45,5 +43,5 @@ fn main() {
         .expect("Missing Argument n")
         .parse::<i64>()
         .expect("n must be a number");
-    std::process::exit(main_loop(iters, n) as i32)
+    main_loop(iters, n)
 }

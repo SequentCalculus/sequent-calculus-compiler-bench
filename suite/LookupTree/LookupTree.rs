@@ -12,10 +12,10 @@ enum Tree<A> {
 impl<A> Tree<A> {
     fn create(i: u64, n: u64) -> Tree<u64> {
         if i < n {
-            let t = Tree::<u64>::create(i + 1, n);
+            let t = Rc::new(Tree::<u64>::create(i + 1, n));
             Tree::Node {
-                left: Rc::new(t.clone()),
-                _right: Rc::new(t),
+                left: t.clone(),
+                _right: t,
             }
         } else {
             Tree::Leaf(n)
@@ -24,10 +24,10 @@ impl<A> Tree<A> {
 
     fn lookup(&self) -> A
     where
-        A: Clone,
+        A: Clone + Copy,
     {
         match self {
-            Tree::Leaf(a) => a.clone(),
+            Tree::Leaf(a) => *a,
             Tree::Node { left, _right: _ } => left.lookup(),
         }
     }

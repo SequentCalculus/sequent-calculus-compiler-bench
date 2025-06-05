@@ -1,26 +1,18 @@
 import args 
 
-def create_n_loop(n:Int,acc:List[Unit]) : List[Unit] ={
+def create_n(n:Int) : List[Unit] = {
   if (n==0){
-    acc
-  }else{
-    create_n_loop(n - 1,Cons((),acc))
-  }
-}
-
-def create_n(n:Int) : List[Unit] ={
-  create_n_loop(n,Nil())
-}
-
-def len_loop(l:List[Unit],acc:Int): Int = {
-  l match{
-    case Nil() => acc
-    case Cons(_,xs) => len_loop(xs,acc + 1)
+    Nil()
+  }else {
+    Cons((),create_n(n - 1))
   }
 }
 
 def len(l:List[Unit]) : Int = {
-  len_loop(l,0)
+  l match{
+    case Nil() => 0
+    case Cons(_,xs) => 1+len(xs)
+  }
 }
 
 def rec_div2(l:List[Unit]): List[Unit] = {
