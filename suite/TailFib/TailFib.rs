@@ -10,14 +10,12 @@ fn fib(n: u64) -> u64 {
     tfib(n, 0, 1)
 }
 
-fn main_loop(iters: u64, n: u64) -> i64 {
-    let res = fib(n);
-    if iters == 1 {
-        println!("{}", res);
-        0
-    } else {
-        main_loop(iters - 1, n)
+fn main_loop(iters: u64, n: u64) {
+    let mut res = fib(n);
+    for _ in 1..iters {
+        res = fib(n);
     }
+    println!("{}", res);
 }
 
 fn main() {
@@ -33,5 +31,5 @@ fn main() {
         .expect("Missing Argument n")
         .parse::<u64>()
         .expect("n must be a number");
-    std::process::exit(main_loop(iters, n) as i32)
+    main_loop(iters, n)
 }

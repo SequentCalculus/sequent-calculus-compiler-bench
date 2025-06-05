@@ -21,10 +21,10 @@
 | SudanGoto             | ✔️ | N/A  | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         |
 | Cryptarithm1          | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         |
 | Lcss                  | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         | 
-| SumRange              | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            | 
-| Deriv                 | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            | Rust version significantly slower |
-| Life                  | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            | 
-| TailFib               | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            | 
+| SumRange              | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         | 
+| Deriv                 | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         | Rust version significantly slower |
+| Life                  | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         | 
+| TailFib               | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         | 
 | Divrec                | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            | 
 | LookupTree            | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     |       | ✔️    |            | Rust version about 10x slower | 
 | Tak                   | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    |            | 

@@ -145,24 +145,30 @@ impl Gen {
     }
 
     fn next(self) -> Gen {
-        let living = self.alive();
+        let living = Rc::new(self.alive());
         let living_ = living.clone();
         let living__ = living.clone();
+        let living___ = living.clone();
 
         let is_alive: &dyn for<'a> Fn(&'a (i64, i64)) -> bool = &move |&p| living_.contains(&p);
         let live_neighbors = move |p| neighbors(p).filter(is_alive).len();
-        let survivors = living.clone().filter(&|&p| twoorthree(live_neighbors(p)));
+        let survivors = Rc::unwrap_or_clone(living___).filter(&|&p| twoorthree(live_neighbors(p)));
 
         let not_is_alive: &dyn for<'a> Fn(&'a (i64, i64)) -> bool =
             &move |&p| !living__.contains(&p);
-        let newbrnlist = living.collect(&move |p| neighbors(p).filter(not_is_alive));
+        let newbrnlist =
+            Rc::unwrap_or_clone(living).collect(&move |p| neighbors(p).filter(not_is_alive));
         let newborn = occurs3(newbrnlist);
 
         Gen::new(survivors.append(newborn))
     }
 
     fn nth(self, i: u64) -> Gen {
-        if i == 0 { self } else { self.next().nth(i - 1) }
+        if i == 0 {
+            self
+        } else {
+            self.next().nth(i - 1)
+        }
     }
 }
 
@@ -362,12 +368,10 @@ fn go_gun() -> Box<dyn Fn(u64)> {
 }
 
 fn go_loop(iters: u64, steps: u64, go: Box<dyn Fn(u64)>) -> i64 {
-    if iters == 0 {
-        0
-    } else {
-        go(steps);
-        go_loop(iters - 1, steps, go)
+    for _ in 0..iters {
+        go(steps)
     }
+    0
 }
 
 fn main() {

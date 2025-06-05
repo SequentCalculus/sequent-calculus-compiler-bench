@@ -48,7 +48,7 @@ structure Life = struct
   fun occurs3 l = 
     collect_neighbors nil nil nil nil l
 
-  fun mk_nextgen g = 
+  fun nextgen g = 
   let val living  = alive g 
     val isalive = fn p => member living p 
     val liveneighbors = fn p => length (List.filter isalive (neighbors p))
@@ -65,7 +65,7 @@ structure Life = struct
 
   fun nthgen g i = 
     if i = 0 then g 
-    else nthgen (mk_nextgen g) (i-1)
+    else nthgen (nextgen g) (i-1)
 
   fun at_pos coordlist (fst2,snd2) = 
   let val move = fn (fst1,snd1) => 

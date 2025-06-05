@@ -72,15 +72,14 @@ fn mk_exp(a: Expr, b: Expr) -> Expr {
     ])
 }
 
-fn main_loop(iters: u64, n: i64, m: i64) -> i64 {
-    for i in 0..=iters {
-        let res = deriv(mk_exp(Expr::Num(n), Expr::Num(m)));
-        let expected = mk_ans(Expr::Num(n), Expr::Num(m));
-        if i == iters {
-            println!("{}", if res == expected { 1 } else { 0 });
-        }
+fn main_loop(iters: u64, n: i64, m: i64) {
+    let mut res = deriv(mk_exp(Expr::Num(n), Expr::Num(m)));
+    let mut expected = mk_ans(Expr::Num(n), Expr::Num(m));
+    for _ in 1..iters {
+        res = deriv(mk_exp(Expr::Num(n), Expr::Num(m)));
+        expected = mk_ans(Expr::Num(n), Expr::Num(m));
     }
-    0
+    println!("{}", if res == expected { 1 } else { 0 });
 }
 
 fn main() {
@@ -102,5 +101,5 @@ fn main() {
         .parse::<i64>()
         .expect("m must be a number");
 
-    std::process::exit(main_loop(iters, n, m) as i32)
+    main_loop(iters, n, m)
 }

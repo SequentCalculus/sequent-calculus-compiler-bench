@@ -12,26 +12,13 @@ data Expr {
   X()
 }
 
-def rev_list_acc(l: List[Expr], acc: List[Expr]): List[Expr] {
-  l.case[Expr] {
-    Nil => acc,
-    Cons(x, xs) => rev_list_acc(xs, Cons(x, acc))
-  }
-}
-
-def rev_list(l: List[Expr]): List[Expr] {
-  rev_list_acc(l, Nil)
-}
-
-def map_list_acc(f: Fun[Expr, Expr], l: List[Expr], acc: List[Expr]): List[Expr] {
-  l.case[Expr] {
-    Nil => rev_list(acc),
-    Cons(x, xs) => map_list_acc(f, xs, Cons(f.Apply[Expr, Expr](x), acc))
-  }
-}
 
 def map_list(f: Fun[Expr, Expr], l: List[Expr]): List[Expr] {
-  map_list_acc(f, l, Nil)
+  l.case[Expr] {
+    Nil => Nil,
+    Cons(x, xs) => Cons(f.Apply[Expr, Expr](x), map_list(f,xs))
+  }
+
 }
 
 def map_expr(f: Fun[Expr, Expr], e: Expr): Expr {

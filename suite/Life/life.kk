@@ -98,7 +98,7 @@ fun twoorthree(n:int64): bool{
   (n == 2.int64) || (n == 3.int64)
 }
 
-fun mk_nextgen(gen:gen) : total gen{
+fun nextgen(gen:gen) : total gen{
   val living = alive(gen)
   val isalive = fn(p) member(living,p)
   val liveneighbours = fn(x,y) length(filter(neighbours((x,y)),isalive)).int64
@@ -112,7 +112,7 @@ fun nthgen(g:gen,i:int64): div gen {
   if i == 0.int64 then
     g 
   else 
-    nthgen(mk_nextgen(g), i - 1.int64)
+    nthgen(nextgen(g), i - 1.int64)
 }
 
 fun at_pos(coordlist:list<(int64,int64)>,p:(int64,int64)): total list<(int64,int64)>{

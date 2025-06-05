@@ -40,7 +40,7 @@ let occurs3 l = collect_neighbors [] [] [] [] l
 
 let twoorthree n = n=2 || n=3
 
-let mk_nextgen g = 
+let nextgen g = 
   let living = alive g in 
   let isalive = fun p -> member living p in 
   let liveneighbord = fun p -> List.length (List.filter isalive (neighbors p)) in 
@@ -51,7 +51,7 @@ let mk_nextgen g =
 
 let rec nthgen g i = 
   if i=0 then g 
-  else nthgen (mk_nextgen g) (i-1)
+  else nthgen (nextgen g) (i-1)
 
 let at_pos coordlist (fst2,snd2) = 
   let move = fun (fst1,snd1) -> (fst1+fst2,snd1+snd2)

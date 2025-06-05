@@ -28,14 +28,12 @@ impl List<u64> {
     }
 }
 
-fn main_loop(iters: u64, n: u64) -> i64 {
-    let res = List::range(0, n).sum();
-    if iters == 1 {
-        println!("{}", res);
-        0
-    } else {
-        main_loop(iters - 1, n)
+fn main_loop(iters: u64, n: u64) {
+    let mut res = List::range(0, n).sum();
+    for _ in 1..iters {
+        res = List::range(0, n).sum();
     }
+    println!("{}", res);
 }
 
 fn main() {
@@ -51,5 +49,5 @@ fn main() {
         .expect("Missing Argument n")
         .parse::<u64>()
         .expect("n must be a number");
-    std::process::exit(main_loop(iters, n) as i32)
+    main_loop(iters, n)
 }
