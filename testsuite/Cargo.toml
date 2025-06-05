@@ -10,6 +10,11 @@ name = "testsuite"
 path = "src/main.rs"
 harness = false
 
+[[test]]
+name = "test-single"
+path = "src/single.rs"
+harness = false
+
 [dependencies]
 lib = { path="../lib" }
 basic-toml = { version = "0.1.9" }

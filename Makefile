@@ -2,7 +2,11 @@ stack_size = 2048000
 
 .PHONY: test 
 test: 
+ifeq ($(name),)
 	ulimit -s $(stack_size) && cargo test --all --no-fail-fast
+else 
+	ulimit -s $(stack_size) && cargo test -p testsuite --test test-single -- $(name)
+endif
 
 .PHONY: bench
 bench:
