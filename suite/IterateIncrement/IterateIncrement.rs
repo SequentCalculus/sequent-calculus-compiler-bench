@@ -1,15 +1,15 @@
-fn iterate(i: i64, f: &dyn Fn(i64) -> i64, a: i64) -> i64 {
+fn iterate(i: i64, f: impl Fn(i64) -> i64, a: i64) -> i64 {
     let mut res = a;
     for _ in 0..i {
-        res = f(a)
+        res = f(res)
     }
     res
 }
 
 fn main_loop(iters: u64, n: i64) {
-    let mut res = iterate(n, &|x| x + 1, 0);
+    let mut res = iterate(n, |x| x + 1, 0);
     for _ in 1..iters {
-        res = iterate(n, &|x| x + 1, 0);
+        res = iterate(n, |x| x + 1, 0);
     }
     println!("{}", res);
 }

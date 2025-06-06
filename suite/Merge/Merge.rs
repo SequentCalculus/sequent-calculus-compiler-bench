@@ -12,11 +12,28 @@ impl List<u64> {
         for i in 0..=n {
             ls = List::Cons(f(i), Rc::new(ls));
         }
-        ls
+        ls.rev()
     }
 }
 
 impl<A> List<A> {
+    fn rev_loop(self, acc: List<A>) -> List<A>
+    where
+        A: Clone,
+    {
+        match self {
+            List::Nil => acc,
+            List::Cons(a_, as_) => Rc::unwrap_or_clone(as_).rev_loop(List::Cons(a_, Rc::new(acc))),
+        }
+    }
+
+    fn rev(self) -> List<A>
+    where
+        A: Clone,
+    {
+        self.rev_loop(List::Nil)
+    }
+
     fn merge(self, other: List<A>) -> List<A>
     where
         A: PartialOrd + Clone,
