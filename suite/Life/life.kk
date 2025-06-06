@@ -3,8 +3,6 @@ module life
 import std/os/env
 import std/num/int64
 
-fun todo(a:a): total a { a }
-
 struct gen
   coordslist: list<(int64,int64)>
 
