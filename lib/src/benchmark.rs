@@ -342,10 +342,15 @@ impl Benchmark {
         let out_path = self.result_path(lang)?;
 
         let mut command = Command::new("hyperfine");
-        let bin_str = bin_path
-            .to_str()
-            .ok_or(Error::path_access(&bin_path, "Path as String"))?
-            .to_owned();
+        let path_err = Error::path_access(&bin_path, "Path as String");
+        let bin_str = if *lang == BenchmarkLanguage::Effekt {
+            bin_path.join(&self.name)
+        } else {
+            bin_path
+        }
+        .to_str()
+        .ok_or(path_err)?
+        .to_owned();
 
         let mut call_str = if *lang == BenchmarkLanguage::SmlNj {
             format!("sml @SMLload {bin_str}")
@@ -362,6 +367,7 @@ impl Benchmark {
         command.arg(self.config.runs.to_string());
         command.arg("--export-csv");
         command.arg(&out_path);
+        println!("hyperfine command: {command:?}");
         command
             .status()
             .map_err(|err| Error::hyperfine(&self.name, lang, err))?;
