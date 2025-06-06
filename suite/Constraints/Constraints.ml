@@ -164,7 +164,7 @@ let lookup_cache csp t =
 let rec n_unknown ls n = 
   match ls with 
     | [] -> []
-    | n::t1 -> 
+    | _::t1 -> 
         (to_unknown (enum_from_to 1 n)) 
         :: (n_unknown t1 n) 
 and to_unknown ls = 
