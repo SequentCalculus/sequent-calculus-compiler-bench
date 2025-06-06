@@ -247,6 +247,18 @@ def collect(ls:List[ConflictSet]) : List[Int] = {
   }
 }
 
+def wipe_lscomp1(ls:List[List[ConflictSet]]) : List[List[ConflictSet]] = {
+  ls match{
+    case Nil() => Nil()
+    case Cons(vs,t1) => 
+      if (list::all(vs) { x => known_conflict(x) }){
+        Cons(vs,wipe_lscomp1(t1))
+      }else{
+        wipe_lscomp1(t1)
+      }
+  }
+}
+
 def domain_wipeout(csp:CSP,t:Node[((List[Assign],ConflictSet),List[List[ConflictSet]])]) : Node[(List[Assign],ConflictSet)] = { 
   csp match{
     case CSP(vars,vals,rel) => 
@@ -331,10 +343,10 @@ def to_pairs(ls:List[Int],varrr:Int) : List[(Int,Int)] = {
   }
 }
 
-def n_pairs(ls:List[Int],vals:Int) : List[List[(Int,Int)]] = {
+def n_pairs(ls:List[Int],n:Int) : List[List[(Int,Int)]] = {
   ls match{
     case Nil() => Nil()
-    case Cons(varrr,t1) => Cons(to_pairs(enum_from_to(1,vals),varrr),n_pairs(t1,vals))
+    case Cons(varrr,t1) => Cons(to_pairs(enum_from_to(1,n),varrr),n_pairs(t1,n))
   }
 }
 
@@ -369,7 +381,7 @@ def to_unknown(ls:List[Int]) : List[ConflictSet] = {
 def n_unknown(ls:List[Int],n:Int) : List[List[ConflictSet]] = {
   ls match{
     case Nil() => Nil()
-    case Cons(n,t1) => Cons(to_unknown(enum_from_to(1,n)),n_unknown(t1,n))
+    case Cons(_,t1) => Cons(to_unknown(enum_from_to(1,n)),n_unknown(t1,n))
   }
 }
 
