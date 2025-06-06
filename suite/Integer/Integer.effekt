@@ -41,16 +41,16 @@ def runbench(astart:Int,astep:Int,alim:Int) { jop : (Int,Int) => Either[Int,Bool
 }
 
 def runalltests(astart:Int,astep:Int,alim:Int) : List[Either[Int,Bool]] = {
-  val z_add: (Int,Int) => Either[Int,Bool] at {} = box { (a,b) => Left(a + b) }
-  val z_sub: (Int,Int) => Either[Int,Bool] at {} = box { (a,b) => Left(a - b) }
-  val z_mul: (Int,Int) => Either[Int,Bool] at {} = box { (a,b) => Left(a * b) }
-  val z_div: (Int,Int) => Either[Int,Bool] at {} = box { (a,b) => Left(a / b) }
-  val z_mod: (Int,Int) => Either[Int,Bool] at {} = box { (a,b) => Left(mod(a,b)) }
-  val z_equal: (Int,Int) => Either[Int,Bool] at {} = box { (a,b) => Right(a==b) }
-  val z_lt: (Int,Int) => Either[Int,Bool] at {} = box { (a,b) => Right(a<b) }
-  val z_leq: (Int,Int) => Either[Int,Bool] at {} = box { (a,b) => Right(a<=b) }
-  val z_gt: (Int,Int) => Either[Int,Bool] at {} = box { (a,b) => Right(a>b) }
-  val z_geq: (Int,Int) => Either[Int,Bool] at {} = box { (a,b) => Right(a>=b) }
+  def z_add(a: Int, b: Int): Either[Int, Bool] = { Left(a + b) }
+  def z_sub(a: Int, b: Int): Either[Int, Bool] = { Left(a - b) }
+  def z_mul(a: Int, b: Int): Either[Int, Bool] = { Left(a * b) }
+  def z_div(a: Int, b: Int): Either[Int, Bool] = { Left(a / b) }
+  def z_mod(a: Int, b: Int): Either[Int, Bool] = { Left(mod(a,b)) }
+  def z_equal(a: Int, b: Int): Either[Int, Bool] = { Right(a==b) }
+  def z_lt(a: Int, b: Int): Either[Int, Bool] = { Right(a<b) }
+  def z_leq(a: Int, b: Int): Either[Int, Bool] = { Right(a<=b) }
+  def z_gt(a: Int, b: Int): Either[Int, Bool] = { Right(a>b) }
+  def z_geq(a: Int, b: Int): Either[Int, Bool] = { Right(a>=b) }
 
   val add = runbench(astart,astep,alim) { z_add } 
   val sub = runbench(astart,astep,alim) { z_sub } 

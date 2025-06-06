@@ -13,8 +13,8 @@ def motz(n:Int) : Int = {
     1
   }else{
     val limit = n - 2 
-    val product: Int => Int at {} = box {
-      i => motz(i) * motz(limit - i) 
+    def product(i: Int): Int = {
+      motz(i) * motz(limit - i) 
     }
     motz(n - 1) + sum(0,limit) {product}
   }

@@ -21,7 +21,7 @@ def motz(n:Int) : Int / Ret = {
     do ret(1)
   }else{
     val limit = n - 2
-    val product: Int => Int at {} = box { i => 
+    def product(i: Int): Int = {
       (try { motz(i) } with Ret { def ret(i) = { i } })
       * 
       (try { motz(limit - i) } with Ret { def ret(i) = { i } })
