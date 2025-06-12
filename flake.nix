@@ -18,8 +18,6 @@
     in {
       devShells.${system}.default = pkgs.mkShell{
         buildInputs = [
-          effektBuild
-          #effekt-lib.mkDevShell { inherit effektVersion effektBackends; }
           #grokking dependencies
           pkgs.yasm
           pkgs.cargo
@@ -32,6 +30,9 @@
           pkgs.koka
           pkgs.smlnj
           pkgs.mlton
+          effektBuild
+          #effekt dependency
+          pkgs.libuv
         ];
 
         shellHook= ''
