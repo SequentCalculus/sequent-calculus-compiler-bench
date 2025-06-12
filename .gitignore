@@ -1,6 +1,8 @@
 /target
 /target_grk
 /results
+Cargo.lock
+flake.lock
 *.cmi
 *.cmo
 /**/.cm/
