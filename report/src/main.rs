@@ -164,7 +164,7 @@ pub fn exec(cmd: Args) -> Result<(), Error> {
             println!("Skipping {}, no results found", example.name);
             continue;
         }
-        let lang = BenchmarkLanguage::Sc;
+        let lang = BenchmarkLanguage::Scc;
         let results =
             BenchResult::from_file(example.result_path(&lang)?, example.report_path(&lang)?);
         results.generate_plot();

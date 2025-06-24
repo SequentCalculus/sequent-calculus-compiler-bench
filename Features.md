@@ -38,6 +38,31 @@
 | Minimax               | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         | 
 | FactorialAccumulator  | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         | 
 | Motzkin               | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️    | ✔️    | ✔️         | 
+
+## Slow Benchmaks
+
+These should be checked on Kamino before running the suite. 
+They might need to be disabled and manually ran later
+
+### Koka
+
+* MotzkinGoto
+* AckGoto
+* SudanGoto
+* Lcss
+* SumRange
+* Constraints
+
+### Rust 
+* Deriv
+
+### Effekt
+
+* TakGoto
+
+### MLton
+
+* EvenoddGoto
  
 # Nofib
 

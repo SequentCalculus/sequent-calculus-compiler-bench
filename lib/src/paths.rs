@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 pub const SUITE_PATH: &str = "suite";
 pub const RESULT_PATH: &str = "results";
 
-pub const BIN_PATH: &str = "target_grk/bin/";
+pub const BIN_PATH: &str = "target_scc/bin/";
 pub const BIN_X86: &str = "x86_64";
 pub const BIN_AARCH: &str = "aarch_64";
 

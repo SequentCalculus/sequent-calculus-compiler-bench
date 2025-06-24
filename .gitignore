@@ -1,5 +1,5 @@
 /target
-/target_grk
+/target_scc
 /results
 Cargo.lock
 flake.lock

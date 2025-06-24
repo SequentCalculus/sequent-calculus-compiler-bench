@@ -6,7 +6,7 @@
     effekt.url = "github:jiribenes/effekt-nix";
   };
 
-  outputs = { self, nixpkgs,effekt,... }:
+  outputs = { self, nixpkgs,effekt,scc,... }:
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs { inherit system; };
@@ -18,7 +18,7 @@
     in {
       devShells.${system}.default = pkgs.mkShell{
         buildInputs = [
-          #grokking dependencies
+          #scc dependencies
           pkgs.yasm
           pkgs.cargo
           #crate dependencies 

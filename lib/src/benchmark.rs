@@ -13,7 +13,7 @@ use std::{
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum BenchmarkLanguage {
-    Sc,
+    Scc,
     Rust,
     SmlMlton,
     SmlNj,
@@ -25,7 +25,7 @@ pub enum BenchmarkLanguage {
 impl BenchmarkLanguage {
     fn from_ext(ext: &str) -> Option<BenchmarkLanguage> {
         match ext {
-            "sc" => Some(BenchmarkLanguage::Sc),
+            "sc" => Some(BenchmarkLanguage::Scc),
             "rs" => Some(BenchmarkLanguage::Rust),
             "mlb" => Some(BenchmarkLanguage::SmlMlton),
             "cm" => Some(BenchmarkLanguage::SmlNj),
@@ -38,7 +38,7 @@ impl BenchmarkLanguage {
 
     fn ext(&self) -> &str {
         match self {
-            BenchmarkLanguage::Sc => "sc",
+            BenchmarkLanguage::Scc => "sc",
             BenchmarkLanguage::Rust => "rs",
             BenchmarkLanguage::SmlNj => "cm",
             BenchmarkLanguage::SmlMlton => "mlb",
@@ -62,8 +62,8 @@ impl BenchmarkLanguage {
         let out_path = bin_path_aarch().join(source_base);
 
         match self {
-            BenchmarkLanguage::Sc => {
-                let mut cmd = Command::new("grokking");
+            BenchmarkLanguage::Scc => {
+                let mut cmd = Command::new("scc");
                 cmd.arg("codegen");
                 cmd.arg(source_file);
                 #[cfg(target_arch = "x86_64")]
@@ -143,7 +143,7 @@ impl BenchmarkLanguage {
 impl fmt::Display for BenchmarkLanguage {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            BenchmarkLanguage::Sc => f.write_str("Compiling-Sc"),
+            BenchmarkLanguage::Scc => f.write_str("Compiling-Sc"),
             BenchmarkLanguage::Rust => f.write_str("Rust"),
             BenchmarkLanguage::SmlNj => f.write_str("Sml/NJ"),
             BenchmarkLanguage::SmlMlton => f.write_str("Mlton"),
@@ -206,7 +206,7 @@ impl Benchmark {
         create_dir_all(&bin_path)
             .map_err(|_| Error::path_access(&PathBuf::from(&bin_path), "create bin path"))?;
         let mut bin_name = self.name.clone();
-        if *lang != BenchmarkLanguage::Sc {
+        if *lang != BenchmarkLanguage::Scc {
             bin_name += "_";
             bin_name += lang.ext();
         } else if *lang == BenchmarkLanguage::Koka {
