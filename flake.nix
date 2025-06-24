@@ -4,6 +4,9 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     effekt.url = "github:jiribenes/effekt-nix";
+    scc = {
+      url = "git+ssh://git@github.com/ps-tuebingen/sequent-calculus-compiler?ref=flake";
+    };
   };
 
   outputs = { self, nixpkgs,effekt,scc,... }:
@@ -15,12 +18,17 @@
       effektVersion = "0.32.0";
       effektBackends = with effekt-lib.effektBackends; [ llvm ];
       effektBuild = effekt-lib.getEffekt { backends = effektBackends; };
+
     in {
       devShells.${system}.default = pkgs.mkShell{
         buildInputs = [
-          #scc dependencies
+          #scc 
           pkgs.yasm
           pkgs.cargo
+          pkgs.hyperfine
+          scc.packages.${system}.default
+          #can be removed if flake works
+          pkgs.git
           #crate dependencies 
           pkgs.gcc
           pkgs.pkg-config
