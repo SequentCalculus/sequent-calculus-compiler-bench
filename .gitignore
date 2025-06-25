@@ -1,8 +1,6 @@
 /target
 /target_scc
 /results
-Cargo.lock
-flake.lock
 *.cmi
 *.cmo
 /**/.cm/
