@@ -123,11 +123,11 @@
         "nixpkgs": "nixpkgs_3"
       },
       "locked": {
-        "lastModified": 1750769901,
-        "narHash": "sha256-6mfEzXIZWzDtlg06t4+TWCC6wvuVpyoWA6OYpWJ+IxM=",
+        "lastModified": 1750850959,
+        "narHash": "sha256-M4AK3TP4drYJFzBnlI+yhaNYR2hO/lNPXXh0OHyOi0Y=",
         "ref": "flake",
-        "rev": "cba9dbcc09d02c594aafbf4471110d2712d5c806",
-        "revCount": 610,
+        "rev": "527a764d78d02e753e96d0108bf5c9c2c8368632",
+        "revCount": 613,
         "type": "git",
         "url": "ssh://git@github.com/ps-tuebingen/sequent-calculus-compiler"
       },

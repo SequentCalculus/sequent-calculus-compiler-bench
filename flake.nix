@@ -19,16 +19,16 @@
       effektBackends = with effekt-lib.effektBackends; [ llvm ];
       effektBuild = effekt-lib.getEffekt { backends = effektBackends; };
 
+      rustPlatform = pkgs.rustPlatform;
+
       dependencies = [
         pkgs.coreutils
         pkgs.gnumake
         pkgs.cargo
-        pkgs.yasm
-        pkgs.cargo
+        pkgs.rustc
         pkgs.hyperfine
         scc.packages.${system}.default
         #crate dependencies 
-        pkgs.gcc
         pkgs.pkg-config
         pkgs.fontconfig
         #languages 
@@ -41,31 +41,23 @@
         pkgs.libuv
       ];
     in {
-      packages.${system}.default = pkgs.stdenv.mkDerivation {
-        name = "run-hyperfine";
-        buildInputs = [ pkgs.makeWrapper ];
-        src = null;
-        unpackPhase = "true";
-        buildPhase = "true";
-        installPhase = ''
-          mkdir -p $out/bin
-          OUT=$out/bin/run.sh
-          echo "#!/bin/bash" > $OUT
-          echo "effekt -b --backend llvm suite/FactorialAccumulator/FactorialAccumulator.effekt" >> $OUT
-          echo "ulimit -s unlimited && cargo run" >> $OUT
-          chmod +x $OUT
-        '';
-
+      packages.${system}.default = pkgs.rustPlatform.buildRustPackage {
+        pname = "Sequent-Calculus-Bench";
+        version = "0.1.0";
+        src = ./.;
+        nativeBuildInputs = [ pkgs.makeWrapper ];
+        buildInputs = dependencies;
+        propagatedBuildInputs = dependencies;
+        cargoDeps = rustPlatform.importCargoLock { lockFile = ./Cargo.lock; };
         postFixup = ''
-          wrapProgram $out/bin/run.sh \
-            --set PATH ${pkgs.lib.makeBinPath dependencies}
+          makeWrapper $out/bin/bench $out/bin/run-bench \
+          --set PATH "${pkgs.lib.makeBinPath dependencies}";
         '';
-        #[pkgs.lib.makeLibraryPath [pkgs.libuv]}
 
       };
 
       devShells.${system}.default = pkgs.mkShell {
-        buildInputs = dependencies;
+        buildInputs = dependencies ++ [ self.packages.${system}.default ];
 
         shellHook = ''
           export name=""
@@ -75,7 +67,7 @@
 
       apps.${system}.default = {
         type = "app";
-        program = "${self.packages.${system}.default}/bin/run.sh";
+        program = "${self.packages.${system}.default}/bin/run-bench";
       };
 
     };
