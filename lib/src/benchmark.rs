@@ -20,7 +20,7 @@ pub struct Benchmark {
 }
 
 impl Benchmark {
-    pub fn new(name: &str, exclude: &[BenchmarkLanguage]) -> Result<Benchmark, Error> {
+    pub fn new(name: &str, exclude_lang: &[BenchmarkLanguage]) -> Result<Benchmark, Error> {
         let base_path = PathBuf::from(SUITE_PATH).join(name);
         let mut config_path = base_path.clone().join(name);
         config_path.set_extension("args");
@@ -44,7 +44,7 @@ impl Benchmark {
             }
 
             if let Some(lang) = BenchmarkLanguage::from_ext(ext) {
-                if !exclude.contains(&lang) {
+                if !exclude_lang.contains(&lang) {
                     languages.push(lang);
                 }
             }
@@ -234,19 +234,22 @@ impl Benchmark {
         Ok(())
     }
 
-    pub fn load_all(exclude: &[BenchmarkLanguage]) -> Result<Vec<Benchmark>, Error> {
+    pub fn load_all(
+        exclude_lang: &[BenchmarkLanguage],
+        exclude_bench: &[String],
+    ) -> Result<Vec<Benchmark>, Error> {
         let mut benchmarks = vec![];
         let suite_path = PathBuf::from(SUITE_PATH);
         for path in read_dir(&suite_path).map_err(|err| Error::read_dir(&suite_path, err))? {
             let path = path
                 .map_err(|_| Error::path_access(&suite_path, "Read File"))?
                 .path();
-            let name = path.file_name().unwrap().to_str().unwrap();
-            if !path.is_dir() {
+            let name = path.file_name().unwrap().to_str().unwrap().to_owned();
+            if !path.is_dir() || exclude_bench.contains(&name) {
                 continue;
             }
 
-            let benchmark = Benchmark::new(name, exclude)?;
+            let benchmark = Benchmark::new(&name, exclude_lang)?;
             benchmarks.push(benchmark);
         }
         Ok(benchmarks)

@@ -18,16 +18,18 @@ pub struct Args {
     ///Optional: Exclude language
     #[arg(long)]
     exclude_language: Vec<BenchmarkLanguage>,
+    ///Optional: Exclude benchmark
+    #[arg(long)]
+    exclude_bench: Vec<String>,
 }
 
 fn main() -> Result<(), Error> {
     let args = Args::parse();
     let benchmarks;
-    println!("{:?}", args.exclude_language);
     if let Some(name) = args.name {
         benchmarks = vec![Benchmark::new(&name, &args.exclude_language)?];
     } else {
-        benchmarks = Benchmark::load_all(&args.exclude_language)?;
+        benchmarks = Benchmark::load_all(&args.exclude_language, &args.exclude_bench)?;
     }
 
     for benchmark in benchmarks {
