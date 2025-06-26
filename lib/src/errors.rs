@@ -1,4 +1,4 @@
-use super::benchmark::BenchmarkLanguage;
+use super::langs::BenchmarkLanguage;
 use std::{fmt, path::PathBuf};
 
 #[derive(Debug)]
@@ -31,7 +31,6 @@ pub enum Error {
         path: PathBuf,
     },
     UnknownLanguage {
-        bench: String,
         lang: String,
         tried: String,
     },
@@ -89,9 +88,11 @@ impl Error {
         }
     }
 
-    pub fn unknown_lang(name: &str, tried: &str, lang: &BenchmarkLanguage) -> Error {
+    pub fn unknown_lang<L>(tried: &str, lang: &L) -> Error
+    where
+        L: fmt::Display + ?Sized,
+    {
         Error::UnknownLanguage {
-            bench: name.to_owned(),
             tried: tried.to_owned(),
             lang: lang.to_string(),
         }
@@ -140,11 +141,8 @@ impl fmt::Display for Error {
                 write!(f, "Could not parse toml of {path:?}\n\t{msg}")
             }
             Error::DirIsFile { path } => write!(f, "{path:?} is a file, should be a directoty"),
-            Error::UnknownLanguage { bench, lang, tried } => {
-                write!(
-                    f,
-                    "Could not {tried}, {lang} does not exist for benchmark {bench}"
-                )
+            Error::UnknownLanguage { lang, tried } => {
+                write!(f, "Could not {tried}, {lang} does not exist")
             }
             Error::Compile { bench, lang, msg } => {
                 write!(f, "Could not compile {bench} ({lang}): {msg}")

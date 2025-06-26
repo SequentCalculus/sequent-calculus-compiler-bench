@@ -2,7 +2,8 @@
 use super::{
     config::Config,
     errors::Error,
-    paths::{bin_path_aarch, bin_path_x86, HYPERFINE_PATH, REPORTS_PATH, SUITE_PATH},
+    langs::BenchmarkLanguage,
+    paths::{HYPERFINE_PATH, REPORTS_PATH, SUITE_PATH, bin_path_aarch, bin_path_x86},
 };
 use std::{
     fmt,
@@ -10,149 +11,6 @@ use std::{
     path::PathBuf,
     process::Command,
 };
-
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub enum BenchmarkLanguage {
-    Scc,
-    Rust,
-    SmlMlton,
-    SmlNj,
-    OCaml,
-    Effekt,
-    Koka,
-}
-
-impl BenchmarkLanguage {
-    fn from_ext(ext: &str) -> Option<BenchmarkLanguage> {
-        match ext {
-            "sc" => Some(BenchmarkLanguage::Scc),
-            "rs" => Some(BenchmarkLanguage::Rust),
-            "mlb" => Some(BenchmarkLanguage::SmlMlton),
-            "cm" => Some(BenchmarkLanguage::SmlNj),
-            "ml" => Some(BenchmarkLanguage::OCaml),
-            "effekt" => Some(BenchmarkLanguage::Effekt),
-            "kk" => Some(BenchmarkLanguage::Koka),
-            _ => None,
-        }
-    }
-
-    fn ext(&self) -> &str {
-        match self {
-            BenchmarkLanguage::Scc => "sc",
-            BenchmarkLanguage::Rust => "rs",
-            BenchmarkLanguage::SmlNj => "cm",
-            BenchmarkLanguage::SmlMlton => "mlb",
-            BenchmarkLanguage::OCaml => "ml",
-            BenchmarkLanguage::Effekt => "effekt",
-            BenchmarkLanguage::Koka => "kk",
-        }
-    }
-
-    fn compile_cmd(&self, source_file: &PathBuf, heap_size: Option<usize>) -> Command {
-        let mut source_base = source_file
-            .as_path()
-            .file_stem()
-            .expect("Could not get file name")
-            .to_owned();
-        source_base.push("_");
-        source_base.push(self.ext());
-        #[cfg(target_arch = "x86_64")]
-        let out_path = bin_path_x86().join(source_base);
-        #[cfg(target_arch = "aarch64")]
-        let out_path = bin_path_aarch().join(source_base);
-
-        match self {
-            BenchmarkLanguage::Scc => {
-                let mut cmd = Command::new("scc");
-                cmd.arg("codegen");
-                cmd.arg(source_file);
-                #[cfg(target_arch = "x86_64")]
-                cmd.arg("x86-64");
-                #[cfg(target_arch = "aarch64")]
-                cmd.arg("aarch64");
-                if let Some(hs) = heap_size {
-                    cmd.arg("--heap-size");
-                    cmd.arg(format!("{}", hs));
-                }
-                cmd
-            }
-            BenchmarkLanguage::Rust => {
-                let mut cmd = Command::new("rustc");
-                cmd.arg(source_file);
-                cmd.arg("-o");
-                cmd.arg(out_path);
-                cmd.arg("-C");
-                cmd.arg("opt-level=3");
-                cmd.arg("-Awarnings");
-                cmd
-            }
-            BenchmarkLanguage::SmlNj => {
-                let mut cmd = Command::new("ml-build");
-                cmd.arg(source_file);
-                cmd.arg("Main.main");
-                cmd.arg(out_path);
-                cmd
-            }
-            BenchmarkLanguage::SmlMlton => {
-                let mut cmd = Command::new("mlton");
-                cmd.arg("-default-type");
-                cmd.arg("int64");
-                cmd.arg("-output");
-                cmd.arg(out_path);
-                cmd.arg(source_file);
-                cmd
-            }
-            BenchmarkLanguage::OCaml => {
-                let mut cmd = Command::new("ocamlc");
-                cmd.arg(source_file);
-                cmd.arg("-o");
-                cmd.arg(out_path);
-                cmd
-            }
-            BenchmarkLanguage::Effekt => {
-                let mut cmd = Command::new("effekt");
-                cmd.arg(source_file);
-                cmd.arg("-b");
-                cmd.arg("--backend");
-                cmd.arg("llvm");
-                cmd.arg("-o");
-                cmd.arg(out_path);
-                cmd
-            }
-            BenchmarkLanguage::Koka => {
-                let source_base = source_file
-                    .file_name()
-                    .expect("Could not read file name")
-                    .to_str()
-                    .expect("Could not get file name as string")
-                    .to_lowercase();
-                let source_file = source_file
-                    .parent()
-                    .expect("Could not get file path")
-                    .join(source_base);
-                let mut cmd = Command::new("koka");
-                cmd.arg(&source_file);
-                cmd.arg("-o");
-                cmd.arg(out_path);
-                cmd
-            }
-        }
-    }
-}
-
-impl fmt::Display for BenchmarkLanguage {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            BenchmarkLanguage::Scc => f.write_str("Compiling-Sc"),
-            BenchmarkLanguage::Rust => f.write_str("Rust"),
-            BenchmarkLanguage::SmlNj => f.write_str("Sml/NJ"),
-            BenchmarkLanguage::SmlMlton => f.write_str("Mlton"),
-            BenchmarkLanguage::OCaml => f.write_str("OCaml"),
-            BenchmarkLanguage::Effekt => f.write_str("Effekt"),
-            BenchmarkLanguage::Koka => f.write_str("Koka"),
-        }
-    }
-}
 
 pub struct Benchmark {
     pub name: String,
@@ -162,7 +20,7 @@ pub struct Benchmark {
 }
 
 impl Benchmark {
-    pub fn new(name: &str) -> Result<Benchmark, Error> {
+    pub fn new(name: &str, exclude: &[BenchmarkLanguage]) -> Result<Benchmark, Error> {
         let base_path = PathBuf::from(SUITE_PATH).join(name);
         let mut config_path = base_path.clone().join(name);
         config_path.set_extension("args");
@@ -186,7 +44,9 @@ impl Benchmark {
             }
 
             if let Some(lang) = BenchmarkLanguage::from_ext(ext) {
-                languages.push(lang);
+                if !exclude.contains(&lang) {
+                    languages.push(lang);
+                }
             }
         }
         Ok(Benchmark {
@@ -252,7 +112,7 @@ impl Benchmark {
 
     pub fn compile(&self, lang: &BenchmarkLanguage) -> Result<(), Error> {
         if !self.languages.contains(lang) {
-            return Err(Error::unknown_lang(&self.name, "Compiling", lang));
+            return Err(Error::unknown_lang("Compiling", lang));
         }
 
         let mut source_path = self.base_path.clone().join(&self.name);
@@ -335,7 +195,7 @@ impl Benchmark {
 
     pub fn run_hyperfine(&self, lang: &BenchmarkLanguage) -> Result<(), Error> {
         if !self.languages.contains(lang) {
-            return Err(Error::unknown_lang(&self.name, "Run Hyperfine", lang));
+            return Err(Error::unknown_lang("Run Hyperfine", lang));
         }
 
         let bin_path = self.bin_path(lang)?;
@@ -374,7 +234,7 @@ impl Benchmark {
         Ok(())
     }
 
-    pub fn load_all() -> Result<Vec<Benchmark>, Error> {
+    pub fn load_all(exclude: &[BenchmarkLanguage]) -> Result<Vec<Benchmark>, Error> {
         let mut benchmarks = vec![];
         let suite_path = PathBuf::from(SUITE_PATH);
         for path in read_dir(&suite_path).map_err(|err| Error::read_dir(&suite_path, err))? {
@@ -386,7 +246,7 @@ impl Benchmark {
                 continue;
             }
 
-            let benchmark = Benchmark::new(name)?;
+            let benchmark = Benchmark::new(name, exclude)?;
             benchmarks.push(benchmark);
         }
         Ok(benchmarks)

@@ -1,5 +1,5 @@
 use clap::Parser;
-use lib::{benchmark::Benchmark, errors::Error};
+use lib::{benchmark::Benchmark, errors::Error, langs::BenchmarkLanguage};
 use std::str;
 
 #[derive(clap::Parser)]
@@ -12,18 +12,22 @@ pub struct Args {
     ///Optional: skip benchmarks with existing results
     #[arg(long, short)]
     skip_existing: bool,
-    ///Optiional: Run benchmark instead of hypefine
+    ///Optional: Run benchmark instead of hypefine
     #[arg(long, short)]
     exec: bool,
+    ///Optional: Exclude language
+    #[arg(long)]
+    exclude_language: Vec<BenchmarkLanguage>,
 }
 
 fn main() -> Result<(), Error> {
     let args = Args::parse();
     let benchmarks;
+    println!("{:?}", args.exclude_language);
     if let Some(name) = args.name {
-        benchmarks = vec![Benchmark::new(&name)?];
+        benchmarks = vec![Benchmark::new(&name, &args.exclude_language)?];
     } else {
-        benchmarks = Benchmark::load_all()?;
+        benchmarks = Benchmark::load_all(&args.exclude_language)?;
     }
 
     for benchmark in benchmarks {
