@@ -6,8 +6,8 @@ use lib::{
 use plotters::{
     chart::ChartBuilder,
     prelude::{
-        BitMapBackend, CandleStick, IntoDrawingArea, IntoFont, LineSeries, RGBColor, Rectangle,
-        BLACK, BLUE, RED, WHITE,
+        BLACK, BLUE, BitMapBackend, CandleStick, IntoDrawingArea, IntoFont, LineSeries, RED,
+        RGBColor, Rectangle, WHITE,
     },
     style::Color,
 };

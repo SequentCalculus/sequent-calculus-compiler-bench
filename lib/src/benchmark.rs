@@ -6,7 +6,6 @@ use super::{
     paths::{HYPERFINE_PATH, REPORTS_PATH, SUITE_PATH, bin_path_aarch, bin_path_x86},
 };
 use std::{
-    fmt,
     fs::{create_dir_all, read_dir},
     path::PathBuf,
     process::Command,
@@ -73,7 +72,7 @@ impl Benchmark {
             bin_name = bin_name.to_lowercase()
         }
 
-        Ok(PathBuf::from(bin_path).join(bin_name))
+        Ok(bin_path.join(bin_name))
     }
 
     pub fn result_path(&self, lang: &BenchmarkLanguage) -> Result<PathBuf, Error> {

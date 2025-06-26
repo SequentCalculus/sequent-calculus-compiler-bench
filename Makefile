@@ -8,6 +8,12 @@ else
 	ulimit -s $(stack_size) && cargo test -p testsuite --test test-single -- $(name)
 endif
 
+.PHONY: check
+check:
+	cargo fmt --all -- --check
+	cargo clippy
+
+
 .PHONY: bench
 bench:
 ifeq ($(name),)

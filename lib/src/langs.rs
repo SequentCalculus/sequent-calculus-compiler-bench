@@ -1,3 +1,4 @@
+#![allow(unused_imports)]
 use super::{
     errors::Error,
     paths::{bin_path_aarch, bin_path_x86},

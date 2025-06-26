@@ -1,7 +1,7 @@
 use lib::{
     benchmark::Benchmark,
     errors::Error,
-    test_utils::{setup, TestResult},
+    test_utils::{TestResult, setup},
 };
 use std::str;
 

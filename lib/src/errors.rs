@@ -1,5 +1,8 @@
 use super::langs::BenchmarkLanguage;
-use std::{fmt, path::PathBuf};
+use std::{
+    fmt,
+    path::{Path, PathBuf},
+};
 
 #[derive(Debug)]
 pub enum Error {
@@ -52,23 +55,23 @@ pub enum Error {
 }
 
 impl Error {
-    pub fn read_dir<T: std::error::Error>(path: &PathBuf, err: T) -> Error {
+    pub fn read_dir<T: std::error::Error>(path: &Path, err: T) -> Error {
         Error::ReadDir {
-            path: path.clone(),
+            path: path.to_path_buf(),
             msg: err.to_string(),
         }
     }
 
-    pub fn path_access(path: &PathBuf, tried: &str) -> Error {
+    pub fn path_access(path: &Path, tried: &str) -> Error {
         Error::PathAccess {
-            path: path.clone(),
+            path: path.to_path_buf(),
             tried: tried.to_owned(),
         }
     }
 
-    pub fn file_access<T: std::error::Error>(path: &PathBuf, tried: &str, err: T) -> Error {
+    pub fn file_access<T: std::error::Error>(path: &Path, tried: &str, err: T) -> Error {
         Error::FileAccess {
-            path: path.clone(),
+            path: path.to_path_buf(),
             tried: tried.to_owned(),
             msg: err.to_string(),
         }
@@ -81,9 +84,9 @@ impl Error {
         }
     }
 
-    pub fn parse_toml<T: std::error::Error>(path: &PathBuf, err: T) -> Error {
+    pub fn parse_toml<T: std::error::Error>(path: &Path, err: T) -> Error {
         Error::TomlParse {
-            path: path.clone(),
+            path: path.to_path_buf(),
             msg: err.to_string(),
         }
     }
