@@ -3,7 +3,8 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    effekt.url = "github:jiribenes/effekt-nix";
+    #effekt.url = "github:jiribenes/effekt-nix";
+    effekt.url = "github:MarcoTz/effekt-nix";
     scc = {
       url =
         "git+ssh://git@github.com/ps-tuebingen/sequent-calculus-compiler?ref=flake";
@@ -37,8 +38,11 @@
         pkgs.smlnj
         pkgs.mlton
         effektBuild
-        #effekt dependency
+        pkgs.gcc
         pkgs.libuv
+        pkgs.gnugrep
+        pkgs.gnused
+        pkgs.bash
       ];
     in {
       packages.${system}.default = pkgs.rustPlatform.buildRustPackage {
@@ -57,10 +61,11 @@
       };
 
       devShells.${system}.default = pkgs.mkShell {
-        buildInputs = dependencies ++ [ self.packages.${system}.default ];
+        buildInputs = [ self.packages.${system}.default ];
 
         shellHook = ''
           export name=""
+          echo "Call 'run-bench' to start benchmarks"
         '';
 
       };

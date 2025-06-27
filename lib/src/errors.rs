@@ -40,7 +40,8 @@ pub enum Error {
     Compile {
         bench: String,
         lang: String,
-        msg: String,
+        stdout: String,
+        stderr: String,
     },
     Run {
         bench: String,
@@ -101,11 +102,12 @@ impl Error {
         }
     }
 
-    pub fn compile<T: fmt::Display>(name: &str, lang: &BenchmarkLanguage, err: T) -> Error {
+    pub fn compile(name: &str, lang: &BenchmarkLanguage, stdout: &str, stderr: &str) -> Error {
         Error::Compile {
             bench: name.to_owned(),
             lang: lang.to_string(),
-            msg: err.to_string(),
+            stdout: stdout.to_owned(),
+            stderr: stderr.to_owned(),
         }
     }
 
@@ -147,8 +149,16 @@ impl fmt::Display for Error {
             Error::UnknownLanguage { lang, tried } => {
                 write!(f, "Could not {tried}, {lang} does not exist")
             }
-            Error::Compile { bench, lang, msg } => {
-                write!(f, "Could not compile {bench} ({lang}): {msg}")
+            Error::Compile {
+                bench,
+                lang,
+                stdout,
+                stderr,
+            } => {
+                write!(
+                    f,
+                    "Could not compile {bench} ({lang}):\n\tstdout{stdout}\n\tstderr {stderr}"
+                )
             }
             Error::Run { bench, lang, msg } => write!(f, "Could not run {bench} ({lang}): {msg}"),
             Error::Hyperfine { bench, lang, msg } => {

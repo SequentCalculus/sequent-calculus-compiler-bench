@@ -9,6 +9,7 @@ use std::{
     fs::{create_dir_all, read_dir},
     path::PathBuf,
     process::Command,
+    str,
 };
 
 pub struct Benchmark {
@@ -119,17 +120,15 @@ impl Benchmark {
 
         let mut compile_cmd = lang.compile_cmd(&source_path, self.config.heap_size);
 
-        compile_cmd
+        let out = compile_cmd
             .output()
-            .map_err(|err| Error::compile(&self.name, lang, err))?
-            .status
-            .success()
-            .then_some(())
-            .ok_or(Error::compile(
-                &self.name,
-                lang,
-                "Compiler exited with nonzero exit status",
-            ))
+            .map_err(|err| Error::compile(&self.name, lang, "", &err.to_string()))?;
+        out.status.success().then_some(()).ok_or(Error::compile(
+            &self.name,
+            lang,
+            str::from_utf8(&out.stdout).unwrap_or(""),
+            str::from_utf8(&out.stderr).unwrap_or(""),
+        ))
     }
 
     pub fn run_all(&self, test: bool) -> Result<Vec<std::process::Output>, Error> {
