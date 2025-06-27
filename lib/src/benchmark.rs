@@ -128,7 +128,34 @@ impl Benchmark {
             lang,
             str::from_utf8(&out.stdout).unwrap_or(""),
             str::from_utf8(&out.stderr).unwrap_or(""),
-        ))
+        ))?;
+        // for koka, we have to make the generated binary executable
+        if let BenchmarkLanguage::Koka = lang {
+            let mut source_base = source_path
+                .as_path()
+                .file_stem()
+                .expect("Could not get file name")
+                .to_owned();
+            source_base.push("_kk");
+            #[cfg(target_arch = "x86_64")]
+            let out_path = bin_path_x86().join(source_base);
+            #[cfg(target_arch = "aarch64")]
+            let out_path = bin_path_aarch().join(source_base);
+
+            let mut cmd = Command::new("chmod");
+            cmd.arg("+x");
+            cmd.arg(out_path.clone());
+
+            let out = cmd
+                .output()
+                .map_err(|err| Error::file_access(&out_path, "Change file permissions", err))?;
+
+            out.status
+                .success()
+                .then_some(())
+                .ok_or(Error::path_access(&out_path, "Change file permissions"))?
+        };
+        Ok(())
     }
 
     pub fn run_all(&self, test: bool) -> Result<Vec<std::process::Output>, Error> {
