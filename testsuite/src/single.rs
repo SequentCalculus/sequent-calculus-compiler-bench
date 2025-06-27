@@ -16,7 +16,7 @@ fn main() -> Result<(), Error> {
     setup()?;
 
     println!("Testing {bench_name}");
-    let bench = Benchmark::new(&bench_name)?;
+    let bench = Benchmark::new(&bench_name, &[])?;
     for lang in bench.languages.iter() {
         bench.compile(lang)?;
         let res = bench.run(lang, true)?;

@@ -1,8 +1,4 @@
-use lib::{
-    benchmark::{Benchmark, BenchmarkLanguage},
-    errors::Error,
-    paths::REPORTS_PATH,
-};
+use lib::{benchmark::Benchmark, errors::Error, langs::BenchmarkLanguage, paths::REPORTS_PATH};
 use plotters::{
     chart::ChartBuilder,
     prelude::{
@@ -155,9 +151,9 @@ impl FromStr for BenchData {
 pub fn exec(cmd: Args) -> Result<(), Error> {
     let examples;
     if let Some(name) = cmd.name {
-        examples = vec![Benchmark::new(&name)?];
+        examples = vec![Benchmark::new(&name, &[])?];
     } else {
-        examples = Benchmark::load_all()?;
+        examples = Benchmark::load_all(&[], &[])?;
     }
     for example in examples {
         if !example.results_exist()? {

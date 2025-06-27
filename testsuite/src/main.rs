@@ -8,7 +8,7 @@ use std::str;
 fn main() -> Result<(), Error> {
     setup()?;
 
-    let tests = Benchmark::load_all()?;
+    let tests = Benchmark::load_all(&[], &[])?;
     let num_tests = tests.len();
     let mut num_fail = 0;
     for test in tests {
