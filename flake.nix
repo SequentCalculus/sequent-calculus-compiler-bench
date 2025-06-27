@@ -23,26 +23,27 @@
       rustPlatform = pkgs.rustPlatform;
 
       dependencies = [
-        pkgs.coreutils
-        pkgs.gnumake
-        pkgs.cargo
-        pkgs.rustc
-        pkgs.hyperfine
-        scc.packages.${system}.default
-        #crate dependencies 
-        pkgs.pkg-config
-        pkgs.fontconfig
-        #languages 
+        #compilers
         pkgs.ocaml
         pkgs.koka
         pkgs.smlnj
         pkgs.mlton
         effektBuild
+        scc.packages.${system}.default
+        pkgs.rustc
+
+        #required by rustc
         pkgs.gcc
-        pkgs.libuv
+        #required by smlnj
         pkgs.gnugrep
         pkgs.gnused
+        #required by mlton
+        pkgs.coreutils
+
+        #hyperfine
+        pkgs.hyperfine
         pkgs.bash
+
       ];
     in {
       packages.${system}.default = pkgs.rustPlatform.buildRustPackage {
@@ -51,7 +52,6 @@
         src = ./.;
         nativeBuildInputs = [ pkgs.makeWrapper ];
         buildInputs = dependencies;
-        propagatedBuildInputs = dependencies;
         cargoDeps = rustPlatform.importCargoLock { lockFile = ./Cargo.lock; };
         postFixup = ''
           makeWrapper $out/bin/bench $out/bin/run-bench \
