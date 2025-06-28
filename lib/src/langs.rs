@@ -140,6 +140,7 @@ impl BenchmarkLanguage {
                 cmd.arg(&source_file);
                 cmd.arg("-o");
                 cmd.arg(out_path);
+                cmd.arg("-O1");
                 cmd
             }
         }
