@@ -129,30 +129,17 @@ impl Benchmark {
         ))?;
         // for Koka, we have to make the generated binary executable
         if let BenchmarkLanguage::Koka = lang {
-            let mut source_base = source_path
-                .as_path()
-                .file_stem()
-                .expect("Could not get file name")
-                .to_owned();
-            source_base.push("_");
-            source_base.push(lang.suffix());
-            #[cfg(target_arch = "x86_64")]
-            let out_path = bin_path_x86().join(source_base);
-            #[cfg(target_arch = "aarch64")]
-            let out_path = bin_path_aarch().join(source_base);
+            let bin_path = self.bin_path(lang)?;
 
             let mut cmd = Command::new("chmod");
             cmd.arg("+x");
-            cmd.arg(out_path.clone());
+            cmd.arg(bin_path.clone());
 
-            let out = cmd
-                .output()
-                .map_err(|err| Error::file_access(&out_path, "Change file permissions", err))?;
-
-            out.status
+            cmd.status()
+                .map_err(|err| Error::file_access(&bin_path, "Change file permissions", err))?
                 .success()
                 .then_some(())
-                .ok_or(Error::path_access(&out_path, "Change file permissions"))?
+                .ok_or(Error::path_access(&bin_path, "Change file permissions"))?
         };
         Ok(())
     }
@@ -175,13 +162,6 @@ impl Benchmark {
             Ok(cmd)
         } else if *lang == BenchmarkLanguage::Effekt {
             Ok(Command::new(bin_path.join(&self.name)))
-        } else if *lang == BenchmarkLanguage::Koka {
-            Command::new("chmod")
-                .arg("+x")
-                .arg(&bin_path)
-                .status()
-                .map_err(|err| Error::run(&self.name, lang, err))?;
-            Ok(Command::new(bin_path))
         } else {
             Ok(Command::new(bin_path))
         }
