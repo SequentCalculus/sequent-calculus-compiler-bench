@@ -127,14 +127,15 @@ impl Benchmark {
             str::from_utf8(&out.stdout).unwrap_or(""),
             str::from_utf8(&out.stderr).unwrap_or(""),
         ))?;
-        // for koka, we have to make the generated binary executable
+        // for Koka, we have to make the generated binary executable
         if let BenchmarkLanguage::Koka = lang {
             let mut source_base = source_path
                 .as_path()
                 .file_stem()
                 .expect("Could not get file name")
                 .to_owned();
-            source_base.push("_kk");
+            source_base.push("_");
+            source_base.push(lang.suffix());
             #[cfg(target_arch = "x86_64")]
             let out_path = bin_path_x86().join(source_base);
             #[cfg(target_arch = "aarch64")]
