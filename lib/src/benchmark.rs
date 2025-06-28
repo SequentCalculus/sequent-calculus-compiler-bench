@@ -68,9 +68,7 @@ impl Benchmark {
         let mut bin_name = self.name.clone();
         if *lang != BenchmarkLanguage::Scc {
             bin_name += "_";
-            bin_name += lang.ext();
-        } else if *lang == BenchmarkLanguage::Koka {
-            bin_name = bin_name.to_lowercase()
+            bin_name += lang.suffix();
         }
 
         Ok(bin_path.join(bin_name))
@@ -80,7 +78,7 @@ impl Benchmark {
         create_dir_all(HYPERFINE_PATH).map_err(|_| {
             Error::path_access(&PathBuf::from(HYPERFINE_PATH), "create hyperfine path")
         })?;
-        let mut path = PathBuf::from(HYPERFINE_PATH).join(self.name.clone() + "_" + lang.ext());
+        let mut path = PathBuf::from(HYPERFINE_PATH).join(self.name.clone() + "_" + lang.suffix());
         path.set_extension("csv");
         Ok(path)
     }
@@ -88,7 +86,7 @@ impl Benchmark {
     pub fn report_path(&self, lang: &BenchmarkLanguage) -> Result<PathBuf, Error> {
         create_dir_all(REPORTS_PATH)
             .map_err(|_| Error::path_access(&PathBuf::from(REPORTS_PATH), "create report path"))?;
-        let mut path = PathBuf::from(REPORTS_PATH).join(self.name.clone() + "_" + lang.ext());
+        let mut path = PathBuf::from(REPORTS_PATH).join(self.name.clone() + "_" + lang.suffix());
         path.set_extension("png");
         Ok(path)
     }

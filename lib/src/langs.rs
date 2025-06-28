@@ -42,6 +42,18 @@ impl BenchmarkLanguage {
         }
     }
 
+    pub fn suffix(&self) -> &str {
+        match self {
+            BenchmarkLanguage::Scc => "scc",
+            BenchmarkLanguage::Rust => "rust",
+            BenchmarkLanguage::SmlNj => "smlnj",
+            BenchmarkLanguage::SmlMlton => "mlton",
+            BenchmarkLanguage::OCaml => "ocaml",
+            BenchmarkLanguage::Effekt => "effekt",
+            BenchmarkLanguage::Koka => "koka",
+        }
+    }
+
     pub fn compile_cmd(&self, source_file: &PathBuf, heap_size: Option<usize>) -> Command {
         let mut source_base = source_file
             .as_path()
@@ -49,7 +61,7 @@ impl BenchmarkLanguage {
             .expect("Could not get file name")
             .to_owned();
         source_base.push("_");
-        source_base.push(self.ext());
+        source_base.push(self.suffix());
         #[cfg(target_arch = "x86_64")]
         let out_path = bin_path_x86().join(source_base);
         #[cfg(target_arch = "aarch64")]
@@ -133,13 +145,14 @@ impl BenchmarkLanguage {
         }
     }
 }
+
 impl fmt::Display for BenchmarkLanguage {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            BenchmarkLanguage::Scc => f.write_str("Compiling-Sc"),
+            BenchmarkLanguage::Scc => f.write_str("Compiling-SC"),
             BenchmarkLanguage::Rust => f.write_str("Rust"),
-            BenchmarkLanguage::SmlNj => f.write_str("Sml/NJ"),
-            BenchmarkLanguage::SmlMlton => f.write_str("Mlton"),
+            BenchmarkLanguage::SmlNj => f.write_str("SML/NJ"),
+            BenchmarkLanguage::SmlMlton => f.write_str("MLton"),
             BenchmarkLanguage::OCaml => f.write_str("OCaml"),
             BenchmarkLanguage::Effekt => f.write_str("Effekt"),
             BenchmarkLanguage::Koka => f.write_str("Koka"),
