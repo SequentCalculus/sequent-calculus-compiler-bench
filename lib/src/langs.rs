@@ -97,7 +97,7 @@ impl BenchmarkLanguage {
                 cmd
             }
             BenchmarkLanguage::OCaml => {
-                let mut cmd = Command::new("ocamlc");
+                let mut cmd = Command::new("ocamlopt");
                 cmd.arg(source_file);
                 cmd.arg("-o");
                 cmd.arg(out_path);
