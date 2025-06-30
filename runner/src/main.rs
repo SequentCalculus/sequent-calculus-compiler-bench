@@ -23,7 +23,7 @@ pub struct Args {
     exclude_bench: Vec<String>,
 }
 
-fn main() -> Result<(), Error> {
+fn run() -> Result<(), Error> {
     let args = Args::parse();
     let benchmarks;
     if let Some(name) = args.name {
@@ -50,4 +50,11 @@ fn main() -> Result<(), Error> {
         }
     }
     Ok(())
+}
+
+fn main() {
+    match run() {
+        Ok(_) => (),
+        Err(err) => println!("Runner exited with error:\n{err}"),
+    }
 }

@@ -3,5 +3,7 @@
 /results
 *.cmi
 *.cmo
+*.cmx
+*.o
 /**/.cm/
 /**/.koka/
