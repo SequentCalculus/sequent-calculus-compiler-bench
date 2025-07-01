@@ -1,4 +1,4 @@
-args = ["1000", "120"]
+args = ["10", "400"]
 test_args = ["1", "40"]
 heap_size=1024
 expected = "5021"
