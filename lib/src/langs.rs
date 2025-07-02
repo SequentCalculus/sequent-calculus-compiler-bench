@@ -78,7 +78,7 @@ impl BenchmarkLanguage {
                 cmd.arg("aarch64");
                 if let Some(hs) = heap_size {
                     cmd.arg("--heap-size");
-                    cmd.arg(format!("{}", hs));
+                    cmd.arg(format!("{hs}"));
                 }
                 cmd
             }
