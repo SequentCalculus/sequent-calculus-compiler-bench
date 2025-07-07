@@ -53,6 +53,11 @@ pub enum Error {
         lang: String,
         msg: String,
     },
+    ReadCSV {
+        path: PathBuf,
+        msg: String,
+    },
+    ParseFloat(String),
 }
 
 impl Error {
@@ -126,6 +131,16 @@ impl Error {
             msg: err.to_string(),
         }
     }
+
+    pub fn csv<T>(path: &Path, msg: &T) -> Error
+    where
+        T: fmt::Display + ?Sized,
+    {
+        Error::ReadCSV {
+            path: path.to_path_buf(),
+            msg: msg.to_string(),
+        }
+    }
 }
 
 impl fmt::Display for Error {
@@ -164,6 +179,8 @@ impl fmt::Display for Error {
             Error::Hyperfine { bench, lang, msg } => {
                 write!(f, "Could not run hyperfine for {bench} ({lang}): {msg}")
             }
+            Error::ReadCSV { path, msg } => write!(f, "Could not read csv from {path:?}:\n\t{msg}"),
+            Error::ParseFloat(s) => write!(f, "Could not parse float {s}"),
         }
     }
 }

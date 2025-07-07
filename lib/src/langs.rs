@@ -54,6 +54,19 @@ impl BenchmarkLanguage {
         }
     }
 
+    pub fn from_suffix(s: &str) -> Result<BenchmarkLanguage, Error> {
+        match s.to_lowercase().trim() {
+            "scc" => Ok(BenchmarkLanguage::Scc),
+            "rust" => Ok(BenchmarkLanguage::Rust),
+            "smlnj" => Ok(BenchmarkLanguage::SmlNj),
+            "mlton" => Ok(BenchmarkLanguage::SmlMlton),
+            "ocaml" => Ok(BenchmarkLanguage::OCaml),
+            "effekt" => Ok(BenchmarkLanguage::Effekt),
+            "koka" => Ok(BenchmarkLanguage::Koka),
+            _ => Err(Error::unknown_lang("read from suffix", s)),
+        }
+    }
+
     pub fn compile_cmd(&self, source_file: &PathBuf, heap_size: Option<usize>) -> Command {
         let mut source_base = source_file
             .as_path()
