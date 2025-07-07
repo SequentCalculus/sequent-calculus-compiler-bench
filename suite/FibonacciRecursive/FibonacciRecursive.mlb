@@ -1,6 +1,0 @@
-$(SML_LIB)/basis/basis.mlb
-local
-  FibonacciRecursive_lib.sml
-in
-  FibonacciRecursive_mlton.sml
-end
