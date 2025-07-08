@@ -498,6 +498,7 @@ name = "lib"
 version = "0.1.0"
 dependencies = [
  "basic-toml",
+ "plotters",
  "serde",
 ]
 

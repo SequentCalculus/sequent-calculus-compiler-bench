@@ -7,3 +7,4 @@ edition = "2024"
 # Benchmark Config
 basic-toml = { version = "0.1.9" }
 serde = { version = "1.0.217", features=["derive"]}
+plotters = {version="0.3.7"}

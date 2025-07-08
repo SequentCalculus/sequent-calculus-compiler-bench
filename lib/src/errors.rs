@@ -37,6 +37,9 @@ pub enum Error {
         lang: String,
         tried: String,
     },
+    MissingData {
+        lang: BenchmarkLanguage,
+    },
     Compile {
         bench: String,
         lang: String,
@@ -58,6 +61,11 @@ pub enum Error {
         msg: String,
     },
     ParseFloat(String),
+    Plotters {
+        bench: String,
+        tried: String,
+        msg: String,
+    },
 }
 
 impl Error {
@@ -141,6 +149,21 @@ impl Error {
             msg: msg.to_string(),
         }
     }
+
+    pub fn plotters<T>(bench: &str, tried: &str, err: T) -> Error
+    where
+        T: fmt::Display,
+    {
+        Error::Plotters {
+            bench: bench.to_owned(),
+            tried: tried.to_owned(),
+            msg: err.to_string(),
+        }
+    }
+
+    pub fn missing_lang(lang: BenchmarkLanguage) -> Error {
+        Error::MissingData { lang }
+    }
 }
 
 impl fmt::Display for Error {
@@ -181,6 +204,10 @@ impl fmt::Display for Error {
             }
             Error::ReadCSV { path, msg } => write!(f, "Could not read csv from {path:?}:\n\t{msg}"),
             Error::ParseFloat(s) => write!(f, "Could not parse float {s}"),
+            Error::Plotters { bench, tried, msg } => {
+                write!(f, "Error in Plotters for {bench} during {tried}:\n\t{msg}")
+            }
+            Error::MissingData { lang } => write!(f, "Missing Data for language {lang}"),
         }
     }
 }
