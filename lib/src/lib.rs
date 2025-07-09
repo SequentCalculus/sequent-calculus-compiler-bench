@@ -1,5 +1,5 @@
 pub mod benchmark;
-mod config;
+pub mod config;
 pub mod errors;
 pub mod langs;
 pub mod paths;

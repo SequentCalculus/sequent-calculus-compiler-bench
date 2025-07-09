@@ -1,4 +1,9 @@
-use lib::{errors::Error, langs::BenchmarkLanguage, paths::HYPERFINE_PATH};
+use lib::{
+    config::Config,
+    errors::Error,
+    langs::BenchmarkLanguage,
+    paths::{HYPERFINE_PATH, SUITE_PATH},
+};
 use std::{fs::read_dir, path::PathBuf};
 
 #[derive(Debug)]
@@ -72,7 +77,11 @@ impl BenchData {
     pub fn new(path: &PathBuf, baseline: &BenchData) -> Result<BenchData, Error> {
         let mut data = BenchData::new_baseline(path)?;
         data.adjusted_mean = data.mean - baseline.mean;
-        data.adjusted_stddev = data.stddev + baseline.stddev;
+
+        let self_variance = data.stddev * data.stddev;
+        let base_variance = baseline.stddev * baseline.stddev;
+        let diff_variance = self_variance + base_variance;
+        data.adjusted_stddev = diff_variance.sqrt();
         Ok(data)
     }
 
