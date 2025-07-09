@@ -5,8 +5,8 @@ use plotters::{
     chart::ChartBuilder,
     drawing::IntoDrawingArea,
     element::BackendCoordOnly,
-    prelude::{ErrorBar, Histogram, IntoFont, IntoSegmentedCoord, Rectangle},
-    style::{BLUE, Color, GREEN, RED, RGBColor, WHITE},
+    prelude::{ErrorBar, Histogram, IntoFont, IntoSegmentedCoord, PathElement, Rectangle},
+    style::{BLACK, BLUE, Color, GREEN, RED, RGBColor, WHITE},
 };
 use std::{collections::HashSet, fs::create_dir_all, path::PathBuf};
 
@@ -17,6 +17,7 @@ const LABEL_SIZE: u32 = 20;
 const COLOR_SLOWER: RGBColor = GREEN;
 const COLOR_FASTER: RGBColor = RED;
 const BAR_THICKNESS: f64 = 0.6;
+const COLOR_STDDEV: RGBColor = BLACK;
 
 pub fn generate_plot(res: BenchResult) -> Result<(), Error> {
     let mut out_path = PathBuf::from(REPORTS_PATH);
@@ -28,32 +29,21 @@ pub fn generate_plot(res: BenchResult) -> Result<(), Error> {
     root.fill(&WHITE)
         .map_err(|err| Error::plotters(&res.benchmark, "fill drawing area", err))?;
 
-    let sc_res = res
+    let y_max = res
         .data
         .iter()
-        .find(|dat| dat.lang == BenchmarkLanguage::Scc)
-        .ok_or(Error::missing_lang(BenchmarkLanguage::Scc))?;
-
-    let data_formatted = res
-        .data
-        .iter()
-        .filter(|dat| dat.lang != BenchmarkLanguage::Scc)
-        .map(|dat| (dat.lang.to_string(), dat.mean - sc_res.mean, dat.stddev))
-        .collect::<Vec<(String, f64, f64)>>();
-
-    let y_max = data_formatted
-        .iter()
-        .max_by(|dat1, dat2| dat1.1.partial_cmp(&dat2.1).unwrap())
+        .max_by(|dat1, dat2| dat1.adjusted_mean.partial_cmp(&dat2.adjusted_mean).unwrap())
         .unwrap()
-        .1
+        .adjusted_mean
         .ceil();
-    let y_min = data_formatted
+    let y_min = res
+        .data
         .iter()
-        .min_by(|dat1, dat2| dat1.1.partial_cmp(&dat2.1).unwrap())
+        .min_by(|dat1, dat2| dat1.adjusted_mean.partial_cmp(&dat2.adjusted_mean).unwrap())
         .unwrap()
-        .1
+        .adjusted_mean
         .floor();
-    let x_max = res.data.len() as f64;
+    let x_max = res.data.len() as f64 + 1.0;
 
     let mut chart = ChartBuilder::on(&root)
         .margin(MARGIN)
@@ -70,29 +60,41 @@ pub fn generate_plot(res: BenchResult) -> Result<(), Error> {
             if ind < &1.0 {
                 return "".to_owned();
             }
-            data_formatted
+            res.data
                 .get((*ind - 1.0).round() as usize)
-                .map(|res| res.0.clone())
+                .map(|res| res.lang.to_string())
                 .unwrap_or("".to_owned())
         })
         .draw()
         .map_err(|err| Error::plotters(&res.benchmark, "configure mesh", err))?;
 
     chart
-        .draw_series(data_formatted.iter().enumerate().map(|(ind, dat)| {
+        .draw_series(res.data.iter().enumerate().map(|(ind, dat)| {
             Rectangle::new(
                 [
                     ((ind + 1) as f64 - (BAR_THICKNESS / 2.0), 0.0),
-                    ((ind + 1) as f64 + (BAR_THICKNESS / 2.0), dat.1),
+                    ((ind + 1) as f64 + (BAR_THICKNESS / 2.0), dat.adjusted_mean),
                 ],
-                if dat.1 > 0.0 {
+                if dat.adjusted_mean > 0.0 {
                     COLOR_SLOWER.filled()
                 } else {
                     COLOR_FASTER.filled()
                 },
             )
         }))
-        .map_err(|err| Error::plotters(&res.benchmark, "Draw plot", err))?;
+        .map_err(|err| Error::plotters(&res.benchmark, "Draw means", err))?;
+
+    chart
+        .draw_series(res.data.iter().enumerate().map(|(ind, dat)| {
+            let x = (ind + 1) as f64;
+            let y_end = if dat.adjusted_mean < 0.0 {
+                dat.adjusted_mean - dat.adjusted_stddev
+            } else {
+                dat.adjusted_mean + dat.adjusted_stddev
+            };
+            PathElement::new([(x, dat.adjusted_mean), (x, y_end)], COLOR_STDDEV)
+        }))
+        .map_err(|err| Error::plotters(&res.benchmark, "Draw Stddev", err))?;
 
     root.present()
         .map_err(|err| Error::file_access(&out_path, "write plot to file", err))?;
