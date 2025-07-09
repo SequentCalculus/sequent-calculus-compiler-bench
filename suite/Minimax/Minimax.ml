@@ -89,7 +89,7 @@ let is_occupied board i = Option.is_some (nth board i)
 
 let rec put_at x xs i = 
   if i=0 then (x::List.tl xs) 
-  else if 0<i then List.hd xs :: put_at x (List.tl xs) (i-1)
+  else if i>0 then List.hd xs :: put_at x (List.tl xs) (i-1)
   else raise BadIndex
 
 let move_to board p i = 

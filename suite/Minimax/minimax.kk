@@ -109,9 +109,9 @@ fun empty(): <div,exn> list<maybe<player>>{
 }
 
 fun put_at(x:maybe<player>,xs:list<maybe<player>>,i:int64): <div,exn> list<maybe<player>>{
-  if i == 0.int64 then 
+  if i == 0.int64 then
     Cons(x,tail(xs))
-  else if 0.int64 < i then 
+  else if i > 0.int64 then
     Cons(unjust(head(xs)),put_at(x,tail(xs),i - 1.int64))
   else 
     throw("Negative list index")

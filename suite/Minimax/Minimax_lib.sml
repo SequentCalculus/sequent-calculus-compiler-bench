@@ -89,7 +89,7 @@ structure Minimax = struct
 
   fun put_at x xs i = 
     if i=0 then (x::tl xs)
-    else if 0<i then (hd xs:: put_at x (tl xs) (i-1))
+    else if i>0 then (hd xs:: put_at x (tl xs) (i-1))
     else raise BadIndex
 
   fun move_to board p i = 

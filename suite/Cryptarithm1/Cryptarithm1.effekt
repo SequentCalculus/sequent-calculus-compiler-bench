@@ -1,7 +1,7 @@
 import args 
 
 def enum_from_to(from:Int,to:Int) : List[Int] = { 
-  if (from<=to){
+  if (to>=from){
     Cons(from,enum_from_to(from + 1,to))
   }else{
     Nil()

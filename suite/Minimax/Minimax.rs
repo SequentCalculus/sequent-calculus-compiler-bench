@@ -266,7 +266,7 @@ fn is_occupied(board: &List<Option<Player>>, i: i64) -> bool {
 fn put_at(x: Option<Player>, xs: List<Option<Player>>, i: i64) -> List<Option<Player>> {
     if i == 0 {
         List::Cons(x, Rc::new(xs.tail()))
-    } else if 0 < i {
+    } else if i > 0 {
         let (hd, tl) = xs.split_head();
         List::Cons(hd, Rc::new(put_at(x, tl, i - 1)))
     } else {

@@ -85,7 +85,7 @@ impl<A> List<A> {
 
 impl List<i64> {
     pub fn enum_from_to(from: i64, to: i64) -> List<i64> {
-        if from <= to {
+        if to >= from {
             List::Cons(from, Rc::new(List::enum_from_to(from + 1, to)))
         } else {
             List::Nil

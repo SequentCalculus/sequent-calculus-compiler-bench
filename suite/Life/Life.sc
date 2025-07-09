@@ -116,39 +116,6 @@ def filter(l: List[Pair[i64, i64]], f: Fun[Pair[i64, i64], Bool]): List[Pair[i64
   }
 }
 
-def lexordset(xs: List[Pair[i64, i64]]): List[Pair[i64, i64]] {
-  xs.case[Pair[i64, i64]] {
-    Nil => Nil,
-    Cons(a, x) =>
-      append(
-        lexordset(filter(x, new { Apply(b) => lexless(a, b) })),
-        append(
-          Cons(a, Nil),
-          lexordset(filter(x, new { Apply(b) => lexgreater(a, b) }))))
-  }
-}
-
-def lexless(a: Pair[i64, i64], b: Pair[i64, i64]): Bool {
-  a.case[i64, i64] {
-    Tup(fst1, snd1) => b.case[i64, i64] {
-      Tup(fst2, snd2) =>
-        if fst2 < fst1 {
-          True
-        } else {
-          if fst2 == fst1 {
-            if snd2 < snd1 { True } else { False }
-          } else {
-            False
-          }
-        }
-    }
-  }
-}
-
-def lexgreater(a: Pair[i64, i64], b: Pair[i64, i64]): Bool {
-    lexless(b, a)
-}
-
 def diff(x: List[Pair[i64, i64]], y: List[Pair[i64, i64]]): List[Pair[i64, i64]] {
   filter(x, new { Apply(p) => not(member(y, p)) })
 }

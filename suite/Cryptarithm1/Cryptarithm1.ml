@@ -1,5 +1,5 @@
 let rec enum_from_to from to_ = 
-  if from<=to_ then from::(enum_from_to (from+1) to_)
+  if to_>=from then from::(enum_from_to (from+1) to_)
   else []
 
 let expand a b c d e f = 
