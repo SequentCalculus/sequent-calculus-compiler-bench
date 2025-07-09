@@ -6,7 +6,7 @@ use plotters::{
     drawing::IntoDrawingArea,
     element::BackendCoordOnly,
     prelude::{ErrorBar, Histogram, IntoFont, IntoSegmentedCoord, Rectangle},
-    style::{BLUE, Color, RGBColor, WHITE},
+    style::{BLUE, Color, GREEN, RED, RGBColor, WHITE},
 };
 use std::{collections::HashSet, fs::create_dir_all, path::PathBuf};
 
@@ -14,9 +14,9 @@ const PLOT_RES: (u32, u32) = (640, 480);
 const MARGIN: u32 = 10;
 const FONT_SIZE: u32 = 40;
 const LABEL_SIZE: u32 = 20;
-const NUM_X_LABELS: usize = 10;
-const NUM_Y_LABELS: usize = 10;
-const BAR_COLOR: RGBColor = BLUE;
+const COLOR_SLOWER: RGBColor = GREEN;
+const COLOR_FASTER: RGBColor = RED;
+const BAR_THICKNESS: f64 = 0.6;
 
 pub fn generate_plot(res: BenchResult) -> Result<(), Error> {
     let mut out_path = PathBuf::from(REPORTS_PATH);
@@ -37,6 +37,7 @@ pub fn generate_plot(res: BenchResult) -> Result<(), Error> {
     let data_formatted = res
         .data
         .iter()
+        .filter(|dat| dat.lang != BenchmarkLanguage::Scc)
         .map(|dat| (dat.lang.to_string(), dat.mean - sc_res.mean, dat.stddev))
         .collect::<Vec<(String, f64, f64)>>();
 
@@ -52,30 +53,45 @@ pub fn generate_plot(res: BenchResult) -> Result<(), Error> {
         .unwrap()
         .1
         .floor();
-    let x_max = res.data.len();
+    let x_max = res.data.len() as f64;
 
     let mut chart = ChartBuilder::on(&root)
         .margin(MARGIN)
         .caption(&res.benchmark, ("sans-serif", FONT_SIZE).into_font())
         .x_label_area_size(LABEL_SIZE)
         .y_label_area_size(LABEL_SIZE)
-        .build_cartesian_2d(0..x_max, y_min..y_max)
+        .build_cartesian_2d(0.0..x_max, y_min..y_max)
         .map_err(|err| Error::plotters(&res.benchmark, "build coordinates", err))?;
 
     chart
         .configure_mesh()
-        .x_desc("Benchmark")
         .y_desc("Time Difference")
+        .x_label_formatter(&|ind| {
+            if ind < &1.0 {
+                return "".to_owned();
+            }
+            data_formatted
+                .get((*ind - 1.0).round() as usize)
+                .map(|res| res.0.clone())
+                .unwrap_or("".to_owned())
+        })
         .draw()
         .map_err(|err| Error::plotters(&res.benchmark, "configure mesh", err))?;
 
     chart
-        .draw_series(
-            data_formatted
-                .iter()
-                .enumerate()
-                .map(|(ind, dat)| Rectangle::new([(ind, 0.0), (ind, dat.1)], BAR_COLOR)),
-        )
+        .draw_series(data_formatted.iter().enumerate().map(|(ind, dat)| {
+            Rectangle::new(
+                [
+                    ((ind + 1) as f64 - (BAR_THICKNESS / 2.0), 0.0),
+                    ((ind + 1) as f64 + (BAR_THICKNESS / 2.0), dat.1),
+                ],
+                if dat.1 > 0.0 {
+                    COLOR_SLOWER.filled()
+                } else {
+                    COLOR_FASTER.filled()
+                },
+            )
+        }))
         .map_err(|err| Error::plotters(&res.benchmark, "Draw plot", err))?;
 
     root.present()

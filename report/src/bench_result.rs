@@ -42,6 +42,8 @@ impl BenchResult {
             data.push(BenchData::new(&csv_path)?);
         }
 
+        data.sort_by(|dat1, dat2| dat1.lang.to_string().cmp(&dat2.lang.to_string()));
+
         Ok(BenchResult {
             benchmark: name.to_owned(),
             data,
