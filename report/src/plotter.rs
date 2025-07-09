@@ -29,33 +29,34 @@ pub fn generate_plot(res: BenchResult) -> Result<(), Error> {
     root.fill(&WHITE)
         .map_err(|err| Error::plotters(&res.benchmark, "fill drawing area", err))?;
 
-    let y_max = res
+    let y_max = -(res
         .data
         .iter()
         .max_by(|dat1, dat2| dat1.adjusted_mean.partial_cmp(&dat2.adjusted_mean).unwrap())
         .unwrap()
-        .adjusted_mean
-        .ceil();
-    let y_min = res
+        .adjusted_mean);
+    let y_min = -(res
         .data
         .iter()
         .min_by(|dat1, dat2| dat1.adjusted_mean.partial_cmp(&dat2.adjusted_mean).unwrap())
         .unwrap()
-        .adjusted_mean
-        .floor();
-    let x_max = res.data.len() as f64 + 1.0;
+        .adjusted_mean);
+    let x_min = BAR_THICKNESS;
+    let x_max = res.data.len() as f64 + BAR_THICKNESS;
 
     let mut chart = ChartBuilder::on(&root)
         .margin(MARGIN)
         .caption(&res.benchmark, ("sans-serif", FONT_SIZE).into_font())
         .x_label_area_size(LABEL_SIZE)
         .y_label_area_size(LABEL_SIZE)
-        .build_cartesian_2d(0.0..x_max, y_min..y_max)
+        .margin_right(0)
+        .build_cartesian_2d(x_min..x_max, y_min..y_max)
         .map_err(|err| Error::plotters(&res.benchmark, "build coordinates", err))?;
 
     chart
         .configure_mesh()
-        .y_desc("Time Difference")
+        .disable_x_mesh()
+        .y_max_light_lines(0)
         .x_label_formatter(&|ind| {
             if ind < &1.0 {
                 return "".to_owned();
@@ -73,7 +74,7 @@ pub fn generate_plot(res: BenchResult) -> Result<(), Error> {
             Rectangle::new(
                 [
                     ((ind + 1) as f64 - (BAR_THICKNESS / 2.0), 0.0),
-                    ((ind + 1) as f64 + (BAR_THICKNESS / 2.0), dat.adjusted_mean),
+                    ((ind + 1) as f64 + (BAR_THICKNESS / 2.0), -dat.adjusted_mean),
                 ],
                 if dat.adjusted_mean > 0.0 {
                     COLOR_SLOWER.filled()

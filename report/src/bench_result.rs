@@ -76,12 +76,13 @@ impl BenchResult {
 impl BenchData {
     pub fn new(path: &PathBuf, baseline: &BenchData) -> Result<BenchData, Error> {
         let mut data = BenchData::new_baseline(path)?;
-        data.adjusted_mean = data.mean - baseline.mean;
+        let diff_mean = data.mean - baseline.mean;
+        data.adjusted_mean = diff_mean;
 
         let self_variance = data.stddev * data.stddev;
         let base_variance = baseline.stddev * baseline.stddev;
         let diff_variance = self_variance + base_variance;
-        data.adjusted_stddev = diff_variance.sqrt();
+        data.adjusted_stddev = diff_variance;
         Ok(data)
     }
 
