@@ -4,7 +4,7 @@ import std/os/env
 import std/num/int64
 
 fun enum_from_to(from:int64,to:int64): div list<int64>{
-  if from<=to then
+  if to>=from then
     Cons(from,enum_from_to(from + 1.int64,to))
   else 
     Nil

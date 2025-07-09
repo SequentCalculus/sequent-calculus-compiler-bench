@@ -131,7 +131,7 @@ def score(board:List[Option[Player]]) : Int = {
 def put_at(x:Option[Player],xs:List[Option[Player]],i:Int) : List[Option[Player]] = { 
   if (i==0) {
     Cons(x,tail(xs))
-  }else if (0<i) {
+  }else if (i>0) {
     Cons(head(xs),put_at(x,tail(xs),i - 1))
   }else{
     Nil()

@@ -1,6 +1,6 @@
 structure Cryptarithm1 = struct 
   fun enum_from_to from to = 
-    if from <= to
+    if to >= from
     then from::(enum_from_to (from+1) to)
     else nil
 
