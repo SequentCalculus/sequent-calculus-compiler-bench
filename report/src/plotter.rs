@@ -1,22 +1,21 @@
 use crate::bench_result::BenchResult;
-use lib::{errors::Error, langs::BenchmarkLanguage, paths::REPORTS_PATH};
+use lib::{errors::Error, paths::REPORTS_PATH};
 use plotters::{
     backend::BitMapBackend,
     chart::ChartBuilder,
     drawing::IntoDrawingArea,
-    element::BackendCoordOnly,
-    prelude::{ErrorBar, Histogram, IntoFont, IntoSegmentedCoord, PathElement, Rectangle},
-    style::{BLACK, BLUE, Color, GREEN, RED, RGBColor, WHITE},
+    prelude::{IntoFont, PathElement, Rectangle},
+    style::{BLACK, Color, GREEN, RED, RGBColor, WHITE},
 };
-use std::{collections::HashSet, fs::create_dir_all, path::PathBuf};
+use std::{fs::create_dir_all, path::PathBuf};
 
-const PLOT_RES: (u32, u32) = (640, 480);
-const MARGIN: u32 = 10;
+const PLOT_RES: (u32, u32) = (600, 600);
+const MARGIN: u32 = 50;
 const FONT_SIZE: u32 = 40;
 const LABEL_SIZE: u32 = 20;
 const COLOR_SLOWER: RGBColor = GREEN;
 const COLOR_FASTER: RGBColor = RED;
-const BAR_THICKNESS: f64 = 0.6;
+const BAR_THICKNESS: f64 = 0.8;
 const COLOR_STDDEV: RGBColor = BLACK;
 
 pub fn generate_plot(res: BenchResult) -> Result<(), Error> {
@@ -29,19 +28,19 @@ pub fn generate_plot(res: BenchResult) -> Result<(), Error> {
     root.fill(&WHITE)
         .map_err(|err| Error::plotters(&res.benchmark, "fill drawing area", err))?;
 
-    let y_max = -(res
+    let y_max = res
         .data
         .iter()
         .max_by(|dat1, dat2| dat1.adjusted_mean.partial_cmp(&dat2.adjusted_mean).unwrap())
         .unwrap()
-        .adjusted_mean);
-    let y_min = -(res
+        .adjusted_mean;
+    let y_min = res
         .data
         .iter()
         .min_by(|dat1, dat2| dat1.adjusted_mean.partial_cmp(&dat2.adjusted_mean).unwrap())
         .unwrap()
-        .adjusted_mean);
-    let x_min = BAR_THICKNESS;
+        .adjusted_mean;
+    let x_min = 1.0 - BAR_THICKNESS + 0.1;
     let x_max = res.data.len() as f64 + BAR_THICKNESS;
 
     let mut chart = ChartBuilder::on(&root)
@@ -74,9 +73,9 @@ pub fn generate_plot(res: BenchResult) -> Result<(), Error> {
             Rectangle::new(
                 [
                     ((ind + 1) as f64 - (BAR_THICKNESS / 2.0), 0.0),
-                    ((ind + 1) as f64 + (BAR_THICKNESS / 2.0), -dat.adjusted_mean),
+                    ((ind + 1) as f64 + (BAR_THICKNESS / 2.0), dat.adjusted_mean),
                 ],
-                if dat.adjusted_mean > 0.0 {
+                if dat.adjusted_mean < 0.0 {
                     COLOR_SLOWER.filled()
                 } else {
                     COLOR_FASTER.filled()
