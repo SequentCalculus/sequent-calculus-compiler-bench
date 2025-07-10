@@ -1,11 +1,11 @@
 use crate::bench_result::BenchResult;
-use lib::{errors::Error, paths::REPORTS_PATH};
+use lib::{errors::Error, langs::BenchmarkLanguage, paths::REPORTS_PATH};
 use plotters::{
     backend::BitMapBackend,
     chart::ChartBuilder,
     drawing::IntoDrawingArea,
     prelude::{IntoFont, PathElement, Rectangle},
-    style::{BLACK, Color, GREEN, RED, RGBColor, WHITE},
+    style::{BLACK, Color, GREEN, RED, RGBColor, ShapeStyle, WHITE},
 };
 use std::{fs::create_dir_all, path::PathBuf};
 
@@ -13,10 +13,21 @@ const PLOT_RES: (u32, u32) = (600, 600);
 const MARGIN: u32 = 50;
 const FONT_SIZE: u32 = 40;
 const LABEL_SIZE: u32 = 20;
-const COLOR_SLOWER: RGBColor = GREEN;
-const COLOR_FASTER: RGBColor = RED;
 const BAR_THICKNESS: f64 = 0.8;
+const AXIS_MARGINS: f64 = 0.1;
 const COLOR_STDDEV: RGBColor = BLACK;
+
+fn lang_color(lang: &BenchmarkLanguage) -> ShapeStyle {
+    match lang {
+        BenchmarkLanguage::Scc => BLACK.filled(),
+        BenchmarkLanguage::OCaml => RGBColor(242, 145, 00).filled(),
+        BenchmarkLanguage::Effekt => RGBColor(66, 36, 70).filled(),
+        BenchmarkLanguage::Koka => RGBColor(27, 66, 83).filled(),
+        BenchmarkLanguage::Rust => RGBColor(143, 30, 28).filled(),
+        BenchmarkLanguage::SmlNj => RGBColor(143, 143, 143).filled(),
+        BenchmarkLanguage::SmlMlton => RGBColor(37, 177, 228).filled(),
+    }
+}
 
 pub fn generate_plot(res: BenchResult) -> Result<(), Error> {
     let mut out_path = PathBuf::from(REPORTS_PATH);
@@ -33,14 +44,16 @@ pub fn generate_plot(res: BenchResult) -> Result<(), Error> {
         .iter()
         .max_by(|dat1, dat2| dat1.adjusted_mean.partial_cmp(&dat2.adjusted_mean).unwrap())
         .unwrap()
-        .adjusted_mean;
+        .adjusted_mean
+        + AXIS_MARGINS;
     let y_min = res
         .data
         .iter()
         .min_by(|dat1, dat2| dat1.adjusted_mean.partial_cmp(&dat2.adjusted_mean).unwrap())
         .unwrap()
-        .adjusted_mean;
-    let x_min = 1.0 - BAR_THICKNESS + 0.1;
+        .adjusted_mean
+        - AXIS_MARGINS;
+    let x_min = 1.0 - BAR_THICKNESS + AXIS_MARGINS;
     let x_max = res.data.len() as f64 + BAR_THICKNESS;
 
     let mut chart = ChartBuilder::on(&root)
@@ -75,11 +88,7 @@ pub fn generate_plot(res: BenchResult) -> Result<(), Error> {
                     ((ind + 1) as f64 - (BAR_THICKNESS / 2.0), 0.0),
                     ((ind + 1) as f64 + (BAR_THICKNESS / 2.0), dat.adjusted_mean),
                 ],
-                if dat.adjusted_mean < 0.0 {
-                    COLOR_SLOWER.filled()
-                } else {
-                    COLOR_FASTER.filled()
-                },
+                lang_color(&dat.lang),
             )
         }))
         .map_err(|err| Error::plotters(&res.benchmark, "Draw means", err))?;
