@@ -4,8 +4,8 @@ use plotters::{
     backend::BitMapBackend,
     chart::ChartBuilder,
     drawing::IntoDrawingArea,
-    prelude::{IntoFont, PathElement, Rectangle},
-    style::{BLACK, Color, GREEN, RED, RGBColor, ShapeStyle, WHITE},
+    prelude::{IntoFont, Rectangle},
+    style::{BLACK, Color, RGBColor, ShapeStyle, WHITE},
 };
 use std::{fs::create_dir_all, path::PathBuf};
 
@@ -15,7 +15,6 @@ const FONT_SIZE: u32 = 40;
 const LABEL_SIZE: u32 = 20;
 const BAR_THICKNESS: f64 = 0.8;
 const AXIS_MARGINS: f64 = 0.1;
-const COLOR_STDDEV: RGBColor = BLACK;
 
 fn lang_color(lang: &BenchmarkLanguage) -> ShapeStyle {
     match lang {
@@ -92,18 +91,6 @@ pub fn generate_plot(res: BenchResult) -> Result<(), Error> {
             )
         }))
         .map_err(|err| Error::plotters(&res.benchmark, "Draw means", err))?;
-
-    chart
-        .draw_series(res.data.iter().enumerate().map(|(ind, dat)| {
-            let x = (ind + 1) as f64;
-            let y_end = if dat.adjusted_mean < 0.0 {
-                dat.adjusted_mean - dat.adjusted_stddev
-            } else {
-                dat.adjusted_mean + dat.adjusted_stddev
-            };
-            PathElement::new([(x, dat.adjusted_mean), (x, y_end)], COLOR_STDDEV)
-        }))
-        .map_err(|err| Error::plotters(&res.benchmark, "Draw Stddev", err))?;
 
     root.present()
         .map_err(|err| Error::file_access(&out_path, "write plot to file", err))?;

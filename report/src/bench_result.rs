@@ -18,7 +18,6 @@ pub struct BenchData {
     pub mean: f64,
     pub adjusted_mean: f64,
     pub stddev: f64,
-    pub adjusted_stddev: f64,
 }
 
 impl BenchResult {
@@ -79,10 +78,6 @@ impl BenchData {
         let diff_mean = baseline.mean / data.mean;
         data.adjusted_mean = diff_mean.ln();
 
-        let self_variance = data.stddev * data.stddev;
-        let base_variance = baseline.stddev * baseline.stddev;
-        let diff_variance = self_variance + base_variance;
-        data.adjusted_stddev = diff_variance;
         Ok(data)
     }
 
@@ -120,7 +115,6 @@ impl BenchData {
             mean,
             stddev,
             adjusted_mean: 0.0,
-            adjusted_stddev: 0.0,
         })
     }
 }
