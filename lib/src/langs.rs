@@ -17,6 +17,18 @@ pub enum BenchmarkLanguage {
 }
 
 impl BenchmarkLanguage {
+    pub fn all() -> [BenchmarkLanguage; 7] {
+        [
+            BenchmarkLanguage::Scc,
+            BenchmarkLanguage::Rust,
+            BenchmarkLanguage::SmlMlton,
+            BenchmarkLanguage::SmlNj,
+            BenchmarkLanguage::OCaml,
+            BenchmarkLanguage::Effekt,
+            BenchmarkLanguage::Koka,
+        ]
+    }
+
     pub fn from_ext(ext: &str) -> Option<BenchmarkLanguage> {
         match ext {
             "sc" => Some(BenchmarkLanguage::Scc),

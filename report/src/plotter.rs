@@ -4,10 +4,10 @@ use plotters::{
     backend::BitMapBackend,
     chart::ChartBuilder,
     drawing::IntoDrawingArea,
-    prelude::{IntoFont, Rectangle},
+    prelude::{IntoDynElement, IntoFont, PathElement, Rectangle},
     style::{BLACK, Color, RGBColor, ShapeStyle, WHITE},
 };
-use std::{fs::create_dir_all, path::PathBuf};
+use std::{cmp::Ordering, fs::create_dir_all, path::PathBuf};
 
 const PLOT_RES: (u32, u32) = (600, 600);
 const MARGIN: u32 = 50;
@@ -15,6 +15,7 @@ const FONT_SIZE: u32 = 40;
 const LABEL_SIZE: u32 = 20;
 const BAR_THICKNESS: f64 = 0.8;
 const AXIS_MARGINS: f64 = 0.1;
+const CROSS_HEIGHT: f64 = 1.0;
 
 fn lang_color(lang: &BenchmarkLanguage) -> ShapeStyle {
     match lang {
@@ -41,14 +42,22 @@ pub fn generate_plot(res: BenchResult) -> Result<(), Error> {
     let y_max = res
         .data
         .iter()
-        .max_by(|dat1, dat2| dat1.adjusted_mean.partial_cmp(&dat2.adjusted_mean).unwrap())
+        .max_by(|dat1, dat2| {
+            dat1.adjusted_mean
+                .partial_cmp(&dat2.adjusted_mean)
+                .unwrap_or(Ordering::Less)
+        })
         .unwrap()
         .adjusted_mean
         + AXIS_MARGINS;
     let y_min = res
         .data
         .iter()
-        .min_by(|dat1, dat2| dat1.adjusted_mean.partial_cmp(&dat2.adjusted_mean).unwrap())
+        .min_by(|dat1, dat2| {
+            dat1.adjusted_mean
+                .partial_cmp(&dat2.adjusted_mean)
+                .unwrap_or(Ordering::Greater)
+        })
         .unwrap()
         .adjusted_mean
         - AXIS_MARGINS;
@@ -69,26 +78,32 @@ pub fn generate_plot(res: BenchResult) -> Result<(), Error> {
         .disable_x_mesh()
         .y_max_light_lines(0)
         .x_label_formatter(&|ind| {
-            if ind < &1.0 {
-                return "".to_owned();
+            if ind.round() == *ind && *ind >= 1.0 {
+                res.data[(*ind) as usize - 1].lang.to_string()
+            } else {
+                "".to_owned()
             }
-            res.data
-                .get((*ind - 1.0).round() as usize)
-                .map(|res| res.lang.to_string())
-                .unwrap_or("".to_owned())
         })
         .draw()
         .map_err(|err| Error::plotters(&res.benchmark, "configure mesh", err))?;
 
     chart
         .draw_series(res.data.iter().enumerate().map(|(ind, dat)| {
-            Rectangle::new(
-                [
-                    ((ind + 1) as f64 - (BAR_THICKNESS / 2.0), 0.0),
-                    ((ind + 1) as f64 + (BAR_THICKNESS / 2.0), dat.adjusted_mean),
-                ],
-                lang_color(&dat.lang),
-            )
+            let x_left = (ind + 1) as f64 - (BAR_THICKNESS / 2.0);
+            let x_right = (ind + 1) as f64 + (BAR_THICKNESS / 2.0);
+            if dat.adjusted_mean.is_nan() {
+                PathElement::new(
+                    [(x_left, CROSS_HEIGHT), (x_right, -CROSS_HEIGHT)],
+                    lang_color(&dat.lang),
+                )
+                .into_dyn()
+            } else {
+                Rectangle::new(
+                    [(x_left, 0.0), (x_right, dat.adjusted_mean)],
+                    lang_color(&dat.lang),
+                )
+                .into_dyn()
+            }
         }))
         .map_err(|err| Error::plotters(&res.benchmark, "Draw means", err))?;
 

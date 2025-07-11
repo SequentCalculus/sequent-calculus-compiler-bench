@@ -63,6 +63,15 @@ impl BenchResult {
             data.push(BenchData::new(&path, &baseline)?);
         }
 
+        for lang in BenchmarkLanguage::all() {
+            if lang == BenchmarkLanguage::Scc || data.iter().find(|dat| dat.lang == lang).is_some()
+            {
+                continue;
+            }
+
+            data.push(BenchData::empty(&lang));
+        }
+
         data.sort_by(|dat1, dat2| dat1.lang.to_string().cmp(&dat2.lang.to_string()));
 
         Ok(BenchResult {
@@ -76,7 +85,7 @@ impl BenchData {
     pub fn new(path: &PathBuf, baseline: &BenchData) -> Result<BenchData, Error> {
         let mut data = BenchData::new_baseline(path)?;
         let diff_mean = baseline.mean / data.mean;
-        data.adjusted_mean = diff_mean.ln();
+        data.adjusted_mean = diff_mean.log10();
 
         Ok(data)
     }
@@ -116,5 +125,14 @@ impl BenchData {
             stddev,
             adjusted_mean: 0.0,
         })
+    }
+
+    pub fn empty(lang: &BenchmarkLanguage) -> BenchData {
+        BenchData {
+            lang: *lang,
+            mean: f64::NAN,
+            stddev: f64::NAN,
+            adjusted_mean: f64::NAN,
+        }
     }
 }
