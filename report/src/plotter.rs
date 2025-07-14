@@ -18,28 +18,6 @@ const AXIS_MARGINS: f64 = 0.1;
 const CROSS_HEIGHT: f64 = 0.2;
 const CROSS_THICKNESS: u32 = 5;
 
-fn pow_unicode(pow: String) -> String {
-    let mut out = "".to_owned();
-    for ch in pow.chars() {
-        match ch {
-            '0' => out.push('⁰'),
-            '1' => out.push('¹'),
-            '2' => out.push('²'),
-            '3' => out.push('³'),
-            '4' => out.push('⁴'),
-            '5' => out.push('⁵'),
-            '6' => out.push('⁶'),
-            '7' => out.push('⁷'),
-            '8' => out.push('⁸'),
-            '9' => out.push('⁹'),
-            '-' => out.push('⁻'),
-            '.' => out.push('·'),
-            _ => out.push(ch),
-        }
-    }
-    out
-}
-
 fn lang_color(lang: &BenchmarkLanguage) -> RGBColor {
     match lang {
         BenchmarkLanguage::Scc => BLACK,
@@ -100,7 +78,13 @@ pub fn generate_plot(res: BenchResult) -> Result<(), Error> {
         .configure_mesh()
         .disable_x_mesh()
         .y_max_light_lines(0)
-        .y_label_formatter(&|ind| format!("10{}", pow_unicode(ind.to_string())))
+        .y_label_formatter(&|ind| {
+            if ind.round() == *ind {
+                10_f64.powf(*ind).to_string()
+            } else {
+                "".to_owned()
+            }
+        })
         .x_label_formatter(&|ind| {
             if ind.round() == *ind && *ind >= 1.0 {
                 res.data[(*ind) as usize - 1].lang.to_string()
