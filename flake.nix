@@ -50,8 +50,8 @@
         pname = "Sequent-Calculus-Bench";
         version = "0.1.0";
         src = ./.;
-        nativeBuildInputs = [ pkgs.makeWrapper ];
-        buildInputs = dependencies;
+        nativeBuildInputs = [ pkgs.makeWrapper pkgs.pkgconf ];
+        buildInputs = dependencies ++ [ pkgs.fontconfig pkgs.expat ];
         cargoDeps = rustPlatform.importCargoLock { lockFile = ./Cargo.lock; };
         postFixup = ''
           makeWrapper $out/bin/bench $out/bin/run-bench \
