@@ -42,18 +42,6 @@ fn main() -> Result<(), Error> {
         .unwrap()
         + AXIS_MARGINS;
 
-    /*let y_min = res
-    .data
-    .iter()
-    .min_by(|dat1, dat2| {
-        dat1.adjusted_mean
-            .partial_cmp(&dat2.adjusted_mean)
-            .unwrap_or(Ordering::Greater)
-    })
-    .unwrap()
-    .adjusted_mean
-    - AXIS_MARGINS;*/
-
     for res in results {
         generate_plot(res, y_min, y_max)?;
     }
