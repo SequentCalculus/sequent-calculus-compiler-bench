@@ -4,8 +4,8 @@ use plotters::{
     backend::BitMapBackend,
     chart::ChartBuilder,
     drawing::IntoDrawingArea,
-    prelude::{IntoDynElement, IntoFont, PathElement, Rectangle},
-    style::{BLACK, Color, RGBColor, ShapeStyle, WHITE},
+    prelude::{IntoFont, PathElement, Rectangle},
+    style::{BLACK, Color, RED, RGBColor, WHITE},
 };
 use std::{cmp::Ordering, fs::create_dir_all, path::PathBuf};
 
@@ -15,17 +15,40 @@ const FONT_SIZE: u32 = 40;
 const LABEL_SIZE: u32 = 20;
 const BAR_THICKNESS: f64 = 0.8;
 const AXIS_MARGINS: f64 = 0.1;
-const CROSS_HEIGHT: f64 = 1.0;
+const CROSS_HEIGHT: f64 = 0.2;
+const CROSS_THICKNESS: u32 = 5;
 
-fn lang_color(lang: &BenchmarkLanguage) -> ShapeStyle {
+fn pow_unicode(pow: String) -> String {
+    let mut out = "".to_owned();
+    for ch in pow.chars() {
+        match ch {
+            '0' => out.push('⁰'),
+            '1' => out.push('¹'),
+            '2' => out.push('²'),
+            '3' => out.push('³'),
+            '4' => out.push('⁴'),
+            '5' => out.push('⁵'),
+            '6' => out.push('⁶'),
+            '7' => out.push('⁷'),
+            '8' => out.push('⁸'),
+            '9' => out.push('⁹'),
+            '-' => out.push('⁻'),
+            '.' => out.push('·'),
+            _ => out.push(ch),
+        }
+    }
+    out
+}
+
+fn lang_color(lang: &BenchmarkLanguage) -> RGBColor {
     match lang {
-        BenchmarkLanguage::Scc => BLACK.filled(),
-        BenchmarkLanguage::OCaml => RGBColor(242, 145, 00).filled(),
-        BenchmarkLanguage::Effekt => RGBColor(66, 36, 70).filled(),
-        BenchmarkLanguage::Koka => RGBColor(27, 66, 83).filled(),
-        BenchmarkLanguage::Rust => RGBColor(143, 30, 28).filled(),
-        BenchmarkLanguage::SmlNj => RGBColor(143, 143, 143).filled(),
-        BenchmarkLanguage::SmlMlton => RGBColor(37, 177, 228).filled(),
+        BenchmarkLanguage::Scc => BLACK,
+        BenchmarkLanguage::OCaml => RGBColor(242, 145, 00),
+        BenchmarkLanguage::Effekt => RGBColor(66, 36, 70),
+        BenchmarkLanguage::Koka => RGBColor(27, 66, 83),
+        BenchmarkLanguage::Rust => RGBColor(143, 30, 28),
+        BenchmarkLanguage::SmlNj => RGBColor(143, 143, 143),
+        BenchmarkLanguage::SmlMlton => RGBColor(37, 177, 228),
     }
 }
 
@@ -77,6 +100,7 @@ pub fn generate_plot(res: BenchResult) -> Result<(), Error> {
         .configure_mesh()
         .disable_x_mesh()
         .y_max_light_lines(0)
+        .y_label_formatter(&|ind| format!("10{}", pow_unicode(ind.to_string())))
         .x_label_formatter(&|ind| {
             if ind.round() == *ind && *ind >= 1.0 {
                 res.data[(*ind) as usize - 1].lang.to_string()
@@ -87,25 +111,37 @@ pub fn generate_plot(res: BenchResult) -> Result<(), Error> {
         .draw()
         .map_err(|err| Error::plotters(&res.benchmark, "configure mesh", err))?;
 
+    let x_left = |ind: usize| (ind + 1) as f64 - (BAR_THICKNESS / 2.0);
+    let x_right = |ind: usize| (ind + 1) as f64 + (BAR_THICKNESS / 2.0);
+
     chart
-        .draw_series(res.data.iter().enumerate().map(|(ind, dat)| {
-            let x_left = (ind + 1) as f64 - (BAR_THICKNESS / 2.0);
-            let x_right = (ind + 1) as f64 + (BAR_THICKNESS / 2.0);
-            if dat.adjusted_mean.is_nan() {
-                PathElement::new(
-                    [(x_left, CROSS_HEIGHT), (x_right, -CROSS_HEIGHT)],
-                    lang_color(&dat.lang),
-                )
-                .into_dyn()
-            } else {
+        .draw_series(res.data.iter().enumerate().filter_map(|(ind, dat)| {
+            (!dat.adjusted_mean.is_nan()).then_some({
                 Rectangle::new(
-                    [(x_left, 0.0), (x_right, dat.adjusted_mean)],
-                    lang_color(&dat.lang),
+                    [(x_left(ind), 0.0), (x_right(ind), dat.adjusted_mean)],
+                    lang_color(&dat.lang).filled(),
                 )
-                .into_dyn()
-            }
+            })
         }))
         .map_err(|err| Error::plotters(&res.benchmark, "Draw means", err))?;
+
+    chart
+        .draw_series(res.data.iter().enumerate().filter_map(|(ind, dat)| {
+            dat.adjusted_mean.is_nan().then_some(PathElement::new(
+                vec![(x_left(ind), -CROSS_HEIGHT), (x_right(ind), CROSS_HEIGHT)],
+                RED.stroke_width(CROSS_THICKNESS),
+            ))
+        }))
+        .map_err(|err| Error::plotters(&res.benchmark, "Draw crosses", err))?;
+
+    chart
+        .draw_series(res.data.iter().enumerate().filter_map(|(ind, dat)| {
+            dat.adjusted_mean.is_nan().then_some(PathElement::new(
+                vec![(x_left(ind), CROSS_HEIGHT), (x_right(ind), -CROSS_HEIGHT)],
+                RED.stroke_width(CROSS_THICKNESS),
+            ))
+        }))
+        .map_err(|err| Error::plotters(&res.benchmark, "Draw crosses", err))?;
 
     root.present()
         .map_err(|err| Error::file_access(&out_path, "write plot to file", err))?;
