@@ -56,11 +56,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1751786137,
-        "narHash": "sha256-lIlUKVGCGsh0Q2EA7/6xRtKUZjaQ/ur8uUyY+MynHXQ=",
+        "lastModified": 1752077645,
+        "narHash": "sha256-HM791ZQtXV93xtCY+ZxG1REzhQenSQO020cu6rHtAPk=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "ceb24d94c6feaa4e8737a8e2bd3cf71c3a7eaaa0",
+        "rev": "be9e214982e20b8310878ac2baa063a961c1bdf6",
         "type": "github"
       },
       "original": {
@@ -123,11 +123,11 @@
         "nixpkgs": "nixpkgs_3"
       },
       "locked": {
-        "lastModified": 1750850959,
-        "narHash": "sha256-M4AK3TP4drYJFzBnlI+yhaNYR2hO/lNPXXh0OHyOi0Y=",
+        "lastModified": 1752507805,
+        "narHash": "sha256-R22106bBMDLkBvWnmcf3otHnUXPPgGRt3jHBuqTCvNM=",
         "ref": "flake",
-        "rev": "527a764d78d02e753e96d0108bf5c9c2c8368632",
-        "revCount": 613,
+        "rev": "5049280332f0fd54b4f1c57c4c6838a6ac0ec85f",
+        "revCount": 619,
         "type": "git",
         "url": "ssh://git@github.com/ps-tuebingen/sequent-calculus-compiler"
       },
