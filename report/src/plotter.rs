@@ -14,7 +14,7 @@ const MARGIN: u32 = 50;
 const FONT_SIZE: u32 = 40;
 const LABEL_SIZE: u32 = 20;
 const BAR_THICKNESS: f64 = 0.8;
-const AXIS_MARGINS: f64 = 0.1;
+pub const AXIS_MARGINS: f64 = 0.1;
 const CROSS_HEIGHT: f64 = 0.2;
 const CROSS_THICKNESS: u32 = 5;
 
@@ -30,7 +30,7 @@ fn lang_color(lang: &BenchmarkLanguage) -> RGBColor {
     }
 }
 
-pub fn generate_plot(res: BenchResult) -> Result<(), Error> {
+pub fn generate_plot(res: BenchResult, y_min: f64, y_max: f64) -> Result<(), Error> {
     let mut out_path = PathBuf::from(REPORTS_PATH);
     create_dir_all(&out_path).map_err(|_| Error::path_access(&out_path, "create reports path"))?;
     out_path = out_path.join(&res.benchmark);
@@ -40,28 +40,6 @@ pub fn generate_plot(res: BenchResult) -> Result<(), Error> {
     root.fill(&WHITE)
         .map_err(|err| Error::plotters(&res.benchmark, "fill drawing area", err))?;
 
-    let y_max = res
-        .data
-        .iter()
-        .max_by(|dat1, dat2| {
-            dat1.adjusted_mean
-                .partial_cmp(&dat2.adjusted_mean)
-                .unwrap_or(Ordering::Less)
-        })
-        .unwrap()
-        .adjusted_mean
-        + AXIS_MARGINS;
-    let y_min = res
-        .data
-        .iter()
-        .min_by(|dat1, dat2| {
-            dat1.adjusted_mean
-                .partial_cmp(&dat2.adjusted_mean)
-                .unwrap_or(Ordering::Greater)
-        })
-        .unwrap()
-        .adjusted_mean
-        - AXIS_MARGINS;
     let x_min = 1.0 - BAR_THICKNESS + AXIS_MARGINS;
     let x_max = res.data.len() as f64 + BAR_THICKNESS;
 
