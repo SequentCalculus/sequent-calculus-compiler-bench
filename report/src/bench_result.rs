@@ -1,5 +1,6 @@
+use crate::plotter::AXIS_MARGINS;
 use lib::{errors::Error, langs::BenchmarkLanguage, paths::HYPERFINE_PATH};
-use std::{fs::read_dir, path::PathBuf};
+use std::{cmp::Ordering, fs::read_dir, path::PathBuf};
 
 #[derive(Debug)]
 pub struct BenchResult {
@@ -101,6 +102,43 @@ impl BenchResult {
             benchmark: name.to_owned(),
             data,
         })
+    }
+
+    pub fn get_min_max(benches: &[Self]) -> (f64, f64) {
+        let y_max = benches
+            .iter()
+            .map(|res| {
+                res.data
+                    .iter()
+                    .max_by(|dat1, dat2| {
+                        dat1.adjusted_mean
+                            .partial_cmp(&dat2.adjusted_mean)
+                            .unwrap_or(Ordering::Less)
+                    })
+                    .unwrap()
+                    .adjusted_mean
+            })
+            .max_by(|max1, max2| max1.partial_cmp(&max2).unwrap())
+            .unwrap()
+            + AXIS_MARGINS;
+        let y_min = benches
+            .iter()
+            .map(|res| {
+                res.data
+                    .iter()
+                    .min_by(|dat1, dat2| {
+                        dat1.adjusted_mean
+                            .partial_cmp(&dat2.adjusted_mean)
+                            .unwrap_or(Ordering::Less)
+                    })
+                    .unwrap()
+                    .adjusted_mean
+            })
+            .min_by(|max1, max2| max1.partial_cmp(&max2).unwrap())
+            .unwrap()
+            + AXIS_MARGINS;
+
+        (y_max, y_min)
     }
 }
 
