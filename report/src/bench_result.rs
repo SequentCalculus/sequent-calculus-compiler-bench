@@ -31,6 +31,26 @@ impl BenchResult {
 
         let avg = Self::get_geometric_mean(&results, false);
         let avg_nogoto = Self::get_geometric_mean(&results, true);
+
+        let avg_langs = avg
+            .data
+            .iter()
+            .map(|dat| dat.lang)
+            .collect::<Vec<BenchmarkLanguage>>();
+        let lang_ind = |lang: &BenchmarkLanguage| {
+            avg_langs
+                .iter()
+                .enumerate()
+                .find(|(_, lang2)| lang == *lang2)
+                .unwrap()
+                .0
+        };
+
+        for res in results.iter_mut() {
+            res.data
+                .sort_by(|dat1, dat2| lang_ind(&dat1.lang).cmp(&lang_ind(&dat2.lang)));
+        }
+
         results.push(avg);
         results.push(avg_nogoto);
         Ok(results)
@@ -66,7 +86,7 @@ impl BenchResult {
                 adjusted_mean: lang_adjusted_mean,
             });
         }
-        avg_data.sort_by(|dat1, dat2| dat1.lang.to_string().cmp(&dat2.lang.to_string()));
+        avg_data.sort_by(|dat1, dat2| dat1.adjusted_mean.partial_cmp(&dat2.adjusted_mean).unwrap());
         let suffix = if skip_goto { " Without Goto" } else { "" };
         BenchResult {
             benchmark: format!("Geometric Mean{suffix}"),
@@ -110,8 +130,6 @@ impl BenchResult {
             data.push(BenchData::empty(&lang));
         }
 
-        data.sort_by(|dat1, dat2| dat1.lang.to_string().cmp(&dat2.lang.to_string()));
-
         Ok(BenchResult {
             benchmark: name.to_owned(),
             data,
@@ -132,7 +150,7 @@ impl BenchResult {
                     .unwrap()
                     .adjusted_mean
             })
-            .max_by(|max1, max2| max1.partial_cmp(&max2).unwrap())
+            .max_by(|max1, max2| max1.partial_cmp(&max2).unwrap_or(Ordering::Less))
             .unwrap()
             + AXIS_MARGINS;
         let y_min = benches
@@ -143,12 +161,12 @@ impl BenchResult {
                     .min_by(|dat1, dat2| {
                         dat1.adjusted_mean
                             .partial_cmp(&dat2.adjusted_mean)
-                            .unwrap_or(Ordering::Less)
+                            .unwrap_or(Ordering::Greater)
                     })
                     .unwrap()
                     .adjusted_mean
             })
-            .min_by(|max1, max2| max1.partial_cmp(&max2).unwrap())
+            .min_by(|max1, max2| max1.partial_cmp(&max2).unwrap_or(Ordering::Greater))
             .unwrap()
             + AXIS_MARGINS;
 
