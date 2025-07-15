@@ -79,8 +79,7 @@ impl Benchmark {
             Error::path_access(&PathBuf::from(HYPERFINE_PATH), "create hyperfine path")
         })?;
         let mut path = PathBuf::from(HYPERFINE_PATH).join(self.name.clone());
-        create_dir_all(&path)
-            .map_err(|_| Error::path_access(&PathBuf::from(path.clone()), "crate results dir"))?;
+        create_dir_all(&path).map_err(|_| Error::path_access(&path, "crate results dir"))?;
         path = path.join(self.name.clone() + "_" + lang.suffix());
         path.set_extension("csv");
         Ok(path)
