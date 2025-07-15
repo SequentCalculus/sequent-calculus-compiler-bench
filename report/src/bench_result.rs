@@ -28,14 +28,29 @@ impl BenchResult {
                 .map_err(|_| Error::path_access(&dir_path, "Read Dir Name (as String)"))?;
             results.push(BenchResult::new(&bench_name)?)
         }
+
+        let avg = Self::get_geometric_mean(&results, false);
+        let avg_nogoto = Self::get_geometric_mean(&results, true);
+        results.push(avg);
+        results.push(avg_nogoto);
+        Ok(results)
+    }
+
+    fn get_geometric_mean(data: &[Self], skip_goto: bool) -> Self {
         let mut avg_data = vec![];
         for lang in BenchmarkLanguage::all() {
             if lang == BenchmarkLanguage::Scc {
                 continue;
             }
-            let lang_results = results
+            let lang_results = data
                 .iter()
-                .filter_map(|res| res.data.iter().find(|dat| dat.lang == lang))
+                .filter_map(|res| {
+                    if skip_goto && res.benchmark.contains("Goto") {
+                        None
+                    } else {
+                        res.data.iter().find(|dat| dat.lang == lang)
+                    }
+                })
                 .filter(|dat| !dat.mean.is_nan() && !dat.adjusted_mean.is_nan())
                 .collect::<Vec<&BenchData>>();
             let lang_mean = lang_results.iter().fold(0.0, |mean, dat| mean + dat.mean)
@@ -52,12 +67,11 @@ impl BenchResult {
             });
         }
         avg_data.sort_by(|dat1, dat2| dat1.lang.to_string().cmp(&dat2.lang.to_string()));
-        let avg = BenchResult {
-            benchmark: "Geometric Mean".to_owned(),
+        let suffix = if skip_goto { " Without Goto" } else { "" };
+        BenchResult {
+            benchmark: format!("Geometric Mean{suffix}"),
             data: avg_data,
-        };
-        results.push(avg);
-        Ok(results)
+        }
     }
 
     pub fn new(name: &str) -> Result<BenchResult, Error> {
