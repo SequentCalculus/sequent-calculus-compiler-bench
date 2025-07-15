@@ -27,6 +27,35 @@ impl BenchResult {
                 .map_err(|_| Error::path_access(&dir_path, "Read Dir Name (as String)"))?;
             results.push(BenchResult::new(&bench_name)?)
         }
+        let mut avg_data = vec![];
+        for lang in BenchmarkLanguage::all() {
+            if lang == BenchmarkLanguage::Scc {
+                continue;
+            }
+            let lang_results = results
+                .iter()
+                .filter_map(|res| res.data.iter().find(|dat| dat.lang == lang))
+                .filter(|dat| !dat.mean.is_nan() && !dat.adjusted_mean.is_nan())
+                .collect::<Vec<&BenchData>>();
+            let lang_mean = lang_results.iter().fold(0.0, |mean, dat| mean + dat.mean)
+                / lang_results.len() as f64;
+            let lang_adjusted_mean = lang_results
+                .iter()
+                .fold(1.0, |mean, dat| mean + dat.adjusted_mean)
+                / lang_results.len() as f64;
+            //println!("lang {lang}, mean: {lang_mean}, adjusted: {lang_adjusted_mean}");
+            avg_data.push(BenchData {
+                lang,
+                mean: lang_mean,
+                adjusted_mean: lang_adjusted_mean,
+            });
+        }
+        avg_data.sort_by(|dat1, dat2| dat1.lang.to_string().cmp(&dat2.lang.to_string()));
+        let avg = BenchResult {
+            benchmark: "Geometric Mean".to_owned(),
+            data: avg_data,
+        };
+        results.push(avg);
         Ok(results)
     }
 
