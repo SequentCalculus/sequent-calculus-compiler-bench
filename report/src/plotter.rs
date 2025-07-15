@@ -7,7 +7,7 @@ use plotters::{
     prelude::{IntoFont, PathElement, Rectangle},
     style::{BLACK, Color, RED, RGBColor, WHITE},
 };
-use std::{cmp::Ordering, fs::create_dir_all, path::PathBuf};
+use std::{fs::create_dir_all, path::PathBuf};
 
 const PLOT_RES: (u32, u32) = (600, 600);
 const MARGIN: u32 = 50;

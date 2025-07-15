@@ -1,9 +1,4 @@
-use lib::{
-    config::Config,
-    errors::Error,
-    langs::BenchmarkLanguage,
-    paths::{HYPERFINE_PATH, SUITE_PATH},
-};
+use lib::{errors::Error, langs::BenchmarkLanguage, paths::HYPERFINE_PATH};
 use std::{fs::read_dir, path::PathBuf};
 
 #[derive(Debug)]
@@ -17,7 +12,6 @@ pub struct BenchData {
     pub lang: BenchmarkLanguage,
     pub mean: f64,
     pub adjusted_mean: f64,
-    pub stddev: f64,
 }
 
 impl BenchResult {
@@ -115,14 +109,9 @@ impl BenchData {
         let mean = mean_str
             .parse::<f64>()
             .map_err(|_| Error::ParseFloat(mean_str.to_owned()))?;
-        let stddev_str = data.next().ok_or(Error::csv(&path, "Missing stddev"))?;
-        let stddev = stddev_str
-            .parse::<f64>()
-            .map_err(|_| Error::ParseFloat(stddev_str.to_owned()))?;
         Ok(BenchData {
             lang,
             mean,
-            stddev,
             adjusted_mean: 0.0,
         })
     }
@@ -131,7 +120,6 @@ impl BenchData {
         BenchData {
             lang: *lang,
             mean: f64::NAN,
-            stddev: f64::NAN,
             adjusted_mean: f64::NAN,
         }
     }
