@@ -21,13 +21,6 @@ def pair_eq(p1: Pair[i64, i64], p2: Pair[i64, i64]): Bool {
   }
 }
 
-def or(b1: Bool, b2: Bool): Bool {
-  b1.case {
-    True => True,
-    False => b2
-  }
-}
-
 def not(b: Bool): Bool {
   b.case {
     True => False,
@@ -76,7 +69,10 @@ def collect(l: List[Pair[i64, i64]], f: Fun[Pair[i64, i64], List[Pair[i64, i64]]
 def exists(l: List[Pair[i64, i64]], f: Fun[Pair[i64, i64], Bool]): Bool {
   l.case[Pair[i64, i64]] {
     Nil => False,
-    Cons(p, ps) => or(f.Apply[Pair[i64, i64], Bool](p), exists(ps, f))
+    Cons(p, ps) => f.Apply[Pair[i64, i64], Bool](p).case {
+      True => True,
+      False => exists(ps, f)
+    }
   }
 }
 

@@ -23,7 +23,7 @@
 | Motzkin              | None  |                                                  |
 | SudanGoto            | None  |                                                  |
 | AckGoto              | None  |                                                  |
-| Deriv                | None  |                                                  |
+| Deriv                | Yes   |                                                  |
 | Fib                  | None  |                                                  |
 | Life                 | Yes   | uses boolean or in list.exists                   |
 | MotzkinGoto          | None  |                                                  |

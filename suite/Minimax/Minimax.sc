@@ -52,20 +52,6 @@ def other(p: Player): Player {
 
 // Boolean functions
 
-def and(b1: Bool, b2: Bool): Bool {
-  b1.case {
-    True => b2,
-    False => False
-  }
-}
-
-def or(b1: Bool, b2: Bool): Bool { 
-  b1.case {
-    True => True,
-    False => b2
-  }
-}
-
 def not(b: Bool): Bool { 
   b.case {
     True => False,
@@ -186,7 +172,10 @@ def exists(f: Fun[List[i64], Bool], l: List[List[i64]]): Bool {
 def all_i(f: Fun[i64, Bool], l: List[i64]): Bool { 
   l.case[i64] {
     Nil => True,
-    Cons(i, is) => and(f.Apply[i64, Bool](i), all_i(f, is))
+    Cons(i, is) => f.Apply[i64, Bool](i).case {
+      True => all_i(f, is),
+      False => False
+    }
   }
 }
 
@@ -199,7 +188,10 @@ def empty(): List[Option[Player]] {
 def all_board(l: List[Option[Player]], f: Fun[Option[Player], Bool]): Bool {
   l.case[Option[Player]] {
     Nil => True,
-    Cons(p, ps) => and(f.Apply[Option[Player], Bool](p), all_board(ps, f))
+    Cons(p, ps) => f.Apply[Option[Player], Bool](p).case {
+      True => all_board(ps, f),
+      False => False
+    }
   }
 }
 
@@ -208,7 +200,13 @@ def is_full(board: List[Option[Player]]): Bool {
 }
 
 def is_cat(board: List[Option[Player]]): Bool {
-  and(is_full(board), and(not(is_win_for(board, X)), not(is_win_for(board, O))))
+  is_full(board).case {
+    True => not(is_win_for(board, X)).case {
+      True => not(is_win_for(board, O)),
+      False => False
+    },
+    False => False
+  }
 }
 
 def fold_i(f: Fun2[i64, i64, i64], start: i64, l: List[i64]): i64 {
@@ -279,15 +277,27 @@ def has_diag(board: List[Option[Player]], p: Player): Bool {
 }
 
 def is_win_for(board: List[Option[Player]], p: Player): Bool {
-  or(has_row(board, p), or(has_col(board, p), has_diag(board, p)))
+  has_row(board, p).case {
+    True => True,
+    False => has_col(board, p).case {
+      True => True,
+      False => has_diag(board, p)
+    }
+  }
 }
 
 def is_win(board: List[Option[Player]]): Bool {
-  or(is_win_for(board, X), is_win_for(board, O))
+  is_win_for(board, X).case {
+    True => True,
+    False => is_win_for(board, O)
+  }
 }
 
 def game_over(board: List[Option[Player]]): Bool {
-  or(is_win(board), is_cat(board))
+  is_win(board).case {
+    True => True,
+    False => is_cat(board)
+  }
 }
 
 def score(board: List[Option[Player]]): i64 {

@@ -18,13 +18,6 @@ def eq(i1: i64, i2: i64): Bool {
   if i1 == i2 { True } else { False }
 }
 
-def and(b1: Bool, b2: Bool): Bool {
-  b1.case {
-    True => b2,
-    False => False
-  }
-}
-
 def not(b: Bool): Bool {
   b.case {
     True => False,
@@ -81,7 +74,10 @@ def enum_from_to(from: i64, to_: i64): List[i64] {
 def safe(as1: Assign, as2: Assign): Bool {
   as1.case {
     Assign(i, m) => as2.case {
-      Assign(j, n) => and(not(eq(m, n)), not(eq(abs(i - j), abs(m - n))))
+      Assign(j, n) => not(eq(m, n)).case {
+        True => not(eq(abs(i - j), abs(m - n))),
+        False => False
+      }
     }
   }
 }

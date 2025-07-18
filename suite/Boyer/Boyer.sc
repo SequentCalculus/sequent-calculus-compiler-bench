@@ -5,23 +5,16 @@ data Unit { Unit }
 codata Fun[A, B] { Apply(a: A): B }
 
 data Id {
-  A, B, C, D, X, Y, Z, U, W, ADD1, AND, APPEND, CONS,  DIFFERENCE, 
+  A, B, C, D, X, Y, Z, U, W, ADD1, AND, APPEND, CONS,  DIFFERENCE,
   EQUAL, EVEN, EXP, F, FALSE, FOUR, IF, IMPLIES,
   LENGTH, LESSP, MEMBER, NIL, NOT, ONE, OR,
   PLUS, QUOTIENT, REMAINDER, REVERSE, TIMES, TRUE, TWO, ZERO, ZEROP
 }
 
-data Term { 
-  Var(i: Id), 
+data Term {
+  Var(i: Id),
   Func(i: Id, t: List[Term], l: Fun[Unit, List[Pair[Term, Term]]]),
-  ERROR 
-}
-
-def and(b1: Bool, b2: Bool): Bool {
-  b1.case {
-    True => b2,
-    False => False
-  }
+  ERROR
 }
 
 def id_eq(i1: Id, i2: Id): Bool {
@@ -1554,7 +1547,10 @@ def term_ls_eq(h1t1: List[Term], h2t2: List[Term]): Bool {
     Nil => True,
     Cons(h1, t1) => h2t2.case[Term] {
       Nil => False,
-      Cons(h2, t2) => and(term_eq(h1, h2), term_ls_eq(t1, t2))
+      Cons(h2, t2) => term_eq(h1, h2).case {
+        True => term_ls_eq(t1, t2),
+        False => False
+      }
     }
   }
 }
@@ -1568,7 +1564,10 @@ def term_eq(t1: Term, t2: Term): Bool {
     },
     Func(f1, ts1, l1) => t2.case {
       Var(i2) => False,
-      Func(f2, ts2, l2) => and(id_eq(f1, f2), term_ls_eq(ts1, ts2)),
+      Func(f2, ts2, l2) => id_eq(f1, f2).case {
+        True => term_ls_eq(ts1, ts2),
+        False => False
+      },
       ERROR => False
     },
     ERROR => False
@@ -1627,7 +1626,12 @@ def one_way_unify1_lst(tts1: List[Term], tts2: List[Term], subst: List[Pair[Id, 
       Nil => Tup(False, Nil),
       Cons(t2, ts2) => one_way_unify1(t1, t2, subst).case[Bool, List[Pair[Id, Term]]] {
         Tup(hd_ok, subst_) => one_way_unify1_lst(ts1, ts2, subst_).case[Bool, List[Pair[Id, Term]]] {
-          Tup(tl_ok, subst__) => Tup(and(hd_ok, tl_ok), subst__)
+          Tup(tl_ok, subst__) =>
+            let is_ok: Bool = hd_ok.case {
+              True => tl_ok,
+              False => False
+            };
+            Tup(is_ok, subst__)
         }
       }
     }
@@ -1704,7 +1708,7 @@ def falsep(x: Term, l: List[Term]): Bool {
     },
     ERROR => term_in_list(x, l)
   }
-} 
+}
 
 def tautologyp(x: Term, true_lst: List[Term], false_lst: List[Term]): Bool {
   truep(x, true_lst).case {
@@ -1725,7 +1729,10 @@ def tautologyp(x: Term, true_lst: List[Term], false_lst: List[Term]): Bool {
                     True => tautologyp(t, true_lst, false_lst),
                     False => falsep(cond, false_lst).case {
                       True => tautologyp(e, true_lst, false_lst),
-                      False => and(tautologyp(t, Cons(cond, true_lst), false_lst), tautologyp(e, true_lst, Cons(cond, false_lst)))
+                      False => tautologyp(t, Cons(cond, true_lst), false_lst).case {
+                        True => tautologyp(e, true_lst, Cons(cond, false_lst)),
+                        False => False
+                      }
                     }
                   },
                   False => False
