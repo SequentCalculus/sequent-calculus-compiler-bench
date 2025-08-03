@@ -1,7 +1,7 @@
 data List[A] { Nil, Cons(a: A, as: List[A]) }
 data Bool { True, False }
 data Either[A, B] { Left(a: A), Right(b: B) }
-codata Fun2[A, B, C] { Apply2(a: A,b: B): C }
+codata Fun2[A, B, C] { apply2(a: A,b: B): C }
 
 def eq(i1: i64, i2: i64): Bool {
   if i1 == i2 {
@@ -58,7 +58,7 @@ def apply_op_inner(
   ls.case[i64] {
     Nil => Nil,
     Cons(b, t2) =>
-      Cons(op.Apply2[i64, i64, Either[i64, Bool]](a, b), apply_op_inner(t2, a, op))
+      Cons(op.apply2[i64, i64, Either[i64, Bool]](a, b), apply_op_inner(t2, a, op))
   }
 }
 
@@ -94,16 +94,16 @@ def runbench(
 }
 
 def runalltests(astart: i64, astep: i64, alim: i64): List[Either[i64, Bool]] {
-  let z_add: Fun2[i64, i64, Either[i64, Bool]] = new { Apply2(a, b) => Left(a + b) };
-  let z_sub: Fun2[i64, i64, Either[i64, Bool]] = new { Apply2(a, b) => Left(a - b) };
-  let z_mul: Fun2[i64, i64, Either[i64, Bool]] = new { Apply2(a, b) => Left(a * b) };
-  let z_div: Fun2[i64, i64, Either[i64, Bool]] = new { Apply2(a, b) => Left(a / b) };
-  let z_mod: Fun2[i64, i64, Either[i64, Bool]] = new { Apply2(a, b) => Left(a % b) };
-  let z_equal: Fun2[i64, i64, Either[i64, Bool]] = new { Apply2(a, b) => Right(eq(a, b)) };
-  let z_lt: Fun2[i64, i64, Either[i64, Bool]] = new { Apply2(a, b) => Right(lt(a, b)) };
-  let z_leq: Fun2[i64, i64, Either[i64, Bool]] = new { Apply2(a, b) => Right(leq(a, b)) };
-  let z_gt: Fun2[i64, i64, Either[i64, Bool]] = new { Apply2(a, b) => Right(gt(a, b)) };
-  let z_geq: Fun2[i64, i64, Either[i64, Bool]] = new { Apply2(a, b) => Right(geq(a, b)) };
+  let z_add: Fun2[i64, i64, Either[i64, Bool]] = new { apply2(a, b) => Left(a + b) };
+  let z_sub: Fun2[i64, i64, Either[i64, Bool]] = new { apply2(a, b) => Left(a - b) };
+  let z_mul: Fun2[i64, i64, Either[i64, Bool]] = new { apply2(a, b) => Left(a * b) };
+  let z_div: Fun2[i64, i64, Either[i64, Bool]] = new { apply2(a, b) => Left(a / b) };
+  let z_mod: Fun2[i64, i64, Either[i64, Bool]] = new { apply2(a, b) => Left(a % b) };
+  let z_equal: Fun2[i64, i64, Either[i64, Bool]] = new { apply2(a, b) => Right(eq(a, b)) };
+  let z_lt: Fun2[i64, i64, Either[i64, Bool]] = new { apply2(a, b) => Right(lt(a, b)) };
+  let z_leq: Fun2[i64, i64, Either[i64, Bool]] = new { apply2(a, b) => Right(leq(a, b)) };
+  let z_gt: Fun2[i64, i64, Either[i64, Bool]] = new { apply2(a, b) => Right(gt(a, b)) };
+  let z_geq: Fun2[i64, i64, Either[i64, Bool]] = new { apply2(a, b) => Right(geq(a, b)) };
 
   let add: List[Either[i64, Bool]] = runbench(z_add, astart, astep, alim);
   let sub: List[Either[i64, Bool]] = runbench(z_sub, astart, astep, alim);

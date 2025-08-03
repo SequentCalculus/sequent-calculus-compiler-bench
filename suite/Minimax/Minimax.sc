@@ -3,8 +3,8 @@ data Unit { Unit }
 data Option[A] { None, Some(a: A) }
 data Pair[A, B] { Tup(a: A, b: B) }
 data List[A] { Nil, Cons(a: A, as: List[A]) }
-codata Fun[A, B] { Apply(a: A): B }
-codata Fun2[A, B, C] { Apply2(a: A, b: B): C }
+codata Fun[A, B] { apply(a: A): B }
+codata Fun2[A, B, C] { apply2(a: A, b: B): C }
 data RoseTree[A] { Rose(a: A, as: List[RoseTree[A]]) }
 data Player { X, O }
 
@@ -98,7 +98,7 @@ def rev(l: List[i64]): List[i64] {
 def map_i_board(l: List[i64], f: Fun[i64, List[Option[Player]]]): List[List[Option[Player]]] {
   l.case[i64] {
     Nil => Nil,
-    Cons(x, xs) => Cons(f.Apply[i64, List[Option[Player]]](x), map_i_board(xs,f))
+    Cons(x, xs) => Cons(f.apply[i64, List[Option[Player]]](x), map_i_board(xs,f))
   }
 }
 
@@ -108,7 +108,7 @@ def map_board_tree(
 ): List[RoseTree[Pair[List[Option[Player]], i64]]] {
   l.case[List[Option[Player]]] {
     Nil => Nil,
-    Cons(x, xs) => Cons(f.Apply[List[Option[Player]], RoseTree[Pair[List[Option[Player]], i64]]](x), map_board_tree(xs,f))
+    Cons(x, xs) => Cons(f.apply[List[Option[Player]], RoseTree[Pair[List[Option[Player]], i64]]](x), map_board_tree(xs,f))
   }
 }
 
@@ -118,7 +118,7 @@ def map_tree_i(
 ): List[i64] {
   l.case[RoseTree[Pair[List[Option[Player]], i64]]] {
     Nil => Nil,
-    Cons(x, xs) => Cons(f.Apply[RoseTree[Pair[List[Option[Player]], i64]], i64](x), map_tree_i(xs,f))
+    Cons(x, xs) => Cons(f.apply[RoseTree[Pair[List[Option[Player]], i64]], i64](x), map_tree_i(xs,f))
   }
 }
 
@@ -126,7 +126,7 @@ def tabulate_loop(n: i64, len: i64, f: Fun[Unit, Option[Player]]): List[Option[P
   if n == len {
     Nil
   } else {
-    Cons(f.Apply[Unit, Option[Player]](Unit), tabulate_loop(n + 1, len, f))
+    Cons(f.apply[Unit, Option[Player]](Unit), tabulate_loop(n + 1, len, f))
   }
 }
 
@@ -162,7 +162,7 @@ def find(l: List[Option[Player]], i: i64): Option[Player] {
 def exists(f: Fun[List[i64], Bool], l: List[List[i64]]): Bool {
   l.case[List[i64]] {
     Nil => False,
-    Cons(is, iss) => f.Apply[List[i64], Bool](is).case {
+    Cons(is, iss) => f.apply[List[i64], Bool](is).case {
       True => True,
       False => exists(f, iss)
     }
@@ -172,7 +172,7 @@ def exists(f: Fun[List[i64], Bool], l: List[List[i64]]): Bool {
 def all_i(f: Fun[i64, Bool], l: List[i64]): Bool { 
   l.case[i64] {
     Nil => True,
-    Cons(i, is) => f.Apply[i64, Bool](i).case {
+    Cons(i, is) => f.apply[i64, Bool](i).case {
       True => all_i(f, is),
       False => False
     }
@@ -182,13 +182,13 @@ def all_i(f: Fun[i64, Bool], l: List[i64]): Bool {
 // Actual functions
 
 def empty(): List[Option[Player]] {
-  tabulate(9, new { Apply(u) => None })
+  tabulate(9, new { apply(u) => None })
 }
 
 def all_board(l: List[Option[Player]], f: Fun[Option[Player], Bool]): Bool {
   l.case[Option[Player]] {
     Nil => True,
-    Cons(p, ps) => f.Apply[Option[Player], Bool](p).case {
+    Cons(p, ps) => f.apply[Option[Player], Bool](p).case {
       True => all_board(ps, f),
       False => False
     }
@@ -196,7 +196,7 @@ def all_board(l: List[Option[Player]], f: Fun[Option[Player], Bool]): Bool {
 }
 
 def is_full(board: List[Option[Player]]): Bool {
-  all_board(board, new { Apply(p) => is_some(p) })
+  all_board(board, new { apply(p) => is_some(p) })
 }
 
 def is_cat(board: List[Option[Player]]): Bool {
@@ -212,7 +212,7 @@ def is_cat(board: List[Option[Player]]): Bool {
 def fold_i(f: Fun2[i64, i64, i64], start: i64, l: List[i64]): i64 {
   l.case[i64] {
     Nil => start,
-    Cons(i, is) => fold_i(f, f.Apply2[i64, i64, i64](start, i), is)
+    Cons(i, is) => fold_i(f, f.apply2[i64, i64, i64](start, i), is)
   }
 }
 
@@ -224,11 +224,11 @@ def list_extreme(f: Fun2[i64, i64, i64], l: List[i64]): i64 {
 }
 
 def listmax(l: List[i64]): i64 {
-  list_extreme(new { Apply2(a, b) => if b < a { a } else { b } }, l)
+  list_extreme(new { apply2(a, b) => if b < a { a } else { b } }, l)
 }
 
 def listmin(l: List[i64]): i64 { 
-  list_extreme(new { Apply2(a, b) => if a < b { a } else { b } }, l)
+  list_extreme(new { apply2(a, b) => if a < b { a } else { b } }, l)
 }
 
 def rows(): List[List[i64]] {
@@ -261,19 +261,19 @@ def player_occupies(p: Player, board: List[Option[Player]], i: i64): Bool {
 }
 
 def has_trip(board: List[Option[Player]], p: Player, l: List[i64]): Bool {
-  all_i(new { Apply(i) => player_occupies(p, board, i) }, l)
+  all_i(new { apply(i) => player_occupies(p, board, i) }, l)
 }
 
 def has_row(board: List[Option[Player]], p: Player): Bool {
-  exists(new { Apply(l) => has_trip(board, p, l) }, rows())
+  exists(new { apply(l) => has_trip(board, p, l) }, rows())
 }
 
 def has_col(board: List[Option[Player]], p: Player): Bool {
-  exists(new { Apply(l) => has_trip(board, p, l) }, cols())
+  exists(new { apply(l) => has_trip(board, p, l) }, cols())
 }
 
 def has_diag(board: List[Option[Player]], p: Player): Bool {
-  exists(new { Apply(l) => has_trip(board, p, l) }, diags())
+  exists(new { apply(l) => has_trip(board, p, l) }, diags())
 }
 
 def is_win_for(board: List[Option[Player]], p: Player): Bool {
@@ -342,15 +342,15 @@ def all_moves_rec(n: i64, board: List[Option[Player]], acc: List[i64]): List[i64
 def all_moves(board: List[Option[Player]]): List[i64] { all_moves_rec(0, board, Nil) } 
 
 def successors(board: List[Option[Player]], p: Player): List[List[Option[Player]]] { 
-  map_i_board(all_moves(board), new { Apply(i) => move_to(board, p, i) })
+  map_i_board(all_moves(board), new { apply(i) => move_to(board, p, i) })
 }
 
 def minimax(p: Player, board: List[Option[Player]]): RoseTree[Pair[List[Option[Player]], i64]] {
   game_over(board).case {
     True => mk_leaf(Tup(board, score(board))),
     False => 
-      let trees: List[RoseTree[Pair[List[Option[Player]], i64]]] = map_board_tree(successors(board, p), new { Apply(b) => minimax(other(p), b) });
-      let scores: List[i64] = map_tree_i(trees, new{ Apply(t) => snd(top(t)) });
+      let trees: List[RoseTree[Pair[List[Option[Player]], i64]]] = map_board_tree(successors(board, p), new { apply(b) => minimax(other(p), b) });
+      let scores: List[i64] = map_tree_i(trees, new{ apply(t) => snd(top(t)) });
       p.case { 
         X => Rose(Tup(board, listmax(scores)), trees),
         O => Rose(Tup(board, listmin(scores)), trees)

@@ -2,7 +2,7 @@ data Unit { Unit }
 data Bool { True, False }
 data List[A] { Nil, Cons(a: A, as: List[A]) }
 data Pair[A, B] { Tup(a: A, b: B) }
-codata Fun[A, B] { Apply(a: A): B }
+codata Fun[A, B] { apply(a: A): B }
 
 
 def tail_i(l: List[i64]): List[i64] {
@@ -115,7 +115,7 @@ def one2n(n: i64): List[i64] {
 }
 
 def loop_run(iters: i64, work: Fun[Unit, List[List[i64]]], result: Fun[List[List[i64]], Bool]): Bool {
-  let res: Bool = result.Apply[List[List[i64]], Bool](work.Apply[Unit, List[List[i64]]](Unit));
+  let res: Bool = result.apply[List[List[i64]], Bool](work.apply[Unit, List[List[i64]]](Unit));
   if iters == 0 {
     res
   } else {
@@ -146,8 +146,8 @@ def loop_work(m: i64, perms: List[List[i64]]): List[List[i64]] {
 def perm9(m: i64, n: i64): Bool {
   run_benchmark(
     1,
-    new { Apply(u) =>  loop_work(m, permutations(one2n(n))) },
-    new { Apply(result) =>
+    new { apply(u) =>  loop_work(m, permutations(one2n(n))) },
+    new { apply(result) =>
       if sumlists(result) == (((n * (n + 1)) * factorial(n))/2) {
         True
       } else {

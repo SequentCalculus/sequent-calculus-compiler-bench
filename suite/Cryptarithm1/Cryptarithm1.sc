@@ -1,6 +1,6 @@
 data List[A] { Nil, Cons(a: A, as: List[A]) }
 data Bool { True, False }
-codata Fun[A, B] { Apply(a: A): B }
+codata Fun[A, B] { apply(a: A): B }
 
 def eq(i1: i64, i2: i64): Bool {
   if i1 == i2 {
@@ -108,7 +108,7 @@ def take(n: i64, l: List[i64]): List[i64] {
 def filter(f: Fun[List[i64], Bool], l: List[List[i64]]): List[List[i64]] {
   l.case[List[i64]] {
     Nil => Nil,
-    Cons(l, ls) => f.Apply[List[i64], Bool](l).case {
+    Cons(l, ls) => f.apply[List[i64], Bool](l).case {
       True => Cons(l, filter(f, ls)),
       False => filter(f, ls)
     }
@@ -118,15 +118,15 @@ def filter(f: Fun[List[i64], Bool], l: List[List[i64]]): List[List[i64]] {
 def map(f: Fun[i64, List[List[i64]]], l: List[i64]): List[List[List[i64]]] {
   l.case[i64] {
     Nil => Nil,
-    Cons(i, is) => Cons(f.Apply[i64, List[List[i64]]](i), map(f, is))
+    Cons(i, is) => Cons(f.apply[i64, List[List[i64]]](i), map(f, is))
   }
 }
 
 def test_cryptarithm_nofib(n: i64): List[List[List[i64]]] {
   map(
-    new { Apply(i) =>
+    new { apply(i) =>
       let p0: List[i64] = take(10, enum_from_to(0, 9 + i));
-      filter(new { Apply(l) => condition(l) }, permutations(p0))
+      filter(new { apply(l) => condition(l) }, permutations(p0))
     },
     enum_from_to(1, n)
   )

@@ -2,7 +2,7 @@ data List[A] { Nil, Cons(a: A, as: List[A]) }
 data Pair[A, B] { Pair(a: A, b: B) }
 data Bool { True, False }
 data Option[A] { None, Some(a: A) }
-codata Fun[A, B] { Apply(a: A): B }
+codata Fun[A, B] { apply(a: A): B }
 
 def int_max(i1: i64, i2: i64): i64 {
   if i1 < i2 {
@@ -47,13 +47,13 @@ def rev(l: List[i64]): List[i64] {
 def map(f: Fun[Pair[i64, i64], i64], l: List[Pair[i64, i64]]): List[i64] {
   l.case[Pair[i64, i64]] {
     Nil => Nil,
-    Cons(p, ps) => Cons(f.Apply[Pair[i64, i64], i64](p), map(f,ps))
+    Cons(p, ps) => Cons(f.apply[Pair[i64, i64], i64](p), map(f,ps))
   }
 }
 
 def algb1(xss: List[i64], yss: List[Pair[i64, i64]]): List[i64] {
   xss.case[i64] {
-    Nil => map(new { Apply(x) => snd_ii(x) }, yss),
+    Nil => map(new { apply(x) => snd_ii(x) }, yss),
     Cons(x, xs) => algb1(xs, algb2(x, 0, 0, yss))
   }
 }
@@ -143,11 +143,11 @@ def in_list(x: i64, ls: List[i64]): Bool {
 
 def algc(m: i64, n: i64, xs: List[i64], ys: List[i64]): Fun[List[i64], List[i64]] {
   is_nil(ys).case {
-    True => new { Apply(x) => x },
+    True => new { apply(x) => x },
     False => is_singleton(xs).case[i64] {
       Some(x) => in_list(x, ys).case {
-        True => new { Apply(t) => Cons(x, t) },
-        False => new { Apply(x) => x }
+        True => new { apply(t) => Cons(x, t) },
+        False => new { apply(x) => x }
       },
       None =>
         let m2: i64 = m/2;
@@ -156,10 +156,10 @@ def algc(m: i64, n: i64, xs: List[i64], ys: List[i64]): Fun[List[i64], List[i64]
         let l1: List[i64] = algb(xs1, ys);
         let l2: List[i64] = rev(algb(rev(xs2), rev(ys)));
         let k: i64 = findk(0, 0, -1, zip(l1, l2));
-        new { Apply(x) =>
+        new { apply(x) =>
           let f1 : Fun[List[i64], List[i64]] = (algc(m - m2, n - k, xs2, drop(k, ys)));
           let f2 : Fun[List[i64], List[i64]] = algc(m2, k, xs1, take(k, ys));
-          f2.Apply[List[i64], List[i64]](f1.Apply[List[i64], List[i64]](x))
+          f2.apply[List[i64], List[i64]](f1.apply[List[i64], List[i64]](x))
         }
     }
   }
@@ -173,7 +173,7 @@ def list_len(l: List[i64]): i64 {
 }
 
 def lcss(xs: List[i64], ys: List[i64]): List[i64] {
-  algc(list_len(xs), list_len(ys), xs, ys).Apply[List[i64], List[i64]](Nil)
+  algc(list_len(xs), list_len(ys), xs, ys).apply[List[i64], List[i64]](Nil)
 }
 
 def enum_from_then_to(from: i64, then: i64, t: i64): List[i64] {
