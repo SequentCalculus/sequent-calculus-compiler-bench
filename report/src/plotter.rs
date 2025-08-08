@@ -1,18 +1,20 @@
 use crate::bench_result::BenchResult;
 use lib::{errors::Error, langs::BenchmarkLanguage, paths::REPORTS_PATH};
 use plotters::{
-    backend::BitMapBackend,
+    backend::SVGBackend,
     chart::ChartBuilder,
     drawing::IntoDrawingArea,
-    prelude::{IntoFont, PathElement, Rectangle},
+    prelude::{IntoFont, IntoTextStyle, PathElement, Rectangle},
     style::{BLACK, Color, RED, RGBColor, WHITE},
 };
 use std::{fs::create_dir_all, path::PathBuf};
 
 const PLOT_RES: (u32, u32) = (600, 600);
-const MARGIN: u32 = 50;
-const FONT_SIZE: u32 = 40;
+const MARGIN: u32 = 25;
+const MARGIN_TOP: u32 = 5;
+const CAPTION_SIZE: u32 = 40;
 const LABEL_SIZE: u32 = 20;
+const LABEL_FONT_SIZE: u32 = 20;
 const BAR_THICKNESS: f64 = 0.8;
 pub const AXIS_MARGINS: f64 = 0.1;
 const CROSS_HEIGHT: f64 = 0.2;
@@ -34,9 +36,9 @@ pub fn generate_plot(res: BenchResult, y_min: f64, y_max: f64) -> Result<(), Err
     let mut out_path = PathBuf::from(REPORTS_PATH);
     create_dir_all(&out_path).map_err(|_| Error::path_access(&out_path, "create reports path"))?;
     out_path = out_path.join(&res.benchmark);
-    out_path.set_extension("png");
+    out_path.set_extension("svg");
 
-    let root = BitMapBackend::new(&out_path, PLOT_RES).into_drawing_area();
+    let root = SVGBackend::new(&out_path, PLOT_RES).into_drawing_area();
     root.fill(&WHITE)
         .map_err(|err| Error::plotters(&res.benchmark, "fill drawing area", err))?;
 
@@ -45,7 +47,8 @@ pub fn generate_plot(res: BenchResult, y_min: f64, y_max: f64) -> Result<(), Err
 
     let mut chart = ChartBuilder::on(&root)
         .margin(MARGIN)
-        .caption(&res.benchmark, ("sans-serif", FONT_SIZE).into_font())
+        .margin_top(MARGIN_TOP)
+        .caption(&res.benchmark, ("sans-serif", CAPTION_SIZE).into_font())
         .x_label_area_size(LABEL_SIZE)
         .y_label_area_size(LABEL_SIZE)
         .margin_right(0)
@@ -70,6 +73,8 @@ pub fn generate_plot(res: BenchResult, y_min: f64, y_max: f64) -> Result<(), Err
                 "".to_owned()
             }
         })
+        .y_label_style(("sans-serif", LABEL_FONT_SIZE).into_text_style(&root))
+        .x_label_style(("sans-serif", LABEL_FONT_SIZE).into_text_style(&root))
         .draw()
         .map_err(|err| Error::plotters(&res.benchmark, "configure mesh", err))?;
 
