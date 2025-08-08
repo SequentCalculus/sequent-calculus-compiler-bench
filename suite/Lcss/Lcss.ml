@@ -1,8 +1,6 @@
-exception TODO
-
-let rec enum_from_then_to from th to_= 
-  if from<=to_ 
-  then from:: enum_from_then_to th ((2*th)-from) to_
+let rec enum_from_then_to from th to_ =
+  if from <= to_
+  then from :: (enum_from_then_to th ((2*th)-from) to_)
   else []
 
 let is_singleton ls = 
@@ -19,7 +17,7 @@ let rec zip xs ys =
   match (xs,ys) with 
     ([],_) -> []
   | (_,[]) -> []
-  | (x1::xs,y1::ys) -> (x1,y1) :: zip xs ys
+  | (x::xs,y::ys) -> (x,y) :: zip xs ys
 
 let rec findk k km m ls = 
   match ls with 

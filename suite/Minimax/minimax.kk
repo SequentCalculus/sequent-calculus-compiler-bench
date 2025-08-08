@@ -104,7 +104,7 @@ fun diags(): total list<list<int64>>{
 
 }
 
-fun empty(): <div,exn> list<maybe<player>>{
+fun emptyBoard(): <div,exn> list<maybe<player>>{
   tabulate(9.int64,fn () -> Nothing)
 }
 
@@ -206,7 +206,7 @@ fun minimax(p:player,board:list<maybe<player>>): <div,exn> rosetree<(list<maybe<
 }
 
 fun main_loop(iters:int64): <console,div,exn> (){
-  val res = minimax(X,empty())
+  val res = minimax(X,emptyBoard())
   if iters == 1.int64 then
     println(snd(top(res)))
   else 

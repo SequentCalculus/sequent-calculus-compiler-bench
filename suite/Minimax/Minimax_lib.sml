@@ -43,7 +43,7 @@ structure Minimax = struct
          nil => NONE
        | p::ps => if i=0 then p else find ps (i-1)
 
-  fun empty () = tabulate 9 (fn () => NONE)
+  fun emptyBoard () = tabulate 9 (fn () => NONE)
 
   fun rows () = [[0,1,2],[3,4,5],[6,7,8]]
   fun cols () = [[0,3,6],[1,4,7],[2,5,8]]
@@ -122,7 +122,7 @@ structure Minimax = struct
       end 
 
   fun main_loop iters = 
-  let val res = minimax X (empty())
+  let val res = minimax X (emptyBoard())
       in 
         if iters=1 then 
           print ((Int.toString (snd (top res))) ^ "\n")
