@@ -1,8 +1,8 @@
 data Vec { Vec(x: i64, y: i64) }
 data Vec4 { Vec4(x: i64, y: i64, z: i64, w: i64) }
 data List[A] { Nil, Cons(a: A, as: List[A]) }
-codata Fun[A, B] { Apply(a: A): B }
-codata Fun3[A, B, C, D] { Apply3(a: A, b: B, c: C): D }
+codata Fun[A, B] { apply(a: A): B }
+codata Fun3[A, B, C, D] { apply3(a: A, b: B, c: C): D }
 
 def vec_add(v1: Vec, v2: Vec): Vec {
   v1.case {
@@ -94,7 +94,7 @@ def grid(m: i64, n: i64, segments: List[Vec4], a: Vec, b: Vec, c: Vec): List[Vec
 }
 
 def rot(p: Fun3[Vec, Vec, Vec, List[Vec4]], a: Vec, b: Vec, c: Vec): List[Vec4] {
-  p.Apply3[Vec, Vec, Vec, List[Vec4]](vec_add(a, b), c, vec_sub(Vec(0, 0), b))
+  p.apply3[Vec, Vec, Vec, List[Vec4]](vec_add(a, b), c, vec_sub(Vec(0, 0), b))
 }
 
 def appendRev(l1: List[Vec4], l2: List[Vec4]): List[Vec4] {
@@ -117,15 +117,15 @@ def append(l1: List[Vec4], l2: List[Vec4]): List[Vec4] {
 
 def beside(m: i64, n: i64, p: Fun3[Vec, Vec, Vec, List[Vec4]], q: Fun3[Vec, Vec, Vec, List[Vec4]], a: Vec, b: Vec, c: Vec): List[Vec4] {
   append(
-    p.Apply3[Vec, Vec, Vec, List[Vec4]](a, scale_vec2(b, m, m + n), c),
-    q.Apply3[Vec, Vec, Vec, List[Vec4]](vec_add(a, scale_vec2(b, m, m + n)), scale_vec2(b, n, n + m), c))
+    p.apply3[Vec, Vec, Vec, List[Vec4]](a, scale_vec2(b, m, m + n), c),
+    q.apply3[Vec, Vec, Vec, List[Vec4]](vec_add(a, scale_vec2(b, m, m + n)), scale_vec2(b, n, n + m), c))
 }
 
 
 def above(m: i64, n: i64, p: Fun3[Vec, Vec, Vec, List[Vec4]], q: Fun3[Vec, Vec, Vec, List[Vec4]], a: Vec, b: Vec, c: Vec): List[Vec4] {
   append(
-    p.Apply3[Vec, Vec, Vec, List[Vec4]](vec_add(a, scale_vec2(c, n, m + n)), b, scale_vec2(c, m, n + m)),
-    q.Apply3[Vec, Vec, Vec, List[Vec4]](a, b, scale_vec2(c, n, m + n)))
+    p.apply3[Vec, Vec, Vec, List[Vec4]](vec_add(a, scale_vec2(c, n, m + n)), b, scale_vec2(c, m, n + m)),
+    q.apply3[Vec, Vec, Vec, List[Vec4]](a, b, scale_vec2(c, n, m + n)))
 }
 
 def tile_to_grid(arg: List[Vec4], arg2: Vec, arg3: Vec, arg4: Vec): List[Vec4] {
@@ -155,17 +155,17 @@ def quartet(
   d: Fun3[Vec, Vec, Vec, List[Vec4]],
   arg: Vec, a6: Vec, a7: Vec): List[Vec4] {
     above(1, 1,
-      new { Apply3(p5, p6, p7) => beside(1, 1, a, b, p5, p6, p7) },
-      new { Apply3(p5, p6, p7) => beside(1, 1, c, d, p5, p6, p7) },
+      new { apply3(p5, p6, p7) => beside(1, 1, a, b, p5, p6, p7) },
+      new { apply3(p5, p6, p7) => beside(1, 1, c, d, p5, p6, p7) },
       arg, a6, a7 )
 }
 
 def t(arg: Vec, q6: Vec, q7: Vec): List[Vec4] {
   quartet(
-    new { Apply3(a, b, c) => p(a, b, c) },
-    new { Apply3(a, b, c) => q(a, b, c) },
-    new { Apply3(a, b, c) => r(a, b, c) },
-    new { Apply3(a, b, c) => s(a, b, c) },
+    new { apply3(a, b, c) => p(a, b, c) },
+    new { apply3(a, b, c) => q(a, b, c) },
+    new { apply3(a, b, c) => r(a, b, c) },
+    new { apply3(a, b, c) => s(a, b, c) },
     arg, q6, q7)
 }
 
@@ -173,16 +173,16 @@ def t(arg: Vec, q6: Vec, q7: Vec): List[Vec4] {
 def cycle_(p1: Fun3[Vec, Vec, Vec, List[Vec4]], arg: Vec, p3: Vec, p4: Vec): List[Vec4] {
   quartet(
     p1,
-    new { Apply3(a, b, c) =>
+    new { apply3(a, b, c) =>
       rot(
-        new { Apply3(a, b, c) =>
-          rot( new { Apply3(a, b, c) => rot(p1, a, b, c) }, a, b, c)
+        new { apply3(a, b, c) =>
+          rot( new { apply3(a, b, c) => rot(p1, a, b, c) }, a, b, c)
         },
         a, b, c)
     },
-    new { Apply3(a, b, c) => rot(p1, a, b, c) },
-    new { Apply3(a, b, c) =>
-      rot(new { Apply3(a, b, c) => rot(p1, a, b, c) }, a, b, c)
+    new { apply3(a, b, c) => rot(p1, a, b, c) },
+    new { apply3(a, b, c) =>
+      rot(new { apply3(a, b, c) => rot(p1, a, b, c) }, a, b, c)
     },
     arg,
     p3,
@@ -191,58 +191,58 @@ def cycle_(p1: Fun3[Vec, Vec, Vec, List[Vec4]], arg: Vec, p3: Vec, p4: Vec): Lis
 
 def u(arg: Vec, p2: Vec, p3: Vec): List[Vec4] {
   cycle_(
-    new { Apply3(a, b, c) => rot(new { Apply3(a, b, c) => q(a, b, c) }, a, b, c) },
+    new { apply3(a, b, c) => rot(new { apply3(a, b, c) => q(a, b, c) }, a, b, c) },
     arg, p2, p3)
 }
 
 def side1(arg: Vec, q6: Vec, q7: Vec): List[Vec4] {
   quartet(
-    new { Apply3(a, b, c) => nil(a, b, c) },
-    new { Apply3(a, b, c) => nil(a, b, c) },
-    new { Apply3(a, b, c) => rot(new { Apply3(a, b, c) => t(a, b, c) }, a, b, c) },
-    new { Apply3(a, b, c) => t(a, b, c) },
+    new { apply3(a, b, c) => nil(a, b, c) },
+    new { apply3(a, b, c) => nil(a, b, c) },
+    new { apply3(a, b, c) => rot(new { apply3(a, b, c) => t(a, b, c) }, a, b, c) },
+    new { apply3(a, b, c) => t(a, b, c) },
     arg, q6, q7)
 }
 
 
 def side2(arg: Vec, q6: Vec, q7: Vec): List[Vec4] {
   quartet(
-    new { Apply3(a, b, c) => side1(a, b, c) },
-    new { Apply3(a, b, c) => side1(a, b, c) },
-    new { Apply3(a, b, c) => rot(new { Apply3(a, b, c) => t(a, b, c) }, a, b, c) },
-    new { Apply3(a, b, c) => t(a, b, c) },
+    new { apply3(a, b, c) => side1(a, b, c) },
+    new { apply3(a, b, c) => side1(a, b, c) },
+    new { apply3(a, b, c) => rot(new { apply3(a, b, c) => t(a, b, c) }, a, b, c) },
+    new { apply3(a, b, c) => t(a, b, c) },
     arg, q6, q7)
 }
 
 def corner1(arg: Vec, q6: Vec, q7: Vec): List[Vec4] {
   quartet(
-    new { Apply3(a, b, c) => nil(a, b, c) },
-    new { Apply3(a, b, c) => nil(a, b, c) },
-    new { Apply3(a, b, c) => nil(a, b, c) },
-    new { Apply3(a, b, c) => u(a, b, c) },
+    new { apply3(a, b, c) => nil(a, b, c) },
+    new { apply3(a, b, c) => nil(a, b, c) },
+    new { apply3(a, b, c) => nil(a, b, c) },
+    new { apply3(a, b, c) => u(a, b, c) },
     arg, q6, q7)
 }
 
 def corner2(arg: Vec, q6: Vec, q7: Vec): List[Vec4] {
   quartet(
-    new { Apply3(a, b, c) => corner1(a, b, c) },
-    new { Apply3(a, b, c) => side1(a, b, c) },
-    new { Apply3(a, b, c) => rot(new { Apply3(a, b, c) => side1(a, b, c) }, a, b, c) },
-    new { Apply3(a, b, c) => u(a, b, c) },
+    new { apply3(a, b, c) => corner1(a, b, c) },
+    new { apply3(a, b, c) => side1(a, b, c) },
+    new { apply3(a, b, c) => rot(new { apply3(a, b, c) => side1(a, b, c) }, a, b, c) },
+    new { apply3(a, b, c) => u(a, b, c) },
     arg, q6, q7)
 }
 
 def pseudocorner(arg: Vec, q6: Vec, q7: Vec): List[Vec4] {
   quartet(
-    new { Apply3(a, b, c) => corner2(a, b, c) },
-    new { Apply3(a, b, c) => side2(a, b, c) },
-    new { Apply3(a, b, c) => rot(new { Apply3(a, b, c) => side2(a, b, c) }, a, b, c) },
-    new { Apply3(a, b, c) => rot(new { Apply3(a, b, c) => t(a, b, c) }, a, b, c) },
+    new { apply3(a, b, c) => corner2(a, b, c) },
+    new { apply3(a, b, c) => side2(a, b, c) },
+    new { apply3(a, b, c) => rot(new { apply3(a, b, c) => side2(a, b, c) }, a, b, c) },
+    new { apply3(a, b, c) => rot(new { apply3(a, b, c) => t(a, b, c) }, a, b, c) },
     arg, q6, q7)
 }
 
 def pseudolimit(arg: Vec, p2: Vec, p3: Vec): List[Vec4] {
-  cycle_(new { Apply3(a, b, c) => pseudocorner(a, b, c) }, arg, p2, p3)
+  cycle_(new { apply3(a, b, c) => pseudocorner(a, b, c) }, arg, p2, p3)
 }
 
 def enum_from_to(from: i64, t: i64): List[i64] {
@@ -264,13 +264,13 @@ def min(i1: i64, i2: i64): i64 {
 def map(f: Fun[i64, List[Vec4]], l: List[i64]): List[List[Vec4]] {
   l.case[i64]{
     Nil => Nil,
-    Cons(i,is) => Cons(f.Apply[i64,List[Vec4]](i),map(f,is))
+    Cons(i,is) => Cons(f.apply[i64,List[Vec4]](i),map(f,is))
   }
 }
 
 def test_fish_nofib(n: i64): List[List[Vec4]] {
   map(
-    new { Apply(i) =>
+    new { apply(i) =>
       let n: i64 = min(0, i);
       pseudolimit(Vec(0, 0), Vec(640 + n, 0), Vec(0, 640 + n))
     },

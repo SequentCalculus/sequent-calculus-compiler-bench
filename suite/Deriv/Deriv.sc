@@ -1,7 +1,7 @@
 data List[A] { Nil, Cons(x: A, xs: List[A]) }
 data Unit { Unit }
 data Bool { True, False }
-codata Fun[A, B] { Apply(x: A): B }
+codata Fun[A, B] { apply(x: A): B }
 
 data Expr {
   Add(sums: List[Expr]),
@@ -16,7 +16,7 @@ data Expr {
 def map_list(f: Fun[Expr, Expr], l: List[Expr]): List[Expr] {
   l.case[Expr] {
     Nil => Nil,
-    Cons(x, xs) => Cons(f.Apply[Expr, Expr](x), map_list(f,xs))
+    Cons(x, xs) => Cons(f.apply[Expr, Expr](x), map_list(f,xs))
   }
 
 }
@@ -27,15 +27,8 @@ def map_expr(f: Fun[Expr, Expr], e: Expr): Expr {
     Sub(subs) => Sub(map_list(f, subs)),
     Mul(muls) => Mul(map_list(f, muls)),
     Div(divs) => Div(map_list(f, divs)),
-    Num(i)    => f.Apply[Expr, Expr](Num(i)),
-    X()       => f.Apply[Expr, Expr](X())
-  }
-}
-
-def and(b1: Bool, b2: Bool): Bool {
-  b1.case {
-    True => b2,
-    False => False
+    Num(i)    => f.apply[Expr, Expr](Num(i)),
+    X()       => f.apply[Expr, Expr](X())
   }
 }
 
@@ -47,7 +40,10 @@ def equal_list(l1: List[Expr], l2: List[Expr]): Bool {
     },
     Cons(e1, es1) => l2.case[Expr] {
       Nil => False,
-      Cons(e2, es2) => and(equal(e1, e2), equal_list(es1, es2))
+      Cons(e2, es2) => equal(e1, e2).case {
+        True => equal_list(es1, es2),
+        False => False
+      }
     },
   }
 }
@@ -108,12 +104,12 @@ def equal(exp1: Expr, exp2: Expr): Bool {
 
 def deriv(e: Expr): Expr {
   e.case {
-    Add(sums) => Add(map_list(new { Apply(x) => deriv(x) }, sums)),
-    Sub(subs) => Sub(map_list(new { Apply(x) => deriv(x) }, subs)),
+    Add(sums) => Add(map_list(new { apply(x) => deriv(x) }, sums)),
+    Sub(subs) => Sub(map_list(new { apply(x) => deriv(x) }, subs)),
     Mul(muls) => Mul(Cons(
       e,
       Cons(
-        Add(map_list(new { Apply(x) => Div(Cons(deriv(x), Cons(x, Nil))) }, muls)),
+        Add(map_list(new { apply(x) => Div(Cons(deriv(x), Cons(x, Nil))) }, muls)),
         Nil))),
     Div(divs) => divs.case[Expr] {
       Nil => X(), // This should raise a runtime error

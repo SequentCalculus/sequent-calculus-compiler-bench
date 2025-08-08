@@ -1,13 +1,6 @@
 data List[A] { Nil, Cons(a: A, as: List[A]) }
 data Bool { True, False }
 
-def and(b1: Bool, b2: Bool): Bool {
-  b1.case {
-    True => b2,
-    False => False
-  }
-}
-
 def neq_i(i1: i64, i2: i64): Bool {
   if i1 == i2 { False } else { True }
 }
@@ -29,11 +22,16 @@ def append(l1: List[List[i64]], l2: List[List[i64]]): List[List[i64]] {
 def safe(x: i64, d: i64, l: List[i64]): Bool {
   l.case[i64] {
     Nil => True,
-    Cons(q, l) =>
-      and(neq_i(x, q),
-        and(neq_i(x, q + d),
-          and(neq_i(x, q - d),
-            safe(x, d + 1, l))))
+    Cons(q, l) => neq_i(x, q).case {
+      True => neq_i(x, q + d).case {
+        True => neq_i(x, q - d).case {
+          True => safe(x, d + 1, l),
+          False => False
+        },
+        False => False
+      },
+      False => False
+    }
   }
 }
 

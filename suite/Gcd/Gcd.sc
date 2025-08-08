@@ -1,7 +1,7 @@
 data Triple[A, B, C] { Trip(a: A, b: B, c: C) }
 data Pair[A, B] { Pair(a: A, b: B) }
 data List[A] { Nil, Cons(a: A, as: List[A]) }
-codata Fun[A, B] { Apply(a: A): B }
+codata Fun[A, B] { apply(a: A): B }
 
 def quot_rem(a: i64, b: i64): Pair[i64, i64] {
   Pair(a / b, a % b)
@@ -77,7 +77,7 @@ def map_pairs(
 ): List[Triple[i64, i64, Triple[i64, i64, i64]]] {
   l.case[Pair[i64,i64]]{
     Nil => Nil,
-    Cons(p,ps) => Cons(f.Apply[Pair[i64,i64],Triple[i64,i64,Triple[i64,i64,i64]]](p),map_pairs(f,ps))
+    Cons(p,ps) => Cons(f.apply[Pair[i64,i64],Triple[i64,i64,Triple[i64,i64,i64]]](p),map_pairs(f,ps))
   }
 }
 
@@ -87,7 +87,7 @@ def map_triples(
 ): List[i64] {
   l.case[Triple[i64,i64,Triple[i64,i64,i64]]]{
     Nil => Nil,
-    Cons(p,ps) => Cons(f.Apply[Triple[i64,i64,Triple[i64,i64,i64]],i64](p),map_triples(f,ps))
+    Cons(p,ps) => Cons(f.apply[Triple[i64,i64,Triple[i64,i64,i64]],i64](p),map_triples(f,ps))
   }
 }
 
@@ -103,10 +103,10 @@ def test(d: i64): i64 {
   let ns: List[i64] = enum_from_to(5000, 5000 + d);
   let ms: List[i64] = enum_from_to(10000, 10000 + d);
   let tripls: List[Triple[i64, i64, Triple[i64, i64, i64]]] = map_pairs(
-    new { Apply(p) => p.case[i64, i64] { Pair(x, y) => Trip(x, y, gcd_e(x, y)) } },
+    new { apply(p) => p.case[i64, i64] { Pair(x, y) => Trip(x, y, gcd_e(x, y)) } },
     cartesian_product(ns, ms));
   let rs: List[i64] = map_triples(
-    new { Apply(t) =>
+    new { apply(t) =>
       t.case[i64, i64, Triple[i64, i64, i64]] { Trip(d1, d2, t) =>
         t.case[i64, i64, i64] { Trip(gg, u, v) => abs_int((gg + u) + v) }
       }
