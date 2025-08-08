@@ -1,5 +1,5 @@
 $(SML_LIB)/basis/basis.mlb
-local 
+local
   Boyer_lib.sml
 in
   Boyer_mlton.sml
