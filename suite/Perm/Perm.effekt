@@ -138,8 +138,8 @@ def main_loop(iters:Int,m:Int,n:Int) : Unit = {
 }
 
 def main() : Unit = {
-  commandLineArgs() match{
-    case Cons(iters_str,Cons(n_str,Cons(m_str,Nil()))) => 
+  commandLineArgs() match {
+    case Cons(iters_str,Cons(m_str,Cons(n_str,Nil()))) =>
       val iters = try { string::toInt(iters_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) }}
       val m = try { string::toInt(m_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) }}
       val n = try { string::toInt(n_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) }}
