@@ -12,6 +12,14 @@ def int_max(i1: i64, i2: i64): i64 {
   }
 }
 
+def enum_from_then_to(from: i64, then: i64, t: i64): List[i64] {
+  if from <= t {
+    Cons(from, enum_from_then_to(then, (2 * then) - from, t))
+  } else {
+    Nil
+  }
+}
+
 def algb2(x: i64, k0j1: i64, k1j1: i64, yss: List[Pair[i64, i64]]): List[Pair[i64, i64]] {
   yss.case[Pair[i64, i64]] {
     Nil => Nil,
@@ -174,14 +182,6 @@ def list_len(l: List[i64]): i64 {
 
 def lcss(xs: List[i64], ys: List[i64]): List[i64] {
   algc(list_len(xs), list_len(ys), xs, ys).apply[List[i64], List[i64]](Nil)
-}
-
-def enum_from_then_to(from: i64, then: i64, t: i64): List[i64] {
-  if from <= t {
-    Cons(from, enum_from_then_to(then, (2 * then) - from, t))
-  } else {
-    Nil
-  }
 }
 
 def lcss_main(a: i64, b: i64, c: i64, d: i64, e: i64, f: i64): List[i64] {

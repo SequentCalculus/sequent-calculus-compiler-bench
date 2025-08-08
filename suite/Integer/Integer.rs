@@ -92,14 +92,7 @@ fn runbench(
     integerbench(jop, astart, astep, alim)
 }
 
-fn runalltests(
-    astart: i64,
-    astep: i64,
-    alim: i64,
-    _: i64,
-    _: i64,
-    _: i64,
-) -> List<Either<i64, bool>> {
+fn runalltests(astart: i64, astep: i64, alim: i64) -> List<Either<i64, bool>> {
     let z_add = &|a, b| Either::Left(a + b);
     let z_sub = &|a, b| Either::Left(a - b);
     let z_mul = &|a, b| Either::Left(a * b);
@@ -124,7 +117,7 @@ fn runalltests(
 }
 
 fn test_integer_nofib(n: i64) -> List<Either<i64, bool>> {
-    runalltests(-2100000000, n, 2100000000, -2100000000, n, 2100000000)
+    runalltests(-2100000000, n, 2100000000)
 }
 
 fn print_either(e: Either<i64, bool>) {
