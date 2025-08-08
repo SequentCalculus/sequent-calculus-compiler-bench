@@ -71,14 +71,16 @@ let lcss xs ys = (algc (List.length xs) (List.length ys) xs ys) []
 let lcss_main a b c d e f = 
   lcss (enum_from_then_to a b c) (enum_from_then_to d e f)
 
-let test_lcss_nofib = lcss_main 1 2 200 100 101 300
+let test_lcss_nofib c f = lcss_main 1 2 c 100 101 f
 
-let rec main_loop iters = 
-  let res = test_lcss_nofib in 
+let rec main_loop iters c f = 
+  let res = test_lcss_nofib c f in 
   if iters=1 then
     print_endline (string_of_int (List.hd res))
-  else main_loop (iters-1)
+  else main_loop (iters-1) c f
 
 let main = 
   let iters = int_of_string Sys.argv.(1) in 
-  main_loop iters
+  let c = int_of_string Sys.argv.(2) in 
+  let f = int_of_string Sys.argv.(3) in 
+  main_loop iters c f

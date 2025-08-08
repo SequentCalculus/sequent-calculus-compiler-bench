@@ -188,8 +188,8 @@ def lcss_main(a: i64, b: i64, c: i64, d: i64, e: i64, f: i64): List[i64] {
   lcss(enum_from_then_to(a, b, c), enum_from_then_to(d, e, f))
 }
 
-def test_lcss_nofib(): List[i64] {
-  lcss_main(1, 2, 200, 100, 101, 300)
+def test_lcss_nofib(c: i64, f: i64): List[i64] {
+  lcss_main(1, 2, c, 100, 101, f)
 }
 
 def head(l: List[i64]): i64 {
@@ -199,17 +199,16 @@ def head(l: List[i64]): i64 {
   }
 }
 
-def main_loop(iters: i64): i64 {
+def main_loop(iters: i64, c: i64, f: i64): i64 {
+  let res: List[i64] = test_lcss_nofib(c, f);
   if iters == 1 {
-    let res: List[i64] = test_lcss_nofib();
     println_i64(head(res));
     0
   } else {
-    let res: List[i64] = test_lcss_nofib();
-    main_loop(iters - 1)
+    main_loop(iters - 1, c, f)
   }
 }
 
-def main(iters: i64): i64 {
-  main_loop(iters)
+def main(iters: i64, c: i64, f: i64): i64 {
+  main_loop(iters, c, f)
 }

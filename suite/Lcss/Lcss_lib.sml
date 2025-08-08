@@ -82,19 +82,20 @@ structure Lcss = struct
   fun lcss_main a b c d e f = 
     lcss (enum_from_then_to a b c) (enum_from_then_to d e f)
 
-  fun test_lcss_nofib () = 
-    lcss_main 1 2 200 100 101 300
+  fun test_lcss_nofib c f = 
+    lcss_main 1 2 c 100 101 f
 
-  fun main_loop iters = 
-  let val res = test_lcss_nofib ()
-             in 
-               if iters=1 then print ((Int.toString (hd res)) ^ "\n")
-               else main_loop (iters-1)
-             end
+  fun main_loop iters c f = 
+    let val res = test_lcss_nofib c f in 
+      if iters=1 then print ((Int.toString (hd res)) ^ "\n")
+      else main_loop (iters-1) c f
+    end
 
   fun run args =   
     let val iters = valOf (Int.fromString (hd args))
-  in 
-    main_loop iters
-  end
+      val c = valOf (Int.fromString (hd (tl args)))
+      val f = valOf (Int.fromString (hd (tl (tl args))))
+    in 
+      main_loop iters c f
+    end
 end 

@@ -109,24 +109,26 @@ def lcss_main(a:Int,b:Int,c:Int,d:Int,e:Int,f:Int) : List[Int] = {
   lcss(enum_from_then_to(a,b,c),enum_from_then_to(d,e,f))
 }
 
-def test_lcss_nofib() : List[Int] = {
-  lcss_main(1,2,200,100,101,300)
+def test_lcss_nofib(c: Int, f: Int) : List[Int] = {
+  lcss_main(1,2,c,100,101,f)
 }
 
-def main_loop(iters:Int) : Unit = {
-  val res = test_lcss_nofib()
+def main_loop(iters: Int, c: Int, f: Int) : Unit = {
+  val res = test_lcss_nofib(c, f)
   if (iters==1){
     println(option::getOrElse(list::headOption(res)){panic("Empty List") })
   }else{
-    main_loop(iters - 1)
+    main_loop(iters - 1, c, f)
   }
 }
 
 def main() : Unit = {
   commandLineArgs() match{
-    case Cons(iters_str,Nil()) => 
+    case Cons(iters_str, Cons(c_str, Cons(f_str, Nil()))) => 
       val iters = try { string::toInt(iters_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) } }
-      main_loop(iters)
+      val c = try { string::toInt(c_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) } }
+      val f = try { string::toInt(f_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) } }
+      main_loop(iters, c, f)
     case _ => panic("Please provide argument \"iters\"")
   }
 }
