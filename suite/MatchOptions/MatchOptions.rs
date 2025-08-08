@@ -10,11 +10,12 @@ fn attempt(i: u64) -> Option<u64> {
 }
 
 fn main_loop(iters: u64, n: u64) {
-    let mut res: i64 = attempt(n).map(|u| u as i64).unwrap_or(-1);
-    for _ in 1..iters {
-        res = attempt(n).map(|u| u as i64).unwrap_or(-1);
+    let res: i64 = attempt(n).map(|u| u as i64).unwrap_or(-1);
+    if iters == 1 {
+        println!("{res}");
+    } else {
+        main_loop(iters - 1, n)
     }
-    println!("{}", res);
 }
 
 fn main() {

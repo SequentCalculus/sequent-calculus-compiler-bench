@@ -23,11 +23,12 @@ fn useless(n: i64) -> i64 {
 }
 
 fn main_loop(iters: u64, n: i64) {
-    let mut res = useless(n);
-    for _ in 0..=iters {
-        res = useless(n);
+    let res = useless(n);
+    if iters == 1 {
+        println!("{res}");
+    } else {
+        main_loop(iters - 1, n)
     }
-    println!("{}", res);
 }
 
 fn main() {

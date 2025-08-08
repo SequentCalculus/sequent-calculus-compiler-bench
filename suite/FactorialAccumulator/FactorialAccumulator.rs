@@ -7,11 +7,12 @@ fn factorial(a: i64, i: i64) -> i64 {
 }
 
 fn main_loop(iters: u64, n: i64) {
-    let mut res = factorial(1, n);
-    for _ in 1..iters {
-        res = factorial(1, n);
+    let res = factorial(1, n);
+    if iters == 1 {
+        println!("{res}");
+    } else {
+        main_loop(iters - 1, n)
     }
-    println!("{}", res);
 }
 
 fn main() {

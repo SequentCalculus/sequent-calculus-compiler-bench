@@ -10,11 +10,12 @@ fn sudan(n: u64, x: u64, y: u64) -> u64 {
 }
 
 fn main_loop(iters: u64, n: u64, x: u64, y: u64) {
-    let mut res = sudan(n, x, y);
-    for _ in 1..iters {
-        res = sudan(n, x, y);
+    let res = sudan(n, x, y);
+    if iters == 1 {
+        println!("{res}");
+    } else {
+        main_loop(iters - 1, n, x, y)
     }
-    println!("{}", res);
 }
 
 fn main() {

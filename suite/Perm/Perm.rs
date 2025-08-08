@@ -177,11 +177,16 @@ fn perm9(m: u64, n: u64) -> bool {
 }
 
 fn main_loop(iters: u64, m: u64, n: u64) {
-    let mut res = perm9(m, n);
-    for _ in 1..iters {
-        res = perm9(m, n);
+    let res = perm9(m, n);
+    if iters == 1 {
+        if res {
+            println!("1")
+        } else {
+            println!("0")
+        }
+    } else {
+        main_loop(iters - 1, m, n)
     }
-    println!("{}", if res { 1 } else { 0 });
 }
 
 fn main() {

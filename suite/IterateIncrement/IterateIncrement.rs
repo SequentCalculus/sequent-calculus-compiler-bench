@@ -7,11 +7,12 @@ fn iterate(i: i64, f: impl Fn(i64) -> i64, a: i64) -> i64 {
 }
 
 fn main_loop(iters: u64, n: i64) {
-    let mut res = iterate(n, |x| x + 1, 0);
-    for _ in 1..iters {
-        res = iterate(n, |x| x + 1, 0);
+    let res = iterate(n, |x| x + 1, 0);
+    if iters == 1 {
+        println!("{res}");
+    } else {
+        main_loop(iters - 1, n)
     }
-    println!("{}", res);
 }
 
 fn main() {

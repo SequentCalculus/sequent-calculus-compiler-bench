@@ -199,11 +199,12 @@ fn test_lcss_nofib() -> List<i64> {
 }
 
 fn main_loop(iters: u64) {
-    let mut res = test_lcss_nofib();
-    for _ in 1..iters {
-        res = test_lcss_nofib();
+    let res = test_lcss_nofib();
+    if iters == 1 {
+        println!("{}", res.head());
+    } else {
+        main_loop(iters - 1)
     }
-    println!("{}", res.head());
 }
 
 fn main() {

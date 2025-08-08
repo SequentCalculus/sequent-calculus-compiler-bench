@@ -141,11 +141,12 @@ fn print_either(e: Either<i64, bool>) {
 }
 
 fn main_loop(iters: u64, n: i64) {
-    let mut res = test_integer_nofib(n);
-    for _ in 0..iters {
-        res = test_integer_nofib(n);
+    let res = test_integer_nofib(n);
+    if iters == 1 {
+        print_either(res.head());
+    } else {
+        main_loop(iters - 1, n)
     }
-    print_either(res.head());
 }
 
 fn main() {

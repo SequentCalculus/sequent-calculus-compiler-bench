@@ -33,14 +33,13 @@ impl<A> Tree<A> {
     }
 }
 
-fn main_loop(iters: u64, n: u64) -> i64 {
-    for i in 0..=iters {
-        let res = Tree::<u64>::create(0, n).lookup();
-        if i == iters {
-            println!("{:?}", res);
-        }
+fn main_loop(iters: u64, n: u64) {
+    let res = Tree::<u64>::create(0, n).lookup();
+    if iters == 1 {
+        println!("{res}");
+    } else {
+        main_loop(iters - 1, n)
     }
-    0
 }
 
 fn main() {
@@ -56,5 +55,5 @@ fn main() {
         .expect("Missing Argument n")
         .parse::<u64>()
         .expect("n must be a number");
-    std::process::exit(main_loop(iters, n) as i32)
+    main_loop(iters, n)
 }

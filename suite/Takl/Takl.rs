@@ -56,11 +56,12 @@ fn mas(x: List<u64>, y: List<u64>, z: List<u64>) -> List<u64> {
 }
 
 fn main_loop(iters: u64, x: u64, y: u64, z: u64) {
-    let mut res = mas(List::n(x), List::n(y), List::n(z)).len();
-    for _ in 1..iters {
-        res = mas(List::n(x), List::n(y), List::n(z)).len();
+    let res = mas(List::n(x), List::n(y), List::n(z)).len();
+    if iters == 1 {
+        println!("{res}");
+    } else {
+        main_loop(iters - 1, x, y, z)
     }
-    println!("{}", res);
 }
 
 fn main() {
@@ -86,6 +87,5 @@ fn main() {
         .expect("Missing Argument z")
         .parse::<u64>()
         .expect("z must be a number");
-
     main_loop(iters, x, y, z)
 }

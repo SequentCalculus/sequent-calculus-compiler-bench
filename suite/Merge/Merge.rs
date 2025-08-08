@@ -61,11 +61,12 @@ impl<A> List<A> {
 }
 
 fn main_loop(iters: u64, l1: List<u64>, l2: List<u64>) {
-    let mut res = l1.clone().merge(l2.clone());
-    for _ in 1..iters {
-        res = l1.clone().merge(l2.clone());
+    let res = l1.clone().merge(l2.clone());
+    if iters == 1 {
+        println!("{}", res.head());
+    } else {
+        main_loop(iters - 1, l1, l2)
     }
-    println!("{}", res.head());
 }
 
 fn main() {

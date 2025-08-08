@@ -7,11 +7,12 @@ fn tak(x: i64, y: i64, z: i64) -> i64 {
 }
 
 fn main_loop(iters: u64, x: i64, y: i64, z: i64) {
-    let mut res = tak(x, y, z);
-    for _ in 1..iters {
-        res = tak(x, y, z);
+    let res = tak(x, y, z);
+    if iters == 1 {
+        println!("{res}");
+    } else {
+        main_loop(iters - 1, x, y, z)
     }
-    println!("{}", res);
 }
 
 fn main() {

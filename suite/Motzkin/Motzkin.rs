@@ -20,11 +20,10 @@ fn motz(n: i64) -> i64 {
     }
 }
 
-fn main_loop(iters: u64, n: i64) -> i64 {
+fn main_loop(iters: u64, n: i64) {
     let res = motz(n);
     if iters == 1 {
-        println!("{}", res);
-        0
+        println!("{res}");
     } else {
         main_loop(iters - 1, n)
     }
@@ -43,5 +42,5 @@ fn main() {
         .expect("Missing Argument n")
         .parse::<i64>()
         .expect("n must be a number");
-    std::process::exit(main_loop(iters, n) as i32)
+    main_loop(iters, n)
 }

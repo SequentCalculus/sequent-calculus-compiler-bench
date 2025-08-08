@@ -1071,11 +1071,16 @@ fn test_boyer_nofib(n: u64) -> bool {
 }
 
 fn main_loop(iters: u64, n: u64) {
-    let mut res = test_boyer_nofib(n);
-    for _ in 1..iters {
-        res = test_boyer_nofib(n)
+    let res = test_boyer_nofib(n);
+    if iters == 1 {
+        if res {
+            println!("1")
+        } else {
+            println!("0")
+        }
+    } else {
+        main_loop(iters - 1, n)
     }
-    println!("{}", if res { 1 } else { -1 });
 }
 
 fn main() {

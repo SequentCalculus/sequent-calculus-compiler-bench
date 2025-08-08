@@ -368,10 +368,12 @@ fn go_gun() -> Box<dyn Fn(u64)> {
 }
 
 fn go_loop(iters: u64, steps: u64, go: Box<dyn Fn(u64)>) -> i64 {
-    for _ in 0..iters {
-        go(steps)
+    if iters == 0 {
+        0
+    } else {
+        go(steps);
+        go_loop(iters - 1, steps, go)
     }
-    0
 }
 
 fn main() {

@@ -106,11 +106,12 @@ fn test_gcd_nofib(d: i64) -> i64 {
 }
 
 fn main_loop(iters: u64, n: i64) {
-    let mut res = test_gcd_nofib(n);
-    for _ in 1..iters {
-        res = test_gcd_nofib(n);
+    let res = test_gcd_nofib(n);
+    if iters == 1 {
+        println!("{res}");
+    } else {
+        main_loop(iters - 1, n)
     }
-    println!("{}", res);
 }
 
 fn main() {
