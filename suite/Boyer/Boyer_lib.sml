@@ -463,6 +463,16 @@ structure Boyer = struct
            (hd_ok andalso tl_ok,subst__)
          end
 
+  fun apply_subst subst t =
+    case t of
+         Var vid =>
+         (case (find vid subst) of
+               (true,value) => value
+             | (false,_) => Var vid)
+             | Func (f, args, ls) =>
+                 Func (f, (map (fn x => apply_subst subst x) args),ls)
+             | ERROR => ERROR
+
   fun rewrite t =
     case t of
          Var v => Var v
@@ -517,16 +527,6 @@ structure Boyer = struct
 
   fun tautp x =
     tautologyp (rewrite x) nil nil
-
-  fun apply_subst subst t =
-    case t of
-         Var vid =>
-         (case (find vid subst) of
-               (true,value) => value
-             | (false,_) => Var vid)
-             | Func (f, args, ls) =>
-                 Func (f, (map (fn x => apply_subst subst x) args),ls)
-             | ERROR => ERROR
 
   fun boyer_theorem xxxx =
     boyer_implies
