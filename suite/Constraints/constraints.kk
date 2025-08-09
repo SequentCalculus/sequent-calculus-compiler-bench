@@ -227,7 +227,7 @@ fun lookup_cache(csp:csp,t:node<(list<assign>,list<list<conflictset>>)>) : <div,
     match ls
       Nil -> ((Nil,Unknown),tbl)
       Cons(a,as_) -> 
-        val table_entry = at_index(value(a) - 1.int64,unjust(list/head(tbl)))
+        val table_entry = at_index(value(a) - 1.int64, list/head(tbl, Nil))
         val cs = match table_entry
           Unknown  -> check_complete(csp_,Cons(a,as_))
           Known(_) -> table_entry
