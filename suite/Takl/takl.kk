@@ -11,13 +11,13 @@ fun list_n(n:int64): div list<int64>{
 }
 
 fun shorterp(x:list<int64>,y:list<int64>): div bool{
-  if not(is-empty(y)) then
+  if is-empty(y) then
+    False
+  else
     if is-empty(x) then
       True
     else 
       shorterp(tail(x),tail(y))
-  else 
-    False
 }
 
 fun mas(x:list<int64>,y:list<int64>,z:list<int64>): div list<int64>{
