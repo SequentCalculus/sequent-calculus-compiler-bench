@@ -9,7 +9,7 @@ use plotters::{
 };
 use std::{fs::create_dir_all, path::PathBuf};
 
-const PLOT_RES: (u32, u32) = (600, 600);
+const PLOT_RES: (u32, u32) = (600, 400);
 const MARGIN: u32 = 25;
 const MARGIN_TOP: u32 = 5;
 const CAPTION_SIZE: u32 = 40;
