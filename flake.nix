@@ -7,7 +7,7 @@
     effekt.url = "github:MarcoTz/effekt-nix";
     scc = {
       url =
-        "git+ssh://git@github.com/ps-tuebingen/sequent-calculus-compiler?ref=flake";
+        "git+ssh://git@github.com/ps-tuebingen/sequent-calculus-compiler";
     };
   };
 
