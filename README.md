@@ -16,8 +16,8 @@ The benchmarks are implemented in the following languages
 ## Usage
 
 To install all laguages and run the benchmarks, the provided Nix flake can be used.
-As some language overflow the stack for some benchmark programs, we increase the stack size to 2GB.
-With working Nix installation, simply run
+To avoid overflowing the stack, we increase the stack size to 2GB.
+With a working Nix installation, simply run
 
 ```
 ulimit -s 2048000; nix run -i
@@ -29,3 +29,13 @@ If you do not have enough space there, you can specify a path to an alternative 
 ```
 ulimit -s 2048000; nix run -i --store /path/to/chroot-store
 ```
+
+Depending on your hardware, running the benchmarks may take several hours.
+In particular, the `EvenoddGoto` benchmark for SML/NJ takes a long time.
+To exclude it, you can temprarily rename it with, for example,
+
+```
+mv suite/EvenoddGoto/EvenoddGotocm suite/EvenoddGoto/EvenoddGoto_cm
+```
+
+The MLton version of this benchmark is excluded, because it takes very long, and the Koka version is excluded becuase it segfaults.
