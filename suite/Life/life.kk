@@ -1,4 +1,4 @@
-module life 
+module life
 
 import std/os/env
 import std/num/int64
@@ -6,50 +6,58 @@ import std/num/int64
 struct gen
   coordslist: list<(int64,int64)>
 
+fun accumulate<t>(
+  a:list<t>,xs:list<t>,
+  f:(list<t>,t) -> list<t>
+): total list<t> {
+  foldl(xs,a,f)
+}
+
+fun revonto<t>(x:list<t>,y:list<t>): total list<t>{
+  accumulate(x,y,fn(tl,hd) -> Cons(hd,tl))
+}
+
+fun collect_accum<t>(
+  sofar:list<t>,
+  xs:list<t>,
+  f:t -> list<t>
+): total list<t>{
+  match xs
+    Nil -> sofar
+    Cons(y,ys) -> collect_accum(revonto(sofar,f(y)),ys,f)
+}
+
+fun collect<t>(l:list<t>,f:t -> list<t>): total list<t>{
+  collect_accum(Nil,l,f)
+}
+
+fun exists_l<t>(l:list<t>,f:t -> bool): total bool{
+  match l
+    Nil -> False
+    Cons(p,ps) -> f(p) || exists_l(ps,f)
+}
+
+fun pair_eq(p1:(int64,int64),p2:(int64,int64)): total bool {
+  match (p1, p2)
+    ((fst1, snd1), (fst2, snd2)) -> (fst1 == fst2) && (snd1 == snd2)
+}
+
+fun member(l:list<(int64,int64)>,p:(int64,int64)): total bool{
+  exists_l(l, fn(p1) pair_eq(p, p1))
+}
+
+fun diff(x:list<(int64,int64)>,y:list<(int64,int64)>): total list<(int64,int64)>{
+  filter(x,fn(p) not(member(y,p)))
+}
+
 fun alive(g:gen): total list<(int64,int64)>{
   match g
     Gen(livecoords) -> livecoords
 }
 
-fun exists_l(l:list<(int64,int64)>,f:(int64,int64) -> bool): total bool{
-  match l
-    Nil -> False
-    Cons((x,y),ps) -> f(x,y) || exists_l(ps,f)
-}
-
-fun member(l:list<(int64,int64)>,p:(int64,int64)): total bool{
-  match p
-    (x1,x2) -> exists_l(l,fn(y1,y2) (x1 == y1) && (x2 == y2))
-}
-
-fun accumulate(
-  a:list<(int64,int64)>,xs:list<(int64,int64)>,
-  f:(list<(int64,int64)>,(int64,int64)) -> list<(int64,int64)>
-): total list<(int64,int64)> {
-  foldl(xs,a,f)
-}
-
-fun revonto(x:list<(int64,int64)>,y:list<(int64,int64)>): total list<(int64,int64)>{
-  accumulate(x,y,fn(t,h) -> Cons(h,t))
-}
-
-fun collect_accum(
-  sofar:list<(int64,int64)>,
-  xs:list<(int64,int64)>,
-  f:(int64,int64) -> list<(int64,int64)>
-): total list<(int64,int64)>{
-  match xs
-    Nil -> sofar
-    Cons((x,y),ys) -> collect_accum(revonto(sofar,f(x,y)),ys,f)
-}
-
-fun collect(l:list<(int64,int64)>,f:(int64,int64) -> list<(int64,int64)>): total list<(int64,int64)>{
-  collect_accum(Nil,l,f)
-}
-
 fun neighbours(p:(int64,int64)): total list<(int64,int64)>{
   match p
-    (fst,snd) -> 
+    (fst,snd) ->
       Cons((fst - 1.int64, snd - 1.int64),
         Cons((fst - 1.int64, snd),
           Cons((fst - 1.int64, snd + 1.int64),
@@ -61,10 +69,9 @@ fun neighbours(p:(int64,int64)): total list<(int64,int64)>{
                       Nil))))))))
 }
 
-fun diff(x:list<(int64,int64)>,y:list<(int64,int64)>): total list<(int64,int64)>{
-  filter(x,fn(p) not(member(y,p)))
+fun twoorthree(n:int64): bool{
+  (n == 2.int64) || (n == 3.int64)
 }
-
 
 fun collect_neighbours(
   xover:list<(int64,int64)>,
@@ -75,7 +82,7 @@ fun collect_neighbours(
 ): total list<(int64,int64)>{
   match xs
     Nil -> diff(x3,xover)
-    Cons(a,x) -> 
+    Cons(a,x) ->
       if member(xover,a) then
           collect_neighbours(xover,x3,x2,x1,x)
       else if member(x3,a) then
@@ -84,7 +91,7 @@ fun collect_neighbours(
           collect_neighbours(xover,Cons(a,x3),x2,x1,x)
       else if member(x1,a) then
           collect_neighbours(xover,x3,Cons(a,x2),x1,x)
-      else 
+      else
           collect_neighbours(xover,x3,x2,Cons(a,x1),x)
 }
 
@@ -92,30 +99,26 @@ fun occurs3(l:list<(int64,int64)>): total list<(int64,int64)>{
   collect_neighbours(Nil,Nil,Nil,Nil,l)
 }
 
-fun twoorthree(n:int64): bool{
-  (n == 2.int64) || (n == 3.int64)
-}
-
 fun nextgen(gen:gen) : total gen{
   val living = alive(gen)
   val isalive = fn(p) member(living,p)
   val liveneighbours = fn(x,y) length(filter(neighbours((x,y)),isalive)).int64
   val survivors = filter(living,fn((x,y)) twoorthree(liveneighbours(x,y)))
-  val newbrnlist: list<(int64,int64)> = collect(living,fn(x,y) filter(neighbours((x,y)),fn(n) not(isalive(n))))
+  val newbrnlist: list<(int64,int64)> = collect(living,fn(p) filter(neighbours(p),fn(n) not(isalive(n))))
   val newborn = occurs3(newbrnlist)
   Gen(append(survivors,newborn))
 }
 
 fun nthgen(g:gen,i:int64): div gen {
   if i == 0.int64 then
-    g 
-  else 
+    g
+  else
     nthgen(nextgen(g), i - 1.int64)
 }
 
 fun at_pos(coordlist:list<(int64,int64)>,p:(int64,int64)): total list<(int64,int64)>{
   val move = fn((fst1,snd1))
-    match p 
+    match p
       (fst2,snd2) -> (fst1 + fst2, snd1 + snd2)
   map(coordlist,move)
 }
@@ -155,28 +158,26 @@ fun gun(): total gen{
   Gen(r2)
 }
 
-fun non_steady(): total gen { 
+fun non_steady(): total gen {
   Gen(append(append(
     at_pos(bail(),(1.int64, center_line())),
     at_pos(bail(),(21.int64,center_line()))),
     at_pos(shuttle(),(6.int64, center_line() - 2.int64))  ))
 }
 
-fun go_gun(steps:int64): div (){
-  val _ = nthgen(gun(),steps)
-  ()
+fun go_gun(steps:int64): div gen {
+  nthgen(gun(),steps)
 }
 
-fun go_shuttle(steps:int64): div () { 
-  val _ = nthgen(non_steady(),steps)
-  ()
+fun go_shuttle(steps:int64): div gen {
+  nthgen(non_steady(),steps)
 }
 
-fun go_loop(iters:int64,steps:int64,go:int64 -> div ()): div int64{
+fun go_loop(iters:int64,steps:int64,go:int64 -> div gen): div int64{
+  val res = go(steps)
   if iters == 1.int64 then
-    0.int64
-  else 
-    val res = go(steps)
+    length(alive(res)).int64
+  else
     go_loop(iters - 1.int64,steps,go)
 }
 

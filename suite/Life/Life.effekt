@@ -15,8 +15,8 @@ def int_to_string(i:Int) : String = {
       case 3 => "3"
       case 4 => "4"
       case 5 => "5"
-      case 6 => "6" 
-      case 7 => "7" 
+      case 6 => "6"
+      case 7 => "7"
       case 8 => "8"
       case 9 => "9"
       case _ => int_to_string(i / 10) ++ int_to_string(mod(i,10))
@@ -26,7 +26,14 @@ def int_to_string(i:Int) : String = {
 
 def pair_eq(p1:(Int,Int),p2:(Int,Int)) : Bool = {
   (p1,p2) match{
-    case ((i1,i2),(j1,j2)) => (i1==i2) && (j1==j2) 
+    case ((fst1,fst2),(snd1,snd2)) => (fst1==snd1) && (fst2==snd2)
+  }
+}
+
+def collect_accum(sofar:List[(Int,Int)],xs:List[(Int,Int)]) { f : Tuple2[Int,Int] => List[(Int,Int)] } : List[(Int,Int)] = {
+  xs match{
+    case Nil() => sofar
+    case Cons(p,xs) => collect_accum(list::reverseOnto(sofar,f(p)),xs) {f}
   }
 }
 
@@ -34,11 +41,26 @@ def exists[A](l:List[A]) { f: A => Bool } : Bool = {
   l match {
     case Nil() => false
     case Cons(a,as) => if (f(a)) {
-      true 
+      true
     }else{
-      exists(as) {f} 
+      exists(as) {f}
     }
   }
+}
+
+def length[A](l:List[A]) : Int = {
+  l match{
+    case Nil() => 0
+    case Cons(_,as) => 1+length(as)
+  }
+}
+
+def collect_pairs(l:List[(Int,Int)]) { f:Tuple2[Int,Int]=>List[(Int,Int)] } : List[(Int,Int)] = {
+  collect_accum(Nil(),l) { f }
+}
+
+def member(l:List[(Int,Int)],p:(Int,Int)) : Bool = {
+  exists(l) { x => pair_eq(p,x) }
 }
 
 def filter[A](l:List[A]) { f: A => Bool } : List[A] = {
@@ -52,30 +74,30 @@ def filter[A](l:List[A]) { f: A => Bool } : List[A] = {
   }
 }
 
-def length[A](l:List[A]) : Int = {
-  l match{
-    case Nil() => 0
-    case Cons(_,as) => 1+length(as)
-  }
-}
-
-def collect_accum(sofar:List[(Int,Int)],xs:List[(Int,Int)]) { f : Tuple2[Int,Int] => List[(Int,Int)] } : List[(Int,Int)] = {
-  xs match{
-    case Nil() => sofar
-    case Cons(p,xs) => collect_accum(list::reverseOnto(sofar,f(p)),xs) {f}
-  }
-}
-
-def collect_pairs(l:List[(Int,Int)]) { f:Tuple2[Int,Int]=>List[(Int,Int)] } : List[(Int,Int)] = {
-  collect_accum(Nil(),l) { f } 
-}
-
-def member(l:List[(Int,Int)],p:(Int,Int)) : Bool = {
-  exists(l) { x => pair_eq(p,x) }
-}
-
 def diff(x:List[(Int,Int)],y:List[(Int,Int)]) : List[(Int,Int)] = {
   filter(x) { p => not(member(y,p)) }
+}
+
+def alive(g:Gen) : List[(Int,Int)] = {
+  g match { case Gen(livecoords) => livecoords }
+}
+
+def neighbours(p:(Int,Int)) : List[(Int,Int)] = {
+  p match{
+    case (fst,snd) =>
+      Cons((fst - 1,snd - 1),
+        Cons((fst - 1, snd),
+          Cons((fst - 1, snd + 1),
+            Cons((fst, snd - 1),
+              Cons((fst, snd + 1),
+                Cons((fst + 1, snd - 1),
+                  Cons((fst + 1, snd),
+                    Cons((fst + 1, snd + 1),Nil()))))))))
+  }
+}
+
+def twoorthree(n:Int) : Bool = {
+  (n==2) || (n==3)
 }
 
 def collect_neighbours(xover:List[(Int,Int)],x3:List[(Int,Int)],x2:List[(Int,Int)],x1:List[(Int,Int)],xs:List[(Int,Int)]) : List[(Int,Int)] = {
@@ -99,28 +121,6 @@ def occurs3(l:List[(Int,Int)]) : List[(Int,Int)] = {
   collect_neighbours(Nil(),Nil(),Nil(),Nil(),l)
 }
 
-def neighbours(p:(Int,Int)) : List[(Int,Int)] = {
-  p match{
-    case (fst,snd) => 
-      Cons((fst - 1,snd - 1),
-        Cons((fst - 1, snd),
-          Cons((fst - 1, snd + 1),
-            Cons((fst, snd - 1),
-              Cons((fst, snd + 1),
-                Cons((fst + 1, snd - 1),
-                  Cons((fst + 1, snd),
-                    Cons((fst + 1, snd + 1),Nil()))))))))
-  }
-}
-
-def alive(g:Gen) : List[(Int,Int)] = {
-  g match { case Gen(livecoords) => livecoords }
-}
-
-def twoorthree(n:Int) : Bool = {
-  (n==2) || (n==3)
-}
-
 def nextgen(gen:Gen) : Gen = {
   val living = alive(gen)
   def isalive(p: Tuple2[Int,Int]): Bool = member(living,p)
@@ -133,36 +133,13 @@ def nextgen(gen:Gen) : Gen = {
 
 def nthgen(g:Gen,i:Int) : Gen = {
   if (i==0) {
-    g 
+    g
   }else {
     nthgen(nextgen(g), i - 1)
-  } 
-}
-
-def at_pos(coordlist:List[(Int,Int)],p:(Int,Int)) : List[(Int,Int)] = {
-  list::map(coordlist) { p1 => (p1,p) match {
-    case ((fst1,snd1),(fst2,snd2)) => 
-      (fst1+fst2,snd1+snd2)
-    }
   }
 }
 
-def bail() : List[(Int,Int)] = {
-  Cons((0, 0), Cons((0, 1), Cons((1, 0), Cons((1, 1), Nil()))))
-}
-
-def shuttle() : List[(Int,Int)] = { 
-  val r4 = Cons((4, 1), Cons((4, 0), Cons((4, 5), Cons((4, 6), Nil()))));
-  val r3 = Cons((3, 2), Cons((3, 3), Cons((3, 4), r4)));
-  val r2 = Cons((2, 1), Cons((2, 5), r3));
-  val r1 = Cons((1, 2), Cons((1, 4), r2));
-  Cons((0, 3), r1)
-}
-
-
-def center_line() : Int = { 5 } 
-
-def gun() : Gen = { 
+def gun() : Gen = {
   val r9 = Cons((9, 29), Cons((9, 30), Cons((9, 31), Cons((9, 32), Nil()))));
   val r8 = Cons((8, 20), Cons((8, 28), Cons((8, 29), Cons((8, 30),
     Cons((8, 31), Cons((8, 40), Cons((8, 41), r9)))))));
@@ -180,36 +157,56 @@ def gun() : Gen = {
   Gen(r2)
 }
 
-def non_steady() : Gen = { 
+def at_pos(coordlist:List[(Int,Int)],p:(Int,Int)) : List[(Int,Int)] = {
+  list::map(coordlist) { p1 => (p1,p) match {
+    case ((fst1,snd1),(fst2,snd2)) =>
+      (fst1+fst2,snd1+snd2)
+    }
+  }
+}
+
+def center_line() : Int = { 5 }
+
+def bail() : List[(Int,Int)] = {
+  Cons((0, 0), Cons((0, 1), Cons((1, 0), Cons((1, 1), Nil()))))
+}
+
+def shuttle() : List[(Int,Int)] = {
+  val r4 = Cons((4, 1), Cons((4, 0), Cons((4, 5), Cons((4, 6), Nil()))));
+  val r3 = Cons((3, 2), Cons((3, 3), Cons((3, 4), r4)));
+  val r2 = Cons((2, 1), Cons((2, 5), r3));
+  val r1 = Cons((1, 2), Cons((1, 4), r2));
+  Cons((0, 3), r1)
+}
+
+def non_steady() : Gen = {
   Gen(
     list::append(list::append(
       at_pos(bail(),(1,center_line())),
       at_pos(bail(),(21,center_line()))),
     at_pos(shuttle(),(6,center_line() - 2))))
-} 
-
-def go_gun(steps:Int) : Unit = { 
-  val gen = nthgen(gun(),steps)
-  ()
 }
 
-def go_shuttle(steps:Int) : Unit = { 
-  val gen = nthgen(non_steady(),steps)
-  ()
+def go_gun(steps:Int) : Gen = {
+  nthgen(gun(),steps)
 }
 
-def go_loop(iters:Int,steps:Int) { go:Int=>Unit } : Int = {
-  if (iters==0){
-    0
+def go_shuttle(steps:Int) : Gen = {
+  nthgen(non_steady(),steps)
+}
+
+def go_loop(iters:Int,steps:Int) { go:Int=>Gen } : Int = {
+  val res = go(steps)
+  if (iters==1){
+    length(alive(res))
   }else{
-    val res = go(steps)
     go_loop(iters - 1,steps) {go}
   }
 }
 
 def main() : Unit = {
   commandLineArgs() match{
-    case Cons(iters_str,Cons(steps_str,Nil())) => 
+    case Cons(iters_str,Cons(steps_str,Nil())) =>
       val iters = try { string::toInt(iters_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) } }
       val steps = try { string::toInt(steps_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) } }
       val gun_res = go_loop(iters,steps) {go_gun }
