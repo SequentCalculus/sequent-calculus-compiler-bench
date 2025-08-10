@@ -114,19 +114,6 @@ def one2n(n: i64): List[i64] {
   loop_one2n(n, Nil)
 }
 
-def loop_run(iters: i64, work: Fun[Unit, List[List[i64]]], result: Fun[List[List[i64]], Bool]): Bool {
-  let res: Bool = result.apply[List[List[i64]], Bool](work.apply[Unit, List[List[i64]]](Unit));
-  if iters == 0 {
-    res
-  } else {
-    loop_run(iters - 1, work, result)
-  }
-}
-
-def run_benchmark(iters: i64, work: Fun[Unit, List[List[i64]]], result: Fun[List[List[i64]], Bool]): Bool {
-  loop_run(iters, work, result)
-}
-
 def factorial(n: i64): i64 {
   if n == 1 {
     1
@@ -143,9 +130,12 @@ def loop_work(m: i64, perms: List[List[i64]]): List[List[i64]] {
   }
 }
 
+def run_benchmark(work: Fun[Unit, List[List[i64]]], result: Fun[List[List[i64]], Bool]): Bool {
+  result.apply[List[List[i64]], Bool](work.apply[Unit, List[List[i64]]](Unit))
+}
+
 def perm9(m: i64, n: i64): Bool {
   run_benchmark(
-    1,
     new { apply(u) =>  loop_work(m, permutations(one2n(n))) },
     new { apply(result) =>
       if sumlists(result) == (((n * (n + 1)) * factorial(n))/2) {

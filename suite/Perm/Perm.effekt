@@ -63,15 +63,6 @@ def one2n(n:Int) : List[Int] = {
   loop_one2n(n,Nil())
 }
 
-def loop_run(iters:Int) { work:() => List[List[Int]] } {result: List[List[Int]] => Bool } : Bool = {
-  val res = result(work())
-  if (iters==0){
-    res
-  }else{
-    loop_run(iters - 1) { work } { result }
-  }
-}
-
 def rev_loop(x:List[Int],n:Int,y:List[Int]) : List[Int] = {
   if (n==0){
     y 
@@ -117,15 +108,13 @@ def loop_work(m:Int,perms:List[List[Int]]) : List[List[Int]] = {
   }
 }
 
-def run_benchmark(iters:Int) { work: () => List[List[Int]] } { result : List[List[Int]] => Bool } : Bool = {
-  loop_run(iters) {work} {result}
+def run_benchmark { work: () => List[List[Int]] } { result : List[List[Int]] => Bool } : Bool = {
+  result(work())
 }
 
 def perm9(m:Int,n:Int) : Bool = {
-  run_benchmark(1) 
-  { () => loop_work(m,permutations(one2n(n))) }
-  { result => sumlists(result) == (((n * (n + 1)) * factorial(n))/2) }
-
+  run_benchmark { () => loop_work(m,permutations(one2n(n))) }
+    { result => sumlists(result) == (((n * (n + 1)) * factorial(n))/2) }
 }
 
 def main_loop(iters:Int,m:Int,n:Int) : Unit = {

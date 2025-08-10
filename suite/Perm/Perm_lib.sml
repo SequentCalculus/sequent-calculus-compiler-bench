@@ -51,19 +51,11 @@ structure Perm = struct
     if m=0 then perms 
     else loop_work (m-1) (permutations (hd perms))
 
-  fun loop_run iters work result = 
-  let val res = result (work())
-  in 
-    if iters = 0 
-    then res 
-    else loop_run (iters-1) work result
-  end
-
-  fun run_benchmark iters work result = 
-    loop_run iters work result 
+  fun run_benchmark work result = 
+    result (work())
 
   fun perm9 m n = 
-    run_benchmark 1 
+    run_benchmark
     (fn () => loop_work m (permutations (one2n n)))
     (fn result => 
     (sumlists result) = (((n*(n+1)) * (factorial n)) div 2))
