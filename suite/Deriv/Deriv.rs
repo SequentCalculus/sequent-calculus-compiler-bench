@@ -73,13 +73,17 @@ fn mk_exp(a: Expr, b: Expr) -> Expr {
 }
 
 fn main_loop(iters: u64, n: i64, m: i64) {
-    let mut res = deriv(mk_exp(Expr::Num(n), Expr::Num(m)));
-    let mut expected = mk_ans(Expr::Num(n), Expr::Num(m));
-    for _ in 1..iters {
-        res = deriv(mk_exp(Expr::Num(n), Expr::Num(m)));
-        expected = mk_ans(Expr::Num(n), Expr::Num(m));
+    let res = deriv(mk_exp(Expr::Num(n), Expr::Num(m)));
+    let expected = mk_ans(Expr::Num(n), Expr::Num(m));
+    if iters == 1 {
+        if res == expected {
+            println!("1")
+        } else {
+            println!("0")
+        }
+    } else {
+        main_loop(iters - 1, n, m)
     }
-    println!("{}", if res == expected { 1 } else { 0 });
 }
 
 fn main() {
@@ -100,6 +104,5 @@ fn main() {
         .expect("Missing Argument m")
         .parse::<i64>()
         .expect("m must be a number");
-
     main_loop(iters, n, m)
 }

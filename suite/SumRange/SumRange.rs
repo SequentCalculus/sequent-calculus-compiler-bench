@@ -29,11 +29,12 @@ impl List<u64> {
 }
 
 fn main_loop(iters: u64, n: u64) {
-    let mut res = List::range(0, n).sum();
-    for _ in 1..iters {
-        res = List::range(0, n).sum();
+    let res = List::range(0, n).sum();
+    if iters == 1 {
+        println!("{res}");
+    } else {
+        main_loop(iters - 1, n)
     }
-    println!("{}", res);
 }
 
 fn main() {

@@ -190,7 +190,7 @@ fn cols() -> List<List<i64>> {
     [[0, 3, 6].into(), [1, 4, 7].into(), [2, 5, 8].into()].into()
 }
 
-fn empty() -> List<Option<Player>> {
+fn empty_board() -> List<Option<Player>> {
     List::<Option<Player>>::tabulate(9, &|| None)
 }
 
@@ -285,14 +285,12 @@ fn move_to(board: &List<Option<Player>>, p: Player, i: i64) -> List<Option<Playe
 fn all_moves_rec(n: i64, board: List<Option<Player>>, acc: List<i64>) -> List<i64> {
     match board {
         List::Nil => acc.rev(),
-        List::Cons(p, more) => match p {
-            Some(_) => all_moves_rec(n + 1, Rc::unwrap_or_clone(more), acc),
-            None => all_moves_rec(
-                n + 1,
-                Rc::unwrap_or_clone(more),
-                List::Cons(n, Rc::new(acc)),
-            ),
-        },
+        List::Cons(Some(_), more) => all_moves_rec(n + 1, Rc::unwrap_or_clone(more), acc),
+        List::Cons(None, more) => all_moves_rec(
+            n + 1,
+            Rc::unwrap_or_clone(more),
+            List::Cons(n, Rc::new(acc)),
+        ),
     }
 }
 
@@ -327,11 +325,12 @@ fn minimax(p: Player, board: List<Option<Player>>) -> RoseTree<(List<Option<Play
 }
 
 fn main_loop(iters: u64) {
-    let mut res = minimax(Player::X, empty());
-    for _ in 1..iters {
-        res = minimax(Player::X, empty());
+    let res = minimax(Player::X, empty_board());
+    if iters == 1 {
+        println!("{}", res.top().1);
+    } else {
+        main_loop(iters - 1)
     }
-    println!("{}", res.top().1);
 }
 
 fn main() {

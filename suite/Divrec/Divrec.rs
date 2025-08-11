@@ -37,12 +37,12 @@ fn rec_div2(l: List<()>) -> List<()> {
 }
 
 fn main_loop(iters: u64, n: u64) {
-    let mut res = rec_div2(List::create_n(n)).len();
-    for _ in 1..iters {
-        res = rec_div2(List::create_n(n)).len();
+    let res = rec_div2(List::create_n(n)).len();
+    if iters == 1 {
+        println!("{res}");
+    } else {
+        main_loop(iters - 1, n)
     }
-
-    println!("{}", res);
 }
 
 fn main() {

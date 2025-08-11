@@ -86,9 +86,9 @@ impl BenchResult {
             });
         }
         avg_data.sort_by(|dat1, dat2| dat1.adjusted_mean.partial_cmp(&dat2.adjusted_mean).unwrap());
-        let suffix = if skip_goto { " Without Goto" } else { "" };
+        let suffix = if skip_goto { "WithoutGoto" } else { "" };
         BenchResult {
-            benchmark: format!("Geometric Mean{suffix}"),
+            benchmark: format!("GeometricMean{suffix}"),
             data: avg_data,
         }
     }

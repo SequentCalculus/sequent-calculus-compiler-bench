@@ -147,6 +147,14 @@ impl<'a> PartialEq for Term<'a> {
 
 impl<'a> Eq for Term<'a> {}
 
+fn replicate_term<'a>(n: u64, t: Term<'a>) -> List<Term<'a>> {
+    if n == 0 {
+        List::Nil
+    } else {
+        List::Cons(t.clone(), Rc::new(replicate_term(n - 1, t)))
+    }
+}
+
 fn boyer_a<'a>() -> Term<'a> {
     Term::Var(Id::A)
 }
@@ -994,8 +1002,8 @@ fn tautp<'a>(x: Term<'a>) -> bool {
     tautologyp(rewrite(x), List::Nil, List::Nil)
 }
 
-fn test0<'a>(xxxx: Term<'a>) -> bool {
-    let subst0 = List::Cons(
+fn boyer_subst0<'a>() -> List<(Id, Term<'a>)> {
+    List::Cons(
         (
             Id::X,
             boyer_f(boyer_plus(
@@ -1040,8 +1048,11 @@ fn test0<'a>(xxxx: Term<'a>) -> bool {
                 )),
             )),
         )),
-    );
-    let theorem = boyer_implies(
+    )
+}
+
+fn boyer_theorem<'a>(xxxx: Term<'a>) -> Term<'a> {
+    boyer_implies(
         boyer_and(
             boyer_implies(xxxx, boyer_y()),
             boyer_and(
@@ -1053,16 +1064,11 @@ fn test0<'a>(xxxx: Term<'a>) -> bool {
             ),
         ),
         boyer_implies(boyer_x(), boyer_w()),
-    );
-    tautp(apply_subst(subst0, theorem))
+    )
 }
 
-fn replicate_term<'a>(n: u64, t: Term<'a>) -> List<Term<'a>> {
-    if n == 0 {
-        List::Nil
-    } else {
-        List::Cons(t.clone(), Rc::new(replicate_term(n - 1, t)))
-    }
+fn test0<'a>(xxxx: Term<'a>) -> bool {
+    tautp(apply_subst(boyer_subst0(), boyer_theorem(xxxx)))
 }
 
 fn test_boyer_nofib(n: u64) -> bool {
@@ -1071,11 +1077,16 @@ fn test_boyer_nofib(n: u64) -> bool {
 }
 
 fn main_loop(iters: u64, n: u64) {
-    let mut res = test_boyer_nofib(n);
-    for _ in 1..iters {
-        res = test_boyer_nofib(n)
+    let res = test_boyer_nofib(n);
+    if iters == 1 {
+        if res {
+            println!("1")
+        } else {
+            println!("0")
+        }
+    } else {
+        main_loop(iters - 1, n)
     }
-    println!("{}", if res { 1 } else { -1 });
 }
 
 fn main() {

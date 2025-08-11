@@ -57,6 +57,22 @@ def nth[A](l:List[A],n:Int) : A = {
   }
 }
 
+def tabulate_loop(n: Int, len: Int) { f: () => Option[Player] } : List[Option[Player]] = {
+  if (n == len) {
+    Nil()
+  } else {
+    Cons(f(), tabulate_loop(n + 1, len) { f })
+  }
+}
+
+def tabulate(len: Int) { f: () => Option[Player] } : List[Option[Player]] = {
+  if (len < 0) {
+    panic("Negative list length")
+  } else {
+    tabulate_loop(0, len) { f }
+  }
+}
+
 def list_extreme(l:List[Int]) { f:(Int,Int) => Int } : Int = {
   l match{
     case Nil() => panic("Empty List")
@@ -126,6 +142,10 @@ def score(board:List[Option[Player]]) : Int = {
   }else{
     0
   }
+}
+
+def emptyBoard(): List[Option[Player]] = {
+  tabulate(9) { () => None() }
 }
 
 def put_at(x:Option[Player],xs:List[Option[Player]],i:Int) : List[Option[Player]] = { 
@@ -216,7 +236,7 @@ def minimax(p:Player,board:List[Option[Player]]) : RoseTree[(List[Option[Player]
 }
 
 def main_loop(iters:Int) : Unit = {
-  val res = minimax(X(),empty())
+  val res = minimax(X(),emptyBoard())
   if (iters==1){
     println(snd(top(res)))
   }else{

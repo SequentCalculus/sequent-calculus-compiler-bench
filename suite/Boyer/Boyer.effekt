@@ -50,77 +50,42 @@ type Term {
 def id_equal(id1:Id,id2:Id) : Bool = {
   (id1,id2) match {
 		case (A(),A()) => true
-		case (A(),_) => false
 		case (B(),B()) => true
-		case (B(),_) => false
 		case (C(),C()) => true
-		case (C(),_) => false
 		case (D(),D()) => true
-		case (D(),_) => false
 		case (X (),X ()) => true
-		case (X (),_) => false
 		case (Y(),Y()) => true
-		case (Y(),_) => false
 		case (Z(),Z()) => true
-		case (Z(),_) => false
 		case (U(),U()) => true
-		case (U(),_) => false
 		case (W(),W()) => true
-		case (W(),_) => false
 		case (ADD1(),ADD1()) => true
-		case (ADD1(),_) => false
 		case (AND(),AND()) => true
-		case (AND(),_) => false
 		case (APPEND(),APPEND()) => true
-		case (APPEND(),_) => false
 		case (CONS(),CONS()) => true
-		case (CONS(),_) => false
 		case (DIFFERENCE(),DIFFERENCE()) => true
-		case (DIFFERENCE(),_) => false
 		case (EQUAL(),EQUAL()) => true
-		case (EQUAL(),_) => false
-		case (F (),F ()) => true
-		case (F (),_) => false
+		case (F(),F()) => true
 		case (FALSE(),FALSE()) => true
-		case (FALSE(),_) => false
 		case (FOUR(),FOUR()) => true
-		case (FOUR(),_) => false
 		case (IF(),IF()) => true
-		case (IF(),_) => false
 		case (IMPLIES (),IMPLIES ()) => true
-		case (IMPLIES (),_) => false
 		case (LENGTH(),LENGTH()) => true
-		case (LENGTH(),_) => false
 		case (LESSP(),LESSP()) => true
-		case (LESSP(),_) => false
 		case (MEMBER(),MEMBER()) => true
-		case (MEMBER(),_) => false
 		case (NIL(),NIL()) => true
-		case (NIL(),_) => false
 		case (NOT(),NOT()) => true
-		case (NOT(),_) => false
 		case (ONE(),ONE()) => true
-		case (ONE(),_) => false
 		case (OR(),OR()) => true
-		case (OR(),_) => false
 		case (PLUS(),PLUS()) => true
-		case (PLUS(),_) => false
 		case (QUOTIENT(),QUOTIENT()) => true
-		case (QUOTIENT(),_) => false
 		case (REMAINDER(),REMAINDER()) => true
-		case (REMAINDER(),_) => false
 		case (REVERSE(),REVERSE()) => true
-		case (REVERSE(),_) => false
 		case (TIMES(),TIMES()) => true
-		case (TIMES(),_) => false
 		case (TRUE(),TRUE()) => true
-		case (TRUE(),_) => false
 		case (TWO(),TWO()) => true
-		case (TWO(),_) => false
 		case (ZERO(),ZERO()) => true
-		case (ZERO(),_) => false
 		case (ZEROP(),ZEROP()) => true
-		case (ZEROP(),_) => false
+		case _ => false
   }
 }
 
@@ -128,7 +93,7 @@ def term_equal(t1:Term,t2:Term) : Bool = {
   (t1,t2) match {
     case (Var(id1),Var(id2)) => id_equal(id1,id2)
     case (Func(f1,args1,_),Func(f2,args2,_)) => id_equal(f1,f2) && term_list_equal(args1,args2)
-    case _ => false 
+    case _ => false
   }
 }
 
@@ -144,7 +109,7 @@ def fst[A,B](p:(A,B)) : A = { p match {
   case (a,_) => a
 }}
 
-def term_in_list(term:Term,ht:List[Term]) : Bool = { 
+def term_in_list(term:Term,ht:List[Term]) : Bool = {
   ht match{
     case Nil() => false
     case Cons(t,ts) => term_equal(t,term) || term_in_list(term,ts)
@@ -157,10 +122,10 @@ def replicate_term(n:Int,t:Term) : List[Term] = {
   }
 }
 
-def find(vid:Id,ls:List[(Id,Term)]) : (Bool,Term) = { 
+def find(vid:Id,ls:List[(Id,Term)]) : (Bool,Term) = {
   ls match {
     case Nil() => (false,ERROR())
-    case Cons((vid2,val2),bs) => 
+    case Cons((vid2,val2),bs) =>
       if (id_equal(vid,vid2)) {
         (true,val2)
       }else{
@@ -168,124 +133,6 @@ def find(vid:Id,ls:List[(Id,Term)]) : (Bool,Term) = {
       }
   }
 }
-
-def apply_subst(subst:List[(Id,Term)],t:Term) : Term = { 
-  t match {
-    case Var(vid) => 
-      val (found,value) = find(vid,subst)
-      if (found) {
-        value
-      }else {
-        Var(vid)
-      }
-    case Func(f,args,ls) => Func(f,map(args){x => apply_subst(subst,x)},ls)
-    case ERROR() => ERROR()
-  }
-}
-
-def one_way_unify(term1:Term,term2:Term) : (Bool,List[(Id,Term)]) = { 
-  one_way_unify1(term1,term2,Nil())
-}
-
-def one_way_unify1(term1:Term,term2:Term,subst:List[(Id,Term)]) : (Bool,List[(Id,Term)]) = {
-  term2 match {
-    case Var(vid2) => 
-      val (found,v2) = find(vid2,subst)
-      if (found) {
-        (term_equal(term1,v2),subst)
-      }else{
-        (true,Cons((vid2,term1),subst))
-      }
-    
-    case Func(f2,as2,l2) => term1 match {
-      case Func(f1,as1,l1) => 
-        if (id_equal(f1,f2)) {
-          one_way_unify1_lst(as1,as2,subst)
-        } else {
-          (false,Nil())
-        }
-      case Var(_) => (false,Nil())
-      case ERROR() => (false,Nil())
-    }
-    case ERROR() => (false,Nil())
-  }
-}
-
-def one_way_unify1_lst(tts1:List[Term],tts2:List[Term],subst:List[(Id,Term)]) : (Bool,List[(Id,Term)]) = {
-  (tts1,tts2) match {
-    case (Nil(),Nil()) => (true,subst)
-    case (Nil(),_) => (false,Nil())
-    case (_,Nil()) => (false,Nil())
-    case (Cons(t1,ts1),Cons(t2,ts2)) => 
-      val (hd_ok,subst_) = one_way_unify1(t1,t2,subst)
-      val (tl_ok,subst__) = one_way_unify1_lst(ts1,ts2,subst_)
-      (hd_ok && tl_ok, subst__)
-  }
-}
-
-def rewrite(x:Term) : Term = { 
-  x match {
-    case Var(v) => Var(v)
-    case Func(f,args,lemmas) => rewrite_with_lemmas(Func(f,list::map(args){rewrite},lemmas),lemmas())
-    case ERROR() => ERROR()
-    
-  }
-}
-
-def rewrite_with_lemmas(term:Term,lss:List[(Term,Term)]) : Term = {
-  lss match {
-    case Nil() => term
-    case Cons((lhs,rhs),ls) => 
-      val (unified,subst) = one_way_unify(term,lhs)
-      if (unified) {
-        rewrite(apply_subst(subst,rhs))
-      } else {
-        rewrite_with_lemmas(term,ls)
-      }
-  }
-}
-
-def truep(x:Term,l:List[Term]):Bool = {
-  (term_in_list(x,l))
-  || 
-  (x match {
-    case Func(TRUE(),_,_) => true
-    case _ => false
-  })
-}
-
-def falsep(x:Term,l:List[Term]):Bool = {
-  (term_in_list(x,l))
-  ||
-  (x match {
-    case Func(FALSE(),_,_) => true
-    case _ => false 
-  })
-}
-
-def tautologyp(x:Term,true_lst:List[Term],false_lst:List[Term]) : Bool = { 
-  if (truep(x,true_lst)) { true } else 
-  if (falsep(x,false_lst)) { false } else 
-  x match {
-    case Func(IF(),Cons(cond,Cons(t,Cons(e,Nil()))),lemmas) => 
-    if (truep(cond,true_lst)) {
-      tautologyp(t,true_lst,false_lst)
-    } else if (falsep(cond, false_lst)) {
-      tautologyp(e,true_lst,false_lst)
-    } else{
-      tautologyp(t,Cons(cond,true_lst),false_lst)
-      && 
-      tautologyp(e,true_lst,Cons(cond,false_lst))  
-    }
-    case _ => true
-  }
-   
-}
-
-def tautp(x:Term): Bool = { 
-  tautologyp(rewrite(x),Nil(),Nil())
-}
-
 def boyer_a() : Term = { Var(A()) }
 def boyer_b() : Term = { Var(B()) }
 def boyer_c() : Term = { Var(C()) }
@@ -301,24 +148,24 @@ def boyer_if_(a:Term,b:Term,c:Term) : Term = { Func(IF(),[a,b,c],box { () => [
   (boyer_if_(boyer_if_(boyer_x(),boyer_y(),boyer_z()),boyer_u(),boyer_w()),
     boyer_if_(boyer_x(),boyer_if_(boyer_y(),boyer_u(),boyer_w()),boyer_if_(boyer_z(),boyer_u(),boyer_w()))
   )
-] }) 
+] })
 }
-def boyer_and_(a:Term,b:Term) : Term = { 
-  Func(AND(),[a,b], box {() => 
+def boyer_and_(a:Term,b:Term) : Term = {
+  Func(AND(),[a,b], box {() =>
     [(
       boyer_and_(boyer_x(),boyer_y()),
       boyer_if_(boyer_x(),boyer_if_(boyer_y(),boyer_true(),boyer_false()),boyer_false())
     )]
   })
 }
-def boyer_implies(a:Term,b:Term) : Term = { 
+def boyer_implies(a:Term,b:Term) : Term = {
   Func(IMPLIES(),[a,b],box { () => [
     (boyer_implies(boyer_x(),boyer_y()),
     boyer_if_(boyer_x(),boyer_if_(boyer_y(),boyer_true(),boyer_false()),boyer_true()))
     ]
   })
 }
-def boyer_equal(a:Term,b:Term) : Term = { 
+def boyer_equal(a:Term,b:Term) : Term = {
   Func(EQUAL(),[a,b], box { () => [
     (
       boyer_equal(boyer_plus(boyer_x(),boyer_y()),boyer_zero()),
@@ -335,11 +182,11 @@ def boyer_equal(a:Term,b:Term) : Term = {
       boyer_equal(boyer_x(), boyer_difference(boyer_x(), boyer_y())),
       boyer_or_(boyer_equal(boyer_x(), boyer_zero()), boyer_zerop(boyer_y()))
     ),
-    ( 
+    (
       boyer_equal(boyer_times(boyer_x(), boyer_y()), boyer_zero()),
       boyer_or_(boyer_zerop(boyer_x()), boyer_zerop(boyer_y()))
     ),
-    ( 
+    (
       boyer_equal(boyer_append_(boyer_x(), boyer_y()), boyer_append_(boyer_x(), boyer_z())),
       boyer_equal(boyer_y(), boyer_z())
     ),
@@ -370,15 +217,15 @@ def boyer_equal(a:Term,b:Term) : Term = {
     )
   ]})
 }
-def boyer_or_(a:Term,b:Term): Term = { 
+def boyer_or_(a:Term,b:Term): Term = {
   Func(OR(),[a,b],box { () => [
     (
       boyer_or_(boyer_x(),boyer_y()),
       boyer_if_(boyer_x(),boyer_true(),boyer_if_(boyer_y(),boyer_true(),boyer_false()))
-    ) 
+    )
   ]})
 }
-def boyer_not_(a:Term) : Term = { 
+def boyer_not_(a:Term) : Term = {
   Func(NOT(),[a], box { () => [
     (
       boyer_not_(boyer_x()),
@@ -386,7 +233,7 @@ def boyer_not_(a:Term) : Term = {
     )
   ]})
 }
-def boyer_zerop(a:Term) : Term = { 
+def boyer_zerop(a:Term) : Term = {
   Func(ZEROP(),[a],box { () => [
     (
       boyer_zerop(boyer_x()),
@@ -394,7 +241,7 @@ def boyer_zerop(a:Term) : Term = {
     )
   ]})
 }
-def boyer_zero() : Term = { 
+def boyer_zero() : Term = {
   Func(ZERO(),[], box { () => [] })
 }
 def boyer_one() : Term = {
@@ -405,7 +252,7 @@ def boyer_one() : Term = {
     )
   ]})
 }
-def boyer_two(): Term = { 
+def boyer_two(): Term = {
   Func(TWO(),[],box { () => [
     (
       boyer_two(),
@@ -413,10 +260,10 @@ def boyer_two(): Term = {
     )
   ]})
 }
-def boyer_add1(a:Term) : Term = { 
+def boyer_add1(a:Term) : Term = {
   Func(ADD1(),[a],box { () => [] })
 }
-def boyer_plus(a:Term,b:Term) : Term = { 
+def boyer_plus(a:Term,b:Term) : Term = {
   Func(PLUS(),[a,b],box { () => [
     (
       boyer_plus(boyer_plus(boyer_x(), boyer_y()), boyer_z()),
@@ -438,7 +285,7 @@ def boyer_difference(a:Term,b:Term) : Term = {
       boyer_difference(boyer_x(), boyer_x()),
       boyer_zero()
     ),
-    ( 
+    (
       boyer_difference(boyer_plus(boyer_x(), boyer_y()), boyer_x()),
       boyer_y()
     ),
@@ -464,7 +311,7 @@ def boyer_difference(a:Term,b:Term) : Term = {
     )
   ]})
 }
-def boyer_times(a:Term,b:Term) : Term = { 
+def boyer_times(a:Term,b:Term) : Term = {
   Func(TIMES(),[a,b], box { () => [
     (
       boyer_times(boyer_x(), boyer_plus(boyer_y(), boyer_z())),
@@ -484,7 +331,7 @@ def boyer_times(a:Term,b:Term) : Term = {
     )
   ]})
 }
-def boyer_remainder(a:Term,b:Term) : Term = { 
+def boyer_remainder(a:Term,b:Term) : Term = {
   Func(REMAINDER(),[a,b], box { () => [
     (
       boyer_remainder(boyer_x(), boyer_one()),
@@ -501,7 +348,7 @@ def boyer_remainder(a:Term,b:Term) : Term = {
     (
       boyer_remainder(boyer_times(boyer_x(), boyer_y()), boyer_y()),
       boyer_zero()
-    ) 
+    )
   ]})
 }
 def boyer_quotient(a:Term,b:Term) : Term = {
@@ -516,7 +363,7 @@ def boyer_quotient(a:Term,b:Term) : Term = {
     )
   ]})
 }
-def boyer_lessp(a:Term,b:Term) : Term = { 
+def boyer_lessp(a:Term,b:Term) : Term = {
   Func(LESSP(),[a,b],box { () => [
     (
       boyer_lessp(boyer_remainder(boyer_x(), boyer_y()), boyer_y()),
@@ -540,13 +387,13 @@ def boyer_lessp(a:Term,b:Term) : Term = {
     )
   ]})
 }
-def boyer_f(a:Term) : Term = { 
+def boyer_f(a:Term) : Term = {
   Func(F(),[a],box { () => [] })
 }
-def boyer_nil() : Term = { 
+def boyer_nil() : Term = {
   Func(NIL(),[],box{ () => [] })
 }
-def boyer_length_(a:Term) : Term = { 
+def boyer_length_(a:Term) : Term = {
   Func(LENGTH(),[a],box { () => [
     (
       boyer_length_(boyer_reverse_(boyer_x())),
@@ -554,7 +401,7 @@ def boyer_length_(a:Term) : Term = {
     )
   ]})
 }
-def boyer_member(a:Term,b:Term) : Term = { 
+def boyer_member(a:Term,b:Term) : Term = {
   Func(MEMBER(),[a,b],box { () => [
     (
       boyer_member(boyer_x(), boyer_append_(boyer_y(), boyer_z())),
@@ -566,7 +413,7 @@ def boyer_member(a:Term,b:Term) : Term = {
     )
   ]})
 }
-def boyer_append_(a:Term,b:Term) : Term = { 
+def boyer_append_(a:Term,b:Term) : Term = {
   Func(APPEND(),[a,b],box{ () => [
     (
       boyer_append_(boyer_append_(boyer_x(), boyer_y()), boyer_z()),
@@ -574,7 +421,7 @@ def boyer_append_(a:Term,b:Term) : Term = {
     )
   ]})
 }
-def boyer_reverse_(a:Term) : Term = { 
+def boyer_reverse_(a:Term) : Term = {
   Func(REVERSE(),[a],box{ () => [
     (
       boyer_reverse_(boyer_append_(boyer_x(), boyer_y())),
@@ -583,7 +430,125 @@ def boyer_reverse_(a:Term) : Term = {
   ]})
 }
 
-def boyer_subst0() : List[(Id,Term)] = { 
+def one_way_unify(term1:Term,term2:Term) : (Bool,List[(Id,Term)]) = {
+  one_way_unify1(term1,term2,Nil())
+}
+
+def one_way_unify1(term1:Term,term2:Term,subst:List[(Id,Term)]) : (Bool,List[(Id,Term)]) = {
+  term2 match {
+    case Var(vid2) =>
+      val (found,v2) = find(vid2,subst)
+      if (found) {
+        (term_equal(term1,v2),subst)
+      }else{
+        (true,Cons((vid2,term1),subst))
+      }
+
+    case Func(f2,as2,l2) => term1 match {
+      case Func(f1,as1,l1) =>
+        if (id_equal(f1,f2)) {
+          one_way_unify1_lst(as1,as2,subst)
+        } else {
+          (false,Nil())
+        }
+      case Var(_) => (false,Nil())
+      case ERROR() => (false,Nil())
+    }
+    case ERROR() => (false,Nil())
+  }
+}
+
+def one_way_unify1_lst(tts1:List[Term],tts2:List[Term],subst:List[(Id,Term)]) : (Bool,List[(Id,Term)]) = {
+  (tts1,tts2) match {
+    case (Nil(),Nil()) => (true,subst)
+    case (Nil(),_) => (false,Nil())
+    case (_,Nil()) => (false,Nil())
+    case (Cons(t1,ts1),Cons(t2,ts2)) =>
+      val (hd_ok,subst_) = one_way_unify1(t1,t2,subst)
+      val (tl_ok,subst__) = one_way_unify1_lst(ts1,ts2,subst_)
+      (hd_ok && tl_ok, subst__)
+  }
+}
+
+def rewrite(x:Term) : Term = {
+  x match {
+    case Var(v) => Var(v)
+    case Func(f,args,lemmas) => rewrite_with_lemmas(Func(f,list::map(args){rewrite},lemmas),lemmas())
+    case ERROR() => ERROR()
+
+  }
+}
+
+def rewrite_with_lemmas(term:Term,lss:List[(Term,Term)]) : Term = {
+  lss match {
+    case Nil() => term
+    case Cons((lhs,rhs),ls) =>
+      val (unified,subst) = one_way_unify(term,lhs)
+      if (unified) {
+        rewrite(apply_subst(subst,rhs))
+      } else {
+        rewrite_with_lemmas(term,ls)
+      }
+  }
+}
+
+
+def truep(x:Term,l:List[Term]):Bool = {
+  (term_in_list(x,l))
+  ||
+  (x match {
+    case Func(TRUE(),_,_) => true
+    case _ => false
+  })
+}
+
+def falsep(x:Term,l:List[Term]):Bool = {
+  (term_in_list(x,l))
+  ||
+  (x match {
+    case Func(FALSE(),_,_) => true
+    case _ => false
+  })
+}
+
+def tautologyp(x:Term,true_lst:List[Term],false_lst:List[Term]) : Bool = {
+  if (truep(x,true_lst)) { true } else
+  if (falsep(x,false_lst)) { false } else
+  x match {
+    case Func(IF(),Cons(cond,Cons(t,Cons(e,Nil()))),lemmas) =>
+    if (truep(cond,true_lst)) {
+      tautologyp(t,true_lst,false_lst)
+    } else if (falsep(cond, false_lst)) {
+      tautologyp(e,true_lst,false_lst)
+    } else{
+      tautologyp(t,Cons(cond,true_lst),false_lst)
+      &&
+      tautologyp(e,true_lst,Cons(cond,false_lst))
+    }
+    case _ => true
+  }
+
+}
+
+def tautp(x:Term): Bool = {
+  tautologyp(rewrite(x),Nil(),Nil())
+}
+
+def apply_subst(subst:List[(Id,Term)],t:Term) : Term = {
+  t match {
+    case Var(vid) =>
+      val (found,value) = find(vid,subst)
+      if (found) {
+        value
+      }else {
+        Var(vid)
+      }
+    case Func(f,args,ls) => Func(f,map(args){x => apply_subst(subst,x)},ls)
+    case ERROR() => ERROR()
+  }
+}
+
+def boyer_subst0() : List[(Id,Term)] = {
   [
   (X(),boyer_f(boyer_plus(boyer_plus(boyer_a(),boyer_b()),boyer_plus(boyer_c(),boyer_zero())))),
   (Y(),boyer_f(boyer_times(boyer_times(boyer_a(),boyer_b()),boyer_plus(boyer_c(),boyer_d())))),
@@ -599,19 +564,21 @@ def boyer_theorem(xxxx:Term) : Term = {
       boyer_implies(xxxx,boyer_y()),
       boyer_and_(
         boyer_implies(boyer_y(),boyer_z()),
-        boyer_and_(boyer_implies(boyer_z(),boyer_u()),boyer_implies(boyer_u(),boyer_w()))
+        boyer_and_(
+          boyer_implies(boyer_z(),boyer_u()),
+          boyer_implies(boyer_u(),boyer_w()))
       )
     ),
     boyer_implies(boyer_x(),boyer_w())
   )
 }
 
-def test0(xxxx:Term) : Bool = { 
+def test0(xxxx:Term) : Bool = {
   tautp(apply_subst(boyer_subst0(),boyer_theorem(xxxx)))
 }
 
 
-def test_boyer_nofib(n:Int): Bool = { 
+def test_boyer_nofib(n:Int): Bool = {
   list::all(replicate_term(n,Var(X()))) { test0 }
 }
 
@@ -627,7 +594,7 @@ def main_loop(iters:Int,n:Int) : Unit = {
 
 def main() = {
   commandLineArgs() match {
-    case Cons(iters_str,Cons(n_str,Nil())) => 
+    case Cons(iters_str,Cons(n_str,Nil())) =>
       val iters = try { string::toInt(iters_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) } }
       val n = try { string::toInt(n_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) } }
       main_loop(iters,n)

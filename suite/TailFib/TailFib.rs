@@ -11,11 +11,12 @@ fn fib(n: u64) -> u64 {
 }
 
 fn main_loop(iters: u64, n: u64) {
-    let mut res = fib(n);
-    for _ in 1..iters {
-        res = fib(n);
+    let res = fib(n);
+    if iters == 1 {
+        println!("{res}");
+    } else {
+        main_loop(iters - 1, n)
     }
-    println!("{}", res);
 }
 
 fn main() {

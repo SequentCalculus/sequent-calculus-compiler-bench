@@ -586,11 +586,12 @@ fn test_constraints_nofib(n: i64) -> List<i64> {
 }
 
 fn main_loop(iters: u64, n: i64) {
-    let mut res = test_constraints_nofib(n);
-    for _ in 1..iters {
-        res = test_constraints_nofib(n);
+    let res = test_constraints_nofib(n);
+    if iters == 1 {
+        println!("{}", res.head());
+    } else {
+        main_loop(iters - 1, n)
     }
-    println!("{}", res.head());
 }
 
 fn main() {

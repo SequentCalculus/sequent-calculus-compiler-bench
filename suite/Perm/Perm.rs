@@ -131,24 +131,11 @@ fn permutations(x0: List<u64>) -> List<List<u64>> {
     final_perms
 }
 
-fn loop_run(
-    iters: u64,
-    work: &impl Fn() -> List<List<u64>>,
-    result: &impl Fn(List<List<u64>>) -> bool,
-) -> bool {
-    let mut res = result(work());
-    for _ in 0..iters {
-        res = result(work());
-    }
-    res
-}
-
 fn run_benchmark(
-    iters: u64,
     work: &impl Fn() -> List<List<u64>>,
     result: &impl Fn(List<List<u64>>) -> bool,
 ) -> bool {
-    loop_run(iters, work, result)
+    result(work())
 }
 
 fn loop_work(m: u64, mut perms: List<List<u64>>) -> List<List<u64>> {
@@ -168,7 +155,6 @@ fn factorial(n: u64) -> u64 {
 
 fn perm9(m: u64, n: u64) -> bool {
     run_benchmark(
-        1,
         &|| loop_work(m, permutations(List::one2n(n))),
         &|result: List<List<u64>>| {
             result.map(&|is_: List<u64>| is_.sum()).sum() == (((n * (n + 1)) * factorial(n)) / 2)
@@ -177,11 +163,16 @@ fn perm9(m: u64, n: u64) -> bool {
 }
 
 fn main_loop(iters: u64, m: u64, n: u64) {
-    let mut res = perm9(m, n);
-    for _ in 1..iters {
-        res = perm9(m, n);
+    let res = perm9(m, n);
+    if iters == 1 {
+        if res {
+            println!("1")
+        } else {
+            println!("0")
+        }
+    } else {
+        main_loop(iters - 1, m, n)
     }
-    println!("{}", if res { 1 } else { 0 });
 }
 
 fn main() {

@@ -25,12 +25,12 @@ let rec find l i =
     | [] -> None
     | p::ps -> if i=0 then p else find ps (i-1)
 
-let rec tabulate_loop n len f = 
-  if n=len then [] 
+let rec tabulate_loop n len f =
+  if n=len then []
   else (f ()) :: tabulate_loop (n+1) len f
 
-let tabulate len f = 
-  if len < 0 then [] else tabulate_loop 0 len f 
+let tabulate len f =
+  if len < 0 then [] else tabulate_loop 0 len f
 
 let list_extreme f l = 
   match l with 
@@ -41,7 +41,7 @@ let listmax l = list_extreme Int.max l
 
 let listmin l = list_extreme Int.min l
 
-let empty = tabulate 0 (fun () -> None)
+let emptyBoard = tabulate 9 (fun () -> None)
 
 let rows = 
   (0::1::2::[])::(3::4::5::[])::(6::7::8::[])::[]
@@ -120,8 +120,8 @@ let rec minimax p board =
       | O -> Rose ((board,listmin scores), trees)
 
 let rec main_loop iters = 
-  let res = minimax X empty in 
-  if iters = 1 then 
+  let res = minimax X emptyBoard in
+  if iters = 1 then
     print_endline (string_of_int (snd (top res)))
   else main_loop (iters-1)
 

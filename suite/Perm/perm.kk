@@ -68,22 +68,11 @@ fun one2n(n:int64): div list<int64>{
   loop_one2n(n,Nil)
 }
 
-fun loop_run(iters:int64,
-  work:() -> <div,exn> list<list<int64>>,
-  result: list<list<int64>> -> div bool
-): <div,exn> bool{
-  val res = result(work())
-  if iters == 0.int64 then
-    res 
-  else 
-    loop_run(iters - 1.int64,work,result)
-}
-
-fun run_benchmark(iters:int64,
+fun run_benchmark(
   work: () -> <div,exn> list<list<int64>>,
   result:list<list<int64>> -> div bool
 ) : <div,exn> bool{
-  loop_run(iters,work,result)
+  result(work())
 }
 
 fun factorial(n:int64): div int64{
@@ -101,7 +90,7 @@ fun loop_work(m:int64,perms:list<list<int64>>): <div,exn> list<list<int64>>{
 }
 
 fun perm9(m:int64,n:int64): <div,exn> bool{
-  run_benchmark(1.int64,
+  run_benchmark(
     fn() loop_work(m,permutations(one2n(n))),
     fn(result) sumlists(result) == ((n * (n + 1.int64)) * factorial(n)) / 2.int64
   )

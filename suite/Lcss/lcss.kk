@@ -95,20 +95,22 @@ fun lcss_main(a:int64,b:int64,c:int64,d:int64,e:int64,f:int64): div list<int64>{
   lcss(enum_from_then_to(a,b,c),enum_from_then_to(d,e,f))
 }
 
-fun test_lcss_nofib(): div list<int64>{
-  lcss_main(1.int64,2.int64,200.int64,100.int64,101.int64,300.int64)
+fun test_lcss_nofib(c: int64, f: int64): div list<int64>{
+  lcss_main(1.int64,2.int64,c,100.int64,101.int64,f)
 }
 
-fun main_loop(iters:int64): <console,div,exn> (){
-  val res = test_lcss_nofib()
+fun main_loop(iters: int64, c: int64, f: int64): <console,div,exn> (){
+  val res = test_lcss_nofib(c, f)
   if iters == 1.int64 then
     println(unjust(head(res)))
   else 
-    main_loop(iters - 1.int64)
+    main_loop(iters - 1.int64, c, f)
 }
 
 fun main(): <ndet,exn,console,div> (){
   val args = get-args()
   val iters = unjust(parse-int(unjust(head(args)))).int64
-  main_loop(iters)
+  val c = unjust(parse-int(unjust(head(tail(args))))).int64
+  val f = unjust(parse-int(unjust(head(tail(tail(args)))))).int64
+  main_loop(iters, c, f)
 }

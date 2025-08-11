@@ -47,12 +47,12 @@ fn sieve(l: List<u64>) -> List<u64> {
 }
 
 fn main_loop(iters: u64, n: u64) {
-    let mut res = sieve(List::interval(2, n));
-    for _ in 1..iters {
-        res = sieve(List::interval(2, n));
+    let res = sieve(List::interval(2, n));
+    if iters == 1 {
+        println!("{}", res.len());
+    } else {
+        main_loop(iters - 1, n)
     }
-
-    println!("{:?}", res.len());
 }
 
 fn main() {

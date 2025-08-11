@@ -72,11 +72,12 @@ fn nsoln(n: i64) -> usize {
 }
 
 fn main_loop(iters: u64, n: i64) {
-    let mut res = nsoln(n);
-    for _ in 1..iters {
-        res = nsoln(n);
+    let res = nsoln(n);
+    if iters == 1 {
+        println!("{res}");
+    } else {
+        main_loop(iters - 1, n)
     }
-    println!("{}", res);
 }
 
 fn main() {

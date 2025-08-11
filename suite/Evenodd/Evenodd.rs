@@ -23,11 +23,16 @@ fn even(n: i64) -> bool {
 }
 
 fn main_loop(iters: u64, n: i64) {
-    let mut res = even(n) && !odd(n);
-    for _ in 1..iters {
-        res = even(n) && odd(n);
+    let res = even(n) && !odd(n);
+    if iters == 1 {
+        if res {
+            println!("1")
+        } else {
+            println!("0")
+        }
+    } else {
+        main_loop(iters - 1, n)
     }
-    println!("{}", if res { 1 } else { 0 });
 }
 
 fn main() {

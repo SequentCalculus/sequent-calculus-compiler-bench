@@ -194,16 +194,17 @@ fn lcss_main(a: i64, b: i64, c: i64, d: i64, e: i64, f: i64) -> List<i64> {
     lcss(enum_from_then_to(a, b, c), enum_from_then_to(d, e, f))
 }
 
-fn test_lcss_nofib() -> List<i64> {
-    lcss_main(1, 2, 200, 100, 101, 300)
+fn test_lcss_nofib(c: i64, f: i64) -> List<i64> {
+    lcss_main(1, 2, c, 100, 101, f)
 }
 
-fn main_loop(iters: u64) {
-    let mut res = test_lcss_nofib();
-    for _ in 1..iters {
-        res = test_lcss_nofib();
+fn main_loop(iters: u64, c: i64, f: i64) {
+    let res = test_lcss_nofib(c, f);
+    if iters == 1 {
+        println!("{}", res.head());
+    } else {
+        main_loop(iters - 1, c, f)
     }
-    println!("{}", res.head());
 }
 
 fn main() {
@@ -214,5 +215,15 @@ fn main() {
         .expect("Missing Argument iterations")
         .parse::<u64>()
         .expect("Iterations must be a number");
-    main_loop(iters)
+    let c = args
+        .next()
+        .expect("Missing Argument c")
+        .parse::<i64>()
+        .expect("c must be a number");
+    let f = args
+        .next()
+        .expect("Missing Argument f")
+        .parse::<i64>()
+        .expect("f must be a number");
+    main_loop(iters, c, f)
 }

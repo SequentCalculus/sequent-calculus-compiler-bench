@@ -44,16 +44,11 @@ let rec loop_work m perms =
   if m=0 then perms 
   else loop_work (m-1) (permutations (List.hd perms))
 
-let rec loop_run iters work result = 
-  let res = result (work()) in 
-  if iters=0 then res 
-  else loop_run (iters-1) work result 
-
-let run_benchmark iters work result = 
-  loop_run iters work result
+let run_benchmark work result = 
+  result (work())
 
 let perm9 m n = 
-  run_benchmark 1 
+  run_benchmark
     (fun () -> loop_work m (permutations (one2n n)))
     (fun result -> (sumlists result) = (((n*(n+1)) * (factorial n))/2))
 
