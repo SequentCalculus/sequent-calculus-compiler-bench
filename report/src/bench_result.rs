@@ -79,7 +79,6 @@ impl BenchResult {
                 .iter()
                 .fold(1.0, |mean, dat| mean + dat.adjusted_mean)
                 / lang_results.len() as f64;
-            //println!("lang {lang}, mean: {lang_mean}, adjusted: {lang_adjusted_mean}");
             avg_data.push(BenchData {
                 lang,
                 mean: lang_mean,
