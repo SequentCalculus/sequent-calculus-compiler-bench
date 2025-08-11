@@ -1,75 +1,50 @@
 import args
 import list
 
-type Assign {
-  Assign(varr:Int,value:Int)
-}
+record Assign(level: Int, value: Int)
 
-type CSP {
-  CSP(vars:Int,vals:Int,rel: (Assign, Assign) => Bool at {})
-}
+record CSP(vars: Int, vals: Int, rel: (Assign, Assign) => Bool at {})
 
-type Node[A] {
-  Node(lab:A,children:List[Node[A]])
-}
+record Node[A](label: A, children: List[Node[A]])
 
 type ConflictSet {
   Known(vs:List[Int])
   Unknown()
 }
 
-def fst[A,B](p:(A,B)) : A = {
+def fst[A, B](p: (A, B)): A =
   p match {
-    case (a,_) => a
+    case (a, _) => a
   }
-}
 
-def snd[A,B](p:(A,B)) : B = {
+def snd[A, B](p: (A, B)): B =
   p match {
-    case (_,b) => b
+    case (_, b) => b
   }
+
+def map_list[A, B](l: List[A]) { f: A => B }: List[B] = l match {
+  case Nil() => Nil()
+  case Cons(a, as) => Cons(f(a), as.map_list {f})
 }
 
-def level(a:Assign) : Int = {
-  a match{
-    case Assign(varr,_) => varr
+def map_tree[A, B](t: Node[A]) { f: A => B }: Node[B] =
+  t match {
+    case Node(l, ls) => Node(f(l), ls.map_list { x => x.map_tree {f} })
   }
-}
 
-def value(a:Assign) : Int = {
-  a match{
-    case Assign(_,value) => value
+def fold_tree[A,B](t: Node[A]) { f : (A, List[Node[B]]) => Node[B] }: Node[B] =
+  t match {
+    case Node(l, c) => f(l, c.map_list { x => x.fold_tree {f} })
   }
-}
 
-def label[A](n:Node[A]) : A = {
+def filter_tree[A](n: Node[A]) {p: A => Bool }: Node[A] =
+  n.fold_tree { (a, cs) => Node(a, cs.filter { x => p(x.label) }) }
+
+def leaves[A](n: Node[A]): List[A] =
   n match {
-    case Node(p,_) => p
+    case Node(leaf, Nil()) => Cons(leaf,Nil())
+    case Node(leaf, Cons(c, cs)) => concat(map_list(Cons(c,cs)) {x => leaves(x)})
   }
-}
-
-def map_tree[A,B](t:Node[A]) { f:A=>B } : Node[B] = {
-  t match {
-    case Node(l,ls) => Node(f(l),list::map(ls){x => map_tree(x){f}})
-  }
-}
-
-def fold_tree[A,B](t:Node[A]) {f : (A,List[Node[B]]) => Node[B] } : Node[B] = {
-  t match {
-    case Node(l,c) => f(l,list::map(c){x => fold_tree(x){f}})
-  }
-}
-
-def filter_tree[A](n:Node[A]) {p: A => Bool }: Node[A] = {
-  fold_tree(n) { (a,cs) => Node(a,filter(cs) {x => p(label(x))}) }
-}
-
-def leaves[A](n:Node[A]) : List[A] = {
-  n match{
-    case Node(leaf,Nil()) => Cons(leaf,Nil())
-    case Node(leaf,Cons(c,cs)) => concat(list::map(Cons(c,cs)) {x => leaves(x)})
-  }
-}
 
 def prune[A](n:Node[A]) { f: A => Bool } : Node[A] = {
   filter_tree(n) { x => not(f(x))}
@@ -78,7 +53,7 @@ def prune[A](n:Node[A]) { f: A => Bool } : Node[A] = {
 def filter[A](ls:List[A]) { f: A => Bool } : List[A] = {
   ls match{
     case Nil() => Nil()
-    case Cons(a,as) => 
+    case Cons(a,as) =>
       if (f(a)) {
         Cons(a,filter(as) { f })
       }else{
@@ -87,7 +62,7 @@ def filter[A](ls:List[A]) { f: A => Bool } : List[A] = {
   }
 }
 
-def enum_from_to(from:Int,to:Int) : List[Int] = { 
+def enum_from_to(from:Int,to:Int) : List[Int] = {
   if (from<=to){
     Cons(from,enum_from_to(from + 1, to))
   }else{
@@ -95,129 +70,120 @@ def enum_from_to(from:Int,to:Int) : List[Int] = {
   }
 }
 
-def len[A](ls:List[A]) : Int = {
+def len[A](ls: List[A]): Int =
   ls match {
     case Nil() => 0
-    case Cons(_,xs) => 1+len(xs)
+    case Cons(_, xs) => 1 + len(xs)
   }
-}
 
-def head[A](ls:List[A]) : A = {
-  ls match{
+def head[A](ls:List[A]): A =
+  ls match {
     case Nil() => panic("Empty List")
-    case Cons(a,_) => a
+    case Cons(a, _) => a
   }
-}
 
-def tail[A](ls:List[A]) : List[A] = {
-  ls match{
+def tail[A](ls: List[A]): List[A] =
+  ls match {
     case Nil() => panic("Empty List")
-    case Cons(_,as) => as
+    case Cons(_, as) => as
   }
-}
 
-def at_index[A](ind:Int,ls:List[A]) : A = {
-  ls match{
+def at_index[A](ind: Int, ls: List[A]): A =
+  ls match {
     case Nil() => panic("Empty List")
-    case Cons(c,cs) => 
-      if (ind==0) {
-        c 
-      }else{
-        at_index(ind - 1,cs)
-      }
+    case Cons(c, cs) =>
+      if (ind == 0) { c }
+      else { at_index(ind - 1, cs) }
   }
-}
 
-def rev_loop[A](ls:List[A],acc:List[A]) : List[A] = {
-  ls match{
+def rev_loop[A](ls: List[A], acc: List[A]): List[A] =
+  ls match {
     case Nil() => acc
-    case Cons(p,ps) => rev_loop(ps,Cons(p,acc))
+    case Cons(p, ps) => rev_loop(ps, Cons(p, acc))
   }
-}
 
-def concat_loop[A](ls:List[List[A]],acc:List[A]) : List[A] = {
-  ls match{
-    case Nil() => list::reverse(acc)
-    case Cons(l,ls) => concat_loop(ls,rev_loop(l,acc))
+def concat_loop[A](ls:List[List[A]],acc:List[A]) : List[A] =
+  ls match {
+    case Nil() => rev_loop(acc, Nil())
+    case Cons(l, ls) => concat_loop(ls, rev_loop(l, acc))
   }
+
+def concat[A](lss: List[List[A]]): List[A] =
+  concat_loop(lss, Nil())
+
+def append[A](l1: List[A], l2: List[A]): List[A] = l1 match {
+  case Nil() => l2
+  case Cons(a, as) => Cons(a, as.append(l2))
 }
 
-def concat[A](lss:List[List[A]]) : List[A] = { 
-  concat_loop(lss,Nil())
-}
+// this is also monomorphic in sc
+def foldl(xs: List[Int], acc: List[Int]) { f: (List[Int], Int) => List[Int] }: List[Int] =
+  xs match {
+    case Nil() => acc
+    case Cons(h, t) => t.foldl(f(acc, h)) {f}
+  }
 
-def in_list(i:Int,ls:List[Int]):Bool = {
+def in_list(i: Int, ls: List[Int]): Bool =
   ls match {
     case Nil() => false
-    case Cons(j,js) => if (i==j) { true } else { in_list(i,js) }
+    case Cons(j, js) => if (i == j) { true } else { in_list(i,js) }
   }
-}
 
-def not_elem(a:Int,ls:List[Int]) : Bool = {
-  not(in_list(a,ls))
-}
+def not_elem(a: Int, ls: List[Int]): Bool =
+  not(in_list(a, ls))
 
-def max_level(ls:List[Assign]) : Int = {
-  ls match{
+def max_level(ls: List[Assign]): Int =
+  ls match {
     case Nil() => 0
-    case Cons(Assign(v,_),_) => v
+    case Cons(Assign(v, _), _) => v
   }
-}
 
-def complete(csp:CSP,s:List[Assign]) : Bool = {
-  csp match{
-    case CSP(v,_,_) => max_level(s) == v
-  }
-}
+def complete(csp: CSP, s: List[Assign]): Bool =
+  max_level(s) == csp.vars
 
-def combine(ls:List[(List[Assign],ConflictSet)],acc:List[Int]) : List[Int] = {
-  ls match{
-    case Nil() => acc 
-    case Cons((s,Known(cs)),css) => 
-      if (not_elem(max_level(s),cs)) {
-        cs 
-      }else{
-        combine(css,union(cs,acc))
+def combine(ls: List[(List[Assign], ConflictSet)], acc: List[Int]): List[Int] = {
+  ls match {
+    case Nil() => acc
+    case Cons((s, Known(cs)), css) =>
+      if (not_elem(max_level(s), cs)) {
+        cs
+      } else {
+        combine(css, union(cs, acc))
       }
-    case Cons((s,Unknown()),css) => acc
+    case Cons((s, Unknown()), css) => acc
   }
 }
 
-def nub_by(ls:List[Int]) { f:(Int,Int) => Bool } : List[Int] = { 
+def nub_by(ls:List[Int]) { f:(Int,Int) => Bool } : List[Int] = {
   ls match{
     case Nil() => Nil()
-    case Cons(h,t) => 
-      Cons(h,nub_by(filter(t){ y => not(f(h,y))} ) {f})
+    case Cons(h,t) =>
+      Cons(h, nub_by(filter(t){ y => not(f(h,y))} ) {f})
   }
 }
 
-def delete_by(x:Int,ys:List[Int]) { f : (Int,Int) => Bool } : List[Int] = { 
-  ys match{
+def delete_by(x: Int, ys: List[Int]) { f: (Int, Int) => Bool }: List[Int] =
+  ys match {
     case Nil() => Nil()
-    case Cons(y,ys) => 
-      if (f(x,y)) {
+    case Cons(y, ys) =>
+      if (f(x, y)) {
         ys
-      }else{
-        Cons(y,delete_by(x,ys) {f})
+      } else {
+        Cons(y, delete_by(x, ys) {f})
       }
   }
-}
 
-def union_by(l1:List[Int],l2:List[Int]) { f : (Int,Int) => Bool } : List[Int] = {
-  list::append(l1,
-    list::foldLeft(nub_by(l2){f},l1)
-    { (acc,y) => delete_by(y,acc){f} }
-    )
-}
+def union_by(l1: List[Int], l2: List[Int]) { f: (Int, Int) => Bool }: List[Int] =
+  append(
+    l1,
+    nub_by(l2){f}.foldl(l1) { (acc, y) => delete_by(y, acc){f} }
+  )
 
-def union(l1:List[Int],l2:List[Int]) : List[Int] = {
-  union_by(l1,l2) { (x,y) => x==y }
-}
+def union(l1:List[Int], l2:List[Int]): List[Int] =
+  union_by(l1, l2) { (x, y) => x == y }
 
-def init_tree(x:List[Assign]) { f:List[Assign] => List[List[Assign]] } : Node[List[Assign]] = {
-  Node(x,list::map(f(x)){y => init_tree(y) {f} })
-
-}
+def init_tree(x:List[Assign]) { f:List[Assign] => List[List[Assign]] }: Node[List[Assign]] =
+  Node(x, map_list(f(x)){ y => init_tree(y) {f} })
 
 def to_assign(ls:List[Int],ss:List[Assign]) : List[List[Assign]] = {
   ls match{
@@ -228,7 +194,7 @@ def to_assign(ls:List[Int],ss:List[Assign]) : List[List[Assign]] = {
 
 def mk_tree(csp:CSP) : Node[List[Assign]] = {
   csp match{
-    case CSP(vars,vals,rel) => 
+    case CSP(vars,vals,rel) =>
       init_tree(Nil()) { ss =>
         if (max_level(ss) < vars){
           to_assign(enum_from_to(1,vals),ss)
@@ -250,7 +216,7 @@ def collect(ls:List[ConflictSet]) : List[Int] = {
 def wipe_lscomp1(ls:List[List[ConflictSet]]) : List[List[ConflictSet]] = {
   ls match{
     case Nil() => Nil()
-    case Cons(vs,t1) => 
+    case Cons(vs,t1) =>
       if (list::all(vs) { x => known_conflict(x) }){
         Cons(vs,wipe_lscomp1(t1))
       }else{
@@ -259,13 +225,13 @@ def wipe_lscomp1(ls:List[List[ConflictSet]]) : List[List[ConflictSet]] = {
   }
 }
 
-def domain_wipeout(csp:CSP,t:Node[((List[Assign],ConflictSet),List[List[ConflictSet]])]) : Node[(List[Assign],ConflictSet)] = { 
+def domain_wipeout(csp:CSP,t:Node[((List[Assign],ConflictSet),List[List[ConflictSet]])]) : Node[(List[Assign],ConflictSet)] = {
   csp match{
-    case CSP(vars,vals,rel) => 
+    case CSP(vars,vals,rel) =>
       map_tree(t){ tup => tup match {case (p,tbl) =>
-        p match{ 
-          case (as_,cs) => 
-            val wiped_domains = filter(tbl) { x => list::all(x) { known_conflict } } 
+        p match{
+          case (as_,cs) =>
+            val wiped_domains = filter(tbl) { x => list::all(x) { known_conflict } }
             val cs_ = if (list::isEmpty(wiped_domains)){
               cs
             }else{
@@ -286,12 +252,12 @@ def check_complete(csp:CSP,s:List[Assign]): ConflictSet = {
   }
 }
 
-def earliest_inconsistency(csp:CSP,aas:List[Assign]) : Option[(Int,Int)] = { 
+def earliest_inconsistency(csp:CSP,aas:List[Assign]) : Option[(Int,Int)] = {
   (csp,aas) match{
     case (_,Nil()) => None()
-    case (CSP(vars,vals,rel),Cons(a,as)) => 
+    case (CSP(vars,vals,rel),Cons(a,as)) =>
       filter(list::reverse(as)) { x => not(rel(a,x)) }match  {
-        case Nil() => None() 
+        case Nil() => None()
         case Cons(b,_) => Some((level(a),level(b)))
       }
   }
@@ -301,7 +267,7 @@ def lookup_cache(csp:CSP,t:Node[(List[Assign],List[List[ConflictSet]])]): Node[(
     map_tree(t) { tp =>
       tp match{
         case (Nil(),tbl) => ((Nil(),Unknown()),tbl)
-        case (Cons(a,as),tbl) => 
+        case (Cons(a,as),tbl) =>
           val table_entry = at_index(value(a) - 1, head(tbl))
           val cs = table_entry match{
             case Unknown() => check_complete(csp,Cons(a,as))
@@ -313,14 +279,14 @@ def lookup_cache(csp:CSP,t:Node[(List[Assign],List[List[ConflictSet]])]): Node[(
   }
 }
 
-def cache_checks(csp:CSP,tbl:List[List[ConflictSet]],n:Node[List[Assign]]) : Node[(List[Assign],List[List[ConflictSet]])] = { 
+def cache_checks(csp:CSP,tbl:List[List[ConflictSet]],n:Node[List[Assign]]) : Node[(List[Assign],List[List[ConflictSet]])] = {
   n match{
-    case Node(s,cs) => 
-      Node((s,tbl),list::map(cs) { x => cache_checks(csp,fill_table(s,csp,tail(tbl)),x) })
+    case Node(s,cs) =>
+      Node((s,tbl),map_list(cs) { x => cache_checks(csp,fill_table(s,csp,tail(tbl)),x) })
   }
 }
 
-def known_solution(c:ConflictSet) : Bool = { 
+def known_solution(c:ConflictSet) : Bool = {
   c match{
     case Known(Nil()) => true
     case Known(Cons(_,_)) => false
@@ -328,7 +294,7 @@ def known_solution(c:ConflictSet) : Bool = {
   }
 }
 
-def known_conflict(c:ConflictSet) : Bool = { 
+def known_conflict(c:ConflictSet) : Bool = {
   c match{
     case Known(Nil()) => false
     case Known(Cons(_,_)) => true
@@ -353,13 +319,13 @@ def n_pairs(ls:List[Int],n:Int) : List[List[(Int,Int)]] = {
 def fill_table(s:List[Assign],csp:CSP,tbl:List[List[ConflictSet]]) : List[List[ConflictSet]] = {
   s match{
     case Nil() => tbl
-    case Cons(Assign(var_,val_),as_) => 
+    case Cons(Assign(var_,val_),as_) =>
       csp match{
-        case CSP(vars,vals,rel) => 
-          list::zipWith(tbl,n_pairs(enum_from_to(var_ + 1,vars),vals)) { (x,y) => list::zipWith(x,y) { (cs,varval) => 
+        case CSP(vars,vals,rel) =>
+          list::zipWith(tbl,n_pairs(enum_from_to(var_ + 1,vars),vals)) { (x,y) => list::zipWith(x,y) { (cs,varval) =>
             (cs,varval) match{
               case (Known(_),_) => cs
-              case (Unknown(),(varr,vall)) => 
+              case (Unknown(),(varr,vall)) =>
                 if (not(rel(Assign(var_,val_),Assign(varr,vall)))){
                   Known(Cons(var_,Cons(varr,Nil())))
                 }else{
@@ -386,54 +352,54 @@ def n_unknown(ls:List[Int],n:Int) : List[List[ConflictSet]] = {
 }
 
 
-def empty_table(csp:CSP) : List[List[ConflictSet]] = { 
+def empty_table(csp:CSP) : List[List[ConflictSet]] = {
   csp match{
     case CSP(vars,vals,rel) => Cons(Nil(),n_unknown(enum_from_to(1,vars),vals))
   }
 }
 
-def search(csp:CSP){labeler:(CSP,Node[List[Assign]]) => Node[(List[Assign],ConflictSet)]} : List[List[Assign]] = { 
-  list::map(
+def search(csp:CSP){labeler:(CSP,Node[List[Assign]]) => Node[(List[Assign],ConflictSet)]} : List[List[Assign]] = {
+  map_list(
     filter(
       leaves(
-        prune(labeler(csp,mk_tree(csp))) 
+        prune(labeler(csp,mk_tree(csp)))
         { x => known_conflict(snd(x)) }
       )
-    ) 
+    )
     {x => known_solution(snd(x)) }
-  ) 
-  { x =>  fst(x) } 
+  )
+  { x =>  fst(x) }
 }
 
-def safe(as1:Assign,as2:Assign): Bool = { 
+def safe(as1:Assign,as2:Assign): Bool = {
   (as1,as2) match {
     case (Assign(i,m),Assign(j,n)) => not(m==n) && not(abs(i - j) == abs(m - n))
   }
 }
 
-def queens(n:Int) : CSP = { 
+def queens(n:Int) : CSP = {
   CSP(n,n,box { (x,y) => safe(x,y) } )
 }
 
-def bt_f3(csp:CSP, s:List[Assign]) : (List[Assign],ConflictSet) = { 
+def bt_f3(csp:CSP, s:List[Assign]) : (List[Assign],ConflictSet) = {
   earliest_inconsistency(csp,s) match{
     case Some((a,b)) => (s,Known(Cons(a,Cons(b,Nil()))))
     case None() => (s,check_complete(csp,s))
   }
 }
 
-def bt(csp:CSP,t:Node[List[Assign]]) : Node[(List[Assign],ConflictSet)] = { 
+def bt(csp:CSP,t:Node[List[Assign]]) : Node[(List[Assign],ConflictSet)] = {
   map_tree(t){ x => bt_f3(csp,x) }
 }
 
-def bm(csp:CSP,t:Node[List[Assign]]) : Node[(List[Assign],ConflictSet)] = { 
+def bm(csp:CSP,t:Node[List[Assign]]) : Node[(List[Assign],ConflictSet)] = {
   map_tree(lookup_cache(csp,cache_checks(csp,empty_table(csp),t))) { x => fst(x) }
 }
 
-def bj_f6(acs:(List[Assign],ConflictSet), chs:List[Node[(List[Assign],ConflictSet)]]) : Node[(List[Assign],ConflictSet)] = { 
+def bj_f6(acs:(List[Assign],ConflictSet), chs:List[Node[(List[Assign],ConflictSet)]]) : Node[(List[Assign],ConflictSet)] = {
   acs match{
     case (a,Known(cs)) => Node((a,Known(cs)),chs)
-    case (a,Unknown()) => Node((a,Known(combine(list::map(chs){x=>label(x)},Nil()))),chs)
+    case (a,Unknown()) => Node((a,Known(combine(map_list(chs){x=>label(x)},Nil()))),chs)
   }
 }
 
@@ -449,7 +415,7 @@ def bj_f7(acs:(List[Assign],ConflictSet),chs:List[Node[(List[Assign],ConflictSet
   acs match{
     case (a,Known(cs)) => Node((a,Known(cs)),chs)
     case (a,Unknown()) =>
-      val cs_ = Known(combine(list::map(chs){x => label(x)},Nil()))
+      val cs_ = Known(combine(map_list(chs){x => label(x)},Nil()))
       if (known_conflict(cs_)) {
         Node((a,cs_),Nil())
       }else{
@@ -462,11 +428,11 @@ def bj_(csp:CSP,t:Node[(List[Assign],ConflictSet)]) : Node[(List[Assign],Conflic
   fold_tree(t){bj_f7}
 }
 
-def bjbt_(csp:CSP,t:Node[List[Assign]]) : Node[(List[Assign],ConflictSet)] = { 
+def bjbt_(csp:CSP,t:Node[List[Assign]]) : Node[(List[Assign],ConflictSet)] = {
   bj_(csp,bt(csp,t))
 }
 
-def fc(csp:CSP,t:Node[List[Assign]]) : Node[(List[Assign],ConflictSet)] = { 
+def fc(csp:CSP,t:Node[List[Assign]]) : Node[(List[Assign],ConflictSet)] = {
   domain_wipeout(csp,lookup_cache(csp,cache_checks(csp,empty_table(csp),t)))
 }
 
@@ -489,12 +455,12 @@ def main_loop(iters:Int,n:Int) : Unit = {
     println(hd)
   }else{
     main_loop(iters - 1, n)
-  } 
+  }
 }
 
 def main() : Unit = {
   commandLineArgs() match{
-    case Cons(iters_str,Cons(n_str,Nil())) => 
+    case Cons(iters_str,Cons(n_str,Nil())) =>
       val iters = try { string::toInt(iters_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) } }
 
       val n = try { string::toInt(n_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) } }
