@@ -1,5 +1,5 @@
 use crate::bench_result::BenchResult;
-use lib::{errors::Error, langs::BenchmarkLanguage, paths::REPORTS_PATH};
+use lib::{errors::Error, langs::BenchmarkLanguage, paths::PLOTS_PATH};
 use plotters::{
     backend::SVGBackend,
     chart::ChartBuilder,
@@ -33,9 +33,9 @@ fn lang_color(lang: &BenchmarkLanguage) -> RGBColor {
 }
 
 pub fn generate_plot(res: BenchResult, y_min: f64, y_max: f64) -> Result<(), Error> {
-    let mut out_path = PathBuf::from(REPORTS_PATH);
+    let mut out_path = PathBuf::from(PLOTS_PATH);
     create_dir_all(&out_path).map_err(|_| Error::path_access(&out_path, "create reports path"))?;
-    out_path = out_path.join(&res.benchmark);
+    out_path = out_path.join(&res.benchmark.replace(" ", ""));
     out_path.set_extension("svg");
 
     let root = SVGBackend::new(&out_path, PLOT_RES).into_drawing_area();
@@ -60,10 +60,14 @@ pub fn generate_plot(res: BenchResult, y_min: f64, y_max: f64) -> Result<(), Err
         .disable_x_mesh()
         .y_max_light_lines(0)
         .y_label_formatter(&|ind| {
-            if ind.round() == *ind {
-                10_f64.powf(*ind).to_string()
+            if res.benchmark.contains("Mean") {
+                ((10_f64.powf(*ind) * 100.0).round() / 100.0).to_string()
             } else {
-                "".to_owned()
+                if ind.round() == *ind {
+                    10_f64.powf(*ind).to_string()
+                } else {
+                    "".to_owned()
+                }
             }
         })
         .x_label_formatter(&|ind| {

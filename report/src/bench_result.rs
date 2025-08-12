@@ -1,5 +1,5 @@
 use crate::plotter::AXIS_MARGINS;
-use lib::{errors::Error, langs::BenchmarkLanguage, paths::HYPERFINE_PATH};
+use lib::{errors::Error, langs::BenchmarkLanguage, paths::RAW_PATH};
 use std::{cmp::Ordering, fs::read_dir, path::PathBuf};
 
 #[derive(Debug)]
@@ -17,7 +17,7 @@ pub struct BenchData {
 
 impl BenchResult {
     pub fn load_dir() -> Result<Vec<BenchResult>, Error> {
-        let dir_path = PathBuf::from(HYPERFINE_PATH);
+        let dir_path = PathBuf::from(RAW_PATH);
         let dir_contents = read_dir(&dir_path).map_err(|err| Error::read_dir(&dir_path, err))?;
         let mut results = vec![];
         for bench_dir in dir_contents {
@@ -86,15 +86,15 @@ impl BenchResult {
             });
         }
         avg_data.sort_by(|dat1, dat2| dat1.adjusted_mean.partial_cmp(&dat2.adjusted_mean).unwrap());
-        let suffix = if skip_goto { "WithoutGoto" } else { "" };
+        let suffix = if skip_goto { "" } else { " with Goto" };
         BenchResult {
-            benchmark: format!("GeometricMean{suffix}"),
+            benchmark: format!("Geometric Mean{suffix}"),
             data: avg_data,
         }
     }
 
     pub fn new(name: &str) -> Result<BenchResult, Error> {
-        let bench_path = PathBuf::from(HYPERFINE_PATH).join(name);
+        let bench_path = PathBuf::from(RAW_PATH).join(name);
         let dir_contents =
             read_dir(&bench_path).map_err(|err| Error::read_dir(&bench_path, err))?;
 
