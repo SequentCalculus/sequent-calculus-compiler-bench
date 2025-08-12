@@ -97,14 +97,10 @@ def term_equal(t1: Term, t2: Term): Bool =
 
 def term_list_equal(l1: List[Term], l2: List[Term]): Bool =
   (l1, l2) match {
-    case (Nil(), Nil()) => true
+    case (Nil(), _) => true
     case (Cons(t1, ts1), Cons(t2, ts2)) => term_equal(t1, t2) && term_list_equal(ts1, ts2)
     case _ => false
   }
-
-def fst[A, B](p: (A, B)): A = p match {
-  case (a, _) => a
-}
 
 def term_in_list(term: Term, ht: List[Term]): Bool =
   ht match {
