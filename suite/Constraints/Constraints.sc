@@ -746,12 +746,12 @@ def wipe_all(f: Fun[ConflictSet, Bool], ls: List[ConflictSet]): Bool {
   }
 }
 
-def filter_known(ls: List[List[ConflictSet]]): List[List[ConflictSet]] {
+def filter_known(f: Fun[List[ConflictSet], Bool], ls: List[List[ConflictSet]]): List[List[ConflictSet]] {
   ls.case[List[ConflictSet]] {
     Nil => Nil,
-    Cons(vs, t1) => wipe_all(new { apply(x) => known_conflict(x)}, vs).case {
-      True => Cons(vs, filter_known(t1)),
-      False => filter_known(t1)
+    Cons(vs, t1) => f.apply[List[ConflictSet], Bool](vs).case {
+      True => Cons(vs, filter_known(f, t1)),
+      False => filter_known(f, t1)
     }
   }
 }
@@ -800,7 +800,7 @@ def domain_wipeout(csp: CSP, t: Node[Pair[Pair[List[Assign], ConflictSet], List[
           tp2.case[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]] {
             Tup(p, tbl) => p.case[List[Assign], ConflictSet] {
               Tup(as_, cs) =>
-                let wiped_domains: List[List[ConflictSet]]= filter_known(tbl);
+                let wiped_domains: List[List[ConflictSet]]= filter_known(new { apply(vs) => wipe_all(new { apply(x) => known_conflict(x)}, vs) }, tbl);
                 let cs_: ConflictSet = wipe_null_(wiped_domains).case {
                   True => cs,
                   False => Known(collect(wipe_head(wiped_domains)))
