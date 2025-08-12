@@ -88,24 +88,30 @@ def id_equal(id1: Id, id2: Id): Bool =
     case _ => false
   }
 
-def term_equal(t1: Term, t2: Term): Bool =
-  (t1, t2) match {
-    case (Var(id1), Var(id2)) => id_equal(id1, id2)
-    case (Func(f1, args1, _), Func(f2, args2, _)) => id_equal(f1, f2) && term_list_equal(args1, args2)
+def term_ls_eq(l1: List[Term], l2: List[Term]): Bool =
+  (l1, l2) match {
+    case (Nil(), _) => true
+    case (Cons(t1, ts1), Cons(t2, ts2)) => term_eq(t1, t2) && term_ls_eq(ts1, ts2)
     case _ => false
   }
 
-def term_list_equal(l1: List[Term], l2: List[Term]): Bool =
-  (l1, l2) match {
-    case (Nil(), _) => true
-    case (Cons(t1, ts1), Cons(t2, ts2)) => term_equal(t1, t2) && term_list_equal(ts1, ts2)
+def term_eq(t1: Term, t2: Term): Bool =
+  (t1, t2) match {
+    case (Var(id1), Var(id2)) => id_equal(id1, id2)
+    case (Func(f1, args1, _), Func(f2, args2, _)) => id_equal(f1, f2) && term_ls_eq(args1, args2)
     case _ => false
   }
 
 def term_in_list(term: Term, ht: List[Term]): Bool =
   ht match {
     case Nil() => false
-    case Cons(t, ts) => term_equal(t, term) || term_in_list(term, ts)
+    case Cons(t, ts) => term_eq(t, term) || term_in_list(term, ts)
+  }
+
+def all_term(ls: List[Term]) { f: Term => Bool }: Bool =
+  ls match {
+    case Nil() => true
+    case Cons(t, ts) => f(t) && all_term(ts) {f}
   }
 
 def replicate_term(n: Int, t: Term): List[Term] =
@@ -124,6 +130,12 @@ def find(vid: Id, ls: List[(Id, Term)]): (Bool, Term) =
       } else {
         find(vid, bs)
       }
+  }
+
+def map(l: List[Term]) { f: Term => Term }: List[Term] =
+  l match {
+    case Nil() => Nil()
+    case Cons(x, xs) => Cons(f(x), xs.map {f})
   }
 
 def boyer_a(): Term = Var(A())
@@ -334,7 +346,7 @@ def one_way_unify1(term1: Term, term2: Term, subst: List[(Id, Term)]): (Bool, Li
     case Var(vid2) =>
       val (found, v2) = find(vid2, subst)
       if (found) {
-        (term_equal(term1, v2), subst)
+        (term_eq(term1, v2), subst)
       } else {
         (true, Cons((vid2, term1), subst))
       }
@@ -366,7 +378,7 @@ def one_way_unify1_lst(tts1: List[Term], tts2: List[Term], subst: List[(Id, Term
 def rewrite(x: Term): Term =
   x match {
     case Var(v) => Var(v)
-    case Func(f, args, lemmas) => rewrite_with_lemmas(Func(f, list::map(args) { rewrite }, lemmas), lemmas())
+    case Func(f, args, lemmas) => rewrite_with_lemmas(Func(f, map(args) { rewrite }, lemmas), lemmas())
     case ERROR() => ERROR()
   }
 
@@ -455,7 +467,7 @@ def test0(xxxx: Term): Bool =
 
 
 def test_boyer_nofib(n: Int): Bool =
-  list::all(replicate_term(n, Var(X()))) { test0 }
+  all_term(replicate_term(n, Var(X()))) { test0 }
 
 def main_loop(iters: Int, n: Int): Unit = {
   val res = test_boyer_nofib(n)
