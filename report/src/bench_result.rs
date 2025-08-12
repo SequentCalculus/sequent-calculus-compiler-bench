@@ -32,7 +32,7 @@ impl BenchResult {
         let avg = Self::get_geometric_mean(&results, false);
         let avg_nogoto = Self::get_geometric_mean(&results, true);
 
-        let avg_langs = avg
+        let avg_langs = avg_nogoto
             .data
             .iter()
             .map(|dat| dat.lang)
