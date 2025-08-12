@@ -138,6 +138,37 @@ def map(l: List[Term]) { f: Term => Term }: List[Term] =
     case Cons(x, xs) => Cons(f(x), xs.map {f})
   }
 
+def boyer_add1(a: Term): Term = Func(ADD1(), [a], box { () => [] })
+def boyer_zero(): Term = Func(ZERO(), [], box { () => [] })
+def boyer_zerop(a: Term): Term =
+  Func(ZEROP(), [a], box { () => [
+    (boyer_zerop(boyer_x()),
+      boyer_equal(boyer_x(), boyer_zero()))
+  ]})
+
+
+def boyer_one(): Term =
+  Func(ONE(), [], box { () => [ (boyer_one(), boyer_add1(boyer_zero())) ]})
+
+def boyer_two(): Term =
+  Func(TWO(), [], box { () => [ (boyer_two(), boyer_add1(boyer_one())) ]})
+
+def boyer_four(): Term =
+  Func(FOUR(), [], box { () => [ (boyer_four(), boyer_add1(boyer_add1(boyer_one()))) ]})
+
+def boyer_if_(a: Term, b: Term, c: Term): Term =
+  Func(IF(), [a, b, c], box { () => [
+    (boyer_if_(boyer_if_(boyer_x(), boyer_y(), boyer_z()), boyer_u(), boyer_w()),
+      boyer_if_(boyer_x(),
+        boyer_if_(boyer_y(), boyer_u(), boyer_w()),
+        boyer_if_(boyer_z(), boyer_u(), boyer_w())))
+  ]})
+
+def boyer_not_(a: Term): Term =
+  Func(NOT(), [a], box { () => [
+    (boyer_not_(boyer_x()), boyer_if_(boyer_x(), boyer_false(), boyer_true()))
+  ]})
+
 def boyer_a(): Term = Var(A())
 def boyer_b(): Term = Var(B())
 def boyer_c(): Term = Var(C())
@@ -150,11 +181,7 @@ def boyer_w(): Term = Var(W())
 def boyer_true(): Term = Func(TRUE(), [], box { () => [] })
 def boyer_false(): Term = Func(FALSE(), [], box { () => [] })
 
-def boyer_if_(a: Term, b: Term, c: Term): Term =
-  Func(IF(), [a, b, c], box { () => [
-    (boyer_if_(boyer_if_(boyer_x(), boyer_y(), boyer_z()), boyer_u(), boyer_w()),
-      boyer_if_(boyer_x(), boyer_if_(boyer_y(), boyer_u(), boyer_w()), boyer_if_(boyer_z(), boyer_u(), boyer_w())))
-  ]})
+
 
 def boyer_and_(a: Term, b: Term): Term =
   Func(AND(), [a, b], box { () => [
@@ -205,35 +232,7 @@ def boyer_or_(a: Term, b: Term): Term =
       boyer_if_(boyer_x(), boyer_true(), boyer_if_(boyer_y(), boyer_true(), boyer_false())))
   ]})
 
-def boyer_not_(a: Term): Term =
-  Func(NOT(), [a], box { () => [
-    (boyer_not_(boyer_x()),
-      boyer_if_(boyer_x(), boyer_false(), boyer_true()))
-  ]})
 
-def boyer_zerop(a: Term): Term =
-  Func(ZEROP(), [a], box { () => [
-    (boyer_zerop(boyer_x()),
-      boyer_equal(boyer_x(), boyer_zero()))
-  ]})
-
-def boyer_zero(): Term = Func(ZERO(), [], box { () => [] })
-
-def boyer_one(): Term =
-  Func(ONE(), [], box { () => [
-    (boyer_one(),
-      boyer_add1(boyer_zero()))
-  ]})
-
-
-def boyer_two(): Term =
-  Func(TWO(), [], box { () => [
-    (boyer_two(),
-      boyer_add1(boyer_one()))
-  ]})
-
-
-def boyer_add1(a: Term): Term = Func(ADD1(), [a], box { () => [] })
 def boyer_plus(a: Term, b: Term): Term =
   Func(PLUS(), [a, b], box { () => [
     (boyer_plus(boyer_plus(boyer_x(), boyer_y()), boyer_z()),
@@ -312,10 +311,15 @@ def boyer_f(a: Term): Term = Func(F(), [a], box { () => [] })
 
 def boyer_nil(): Term = Func(NIL(), [], box { () => [] })
 
+def boyer_cons(a: Term, b: Term): Term =
+  Func(CONS(), Cons(a, Cons(b, Nil())), box { () => Nil() })
+
 def boyer_length_(a: Term): Term =
   Func(LENGTH(), [a], box { () => [
     (boyer_length_(boyer_reverse_(boyer_x())),
-      boyer_length_(boyer_x()))
+      boyer_length_(boyer_x())),
+    (boyer_length_(boyer_cons(boyer_x(), boyer_cons(boyer_y(), boyer_cons(boyer_z(), boyer_cons(boyer_u(), boyer_w()))))),
+        boyer_plus(boyer_four(), boyer_length_(boyer_w())))
   ]})
 
 def boyer_member(a: Term, b: Term): Term =
@@ -406,10 +410,10 @@ def falsep(x: Term, l: List[Term]): Bool =
     case _ => false
   })
 
-def tautologyp(x: Term, true_lst: List[Term], false_lst: List[Term]): Bool = {
-  if (truep(x, true_lst)) { true } else
-  if (falsep(x, false_lst)) { false } else
-  x match {
+def tautologyp(x: Term, true_lst: List[Term], false_lst: List[Term]): Bool =
+  if (truep(x, true_lst)) { true }
+  else if (falsep(x, false_lst)) { false }
+  else x match {
     case Func(IF(), Cons(cond, Cons(t, Cons(e, Nil()))), lemmas) =>
     if (truep(cond, true_lst)) {
       tautologyp(t, true_lst, false_lst)
@@ -422,7 +426,6 @@ def tautologyp(x: Term, true_lst: List[Term], false_lst: List[Term]): Bool = {
     }
     case _ => true
   }
-}
 
 def tautp(x: Term): Bool =
   tautologyp(rewrite(x), Nil(), Nil())
