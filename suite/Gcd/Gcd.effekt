@@ -1,24 +1,5 @@
 import args
 
-def list_max(l: List[Int]): Int =
-  l match {
-    case Nil() => panic("Empty List")
-    case Cons(x, Nil()) => x
-    case Cons(x, Cons(y, ys)) =>
-      if (x > y) {
-        list_max(Cons(x, ys))
-      } else {
-        list_max(Cons(y, ys))
-      }
-  }
-
-def enum_from_to(from: Int, to: Int): List[Int] =
-  if (from <= to) {
-    Cons(from, enum_from_to(from + 1, to))
-  } else {
-    Nil()
-  }
-
 def quot_rem(a: Int, b: Int): (Int, Int) =
   (a / b, mod(a, b))
 
@@ -40,11 +21,41 @@ def gcd_e(x: Int, y: Int): (Int, Int, Int) =
     g((1, 0, x), (0, 1, y))
   }
 
+def max_(l: List[Int]): Int =
+  l match {
+    case Nil() => -1 // panic("Empty List")
+    case Cons(x, Nil()) => x
+    case Cons(x, Cons(y, ys)) =>
+      if (x > y) {
+        max_(Cons(x, ys))
+      } else {
+        max_(Cons(y, ys))
+      }
+  }
+
+def enum_from_to(from: Int, to: Int): List[Int] =
+  if (from <= to) {
+    Cons(from, enum_from_to(from + 1, to))
+  } else {
+    Nil()
+  }
+
 def cartesian_product(p1: List[Int], ms: List[Int]): List[(Int, Int)] =
   p1 match {
     case Nil() => Nil()
     case Cons(h1, t1) => append(to_pair(h1, ms), cartesian_product(t1, ms))
   }
+
+def append[A](l1: List[A], l2: List[A]): List[A] =
+  l1 match {
+    case Nil() => l2
+    case Cons(p, ps) => Cons(p, append(ps, l2))
+  }
+
+def map[A, B](l: List[A]) { f: A => B }: List[B] = l match {
+  case Nil() => Nil()
+  case Cons(a, as) => Cons(f(a), as.map {f})
+}
 
 def to_pair(i: Int, l: List[Int]): List[(Int, Int)] =
   l match {
@@ -52,12 +63,15 @@ def to_pair(i: Int, l: List[Int]): List[(Int, Int)] =
     case Cons(j, js) => Cons((i, j), to_pair(i, js))
   }
 
+def abs_int(i: Int): Int =
+  if (i < 0) -1 * i else i
+
 def test(d: Int): Int = {
   val ns = enum_from_to(5000, 5000 + d)
   val ms = enum_from_to(10000, 10000 + d)
-  val tripls = list::map(cartesian_product(ns, ms)) { p => p match { case (x, y) => (x, y, gcd_e(x, y)) } }
-  val rs = list::map(tripls) { trip => trip match { case (d1, d2, (gg, u, v)) => abs((gg + u) + v) } }
-  list_max(rs)
+  val tripls = cartesian_product(ns, ms).map { case (x, y) => (x, y, gcd_e(x, y)) }
+  val rs = tripls.map { case (d1, d2, (gg, u, v)) => abs_int((gg + u) + v) }
+  max_(rs)
 }
 
 def test_gcd_nofib(x: Int): Int =
