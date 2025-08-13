@@ -1,56 +1,64 @@
 import args
 
 type Expr {
-  Add(sums:List[Expr])
-  Sub(subs:List[Expr])
-  Mul(muls:List[Expr])
-  Div(divs:List[Expr])
-  Num(i:Int)
+  Add(sums: List[Expr])
+  Sub(subs: List[Expr])
+  Mul(muls: List[Expr])
+  Div(divs: List[Expr])
+  Num(i: Int)
   X()
 }
 
-def equal(a:Expr,b:Expr): Bool = {
-  (a,b) match{
-    case (Add(sums1),Add(sums2)) => equal_list(sums1,sums2)
-    case (Sub(subs1),Sub(subs2)) => equal_list(subs1,subs2)
-    case (Mul(muls1),Mul(muls2)) => equal_list(muls1,muls2)
-    case (Div(divs1),Div(divs2)) => equal_list(divs1,divs2)
-    case (Num(i),Num(j)) => i==j 
-    case (X(),X()) => true
-    case _ => false
-  }
+def map_list[A, B](l: List[A]) { f: A => B }: List[B] = l match {
+  case Nil() => Nil()
+  case Cons(a, as) => Cons(f(a), as.map_list {f})
 }
 
-def equal_list(ls1:List[Expr],ls2:List[Expr]) : Bool = {
-  (ls1,ls2) match{
-    case (Nil(),Nil()) => true
-    case (Cons(e1,es1),Cons(e2,es2)) => equal(e1,e2) && equal_list(es1,es2)
+def equal_list(ls1: List[Expr], ls2: List[Expr]): Bool =
+  (ls1, ls2) match {
+    case (Nil(), Nil()) => true
+    case (Cons(e1, es1), Cons(e2, es2)) => equal(e1, e2) && equal_list(es1, es2)
     case _ => false
   }
-}
 
-def deriv(e:Expr) : Expr = {
+def equal(a: Expr, b: Expr): Bool =
+  (a, b) match {
+    case (Add(sums1), Add(sums2)) => equal_list(sums1, sums2)
+    case (Sub(subs1), Sub(subs2)) => equal_list(subs1, subs2)
+    case (Mul(muls1), Mul(muls2)) => equal_list(muls1, muls2)
+    case (Div(divs1), Div(divs2)) => equal_list(divs1, divs2)
+    case (Num(i), Num(j)) => i == j
+    case (X(), X()) => true
+    case _ => false
+  }
+
+
+def deriv(e: Expr): Expr =
   e match {
-    case Add(sums) => Add(list::map(sums){deriv})
-    case Sub(subs) => Sub(list::map(subs){deriv})
-    case Mul(muls) => 
-      Mul(
-        Cons(e,Cons(
-          Add(
-            list::map(muls){x => Div(Cons(deriv(x),Cons(x,Nil())))}
-          ),Nil())))
-    case Div(Cons(x,Cons(y,Nil()))) => 
+    case Add(sums) => Add(sums.map_list { deriv })
+    case Sub(subs) => Sub(subs.map_list { deriv })
+    case Mul(muls) =>
+      Mul(Cons(
+        e,
+        Cons(
+          Add(muls.map_list { x => Div(Cons(deriv(x), Cons(x, Nil()))) }),
+          Nil())))
+    case Div(Cons(x, Cons(y, Nil()))) =>
       Sub(
         Cons(
-          Div(Cons(deriv(x),Cons(y,Nil()))),
-          Cons(Div(Cons(x,Cons(Mul(Cons(y,Cons(y,Cons(deriv(y),Nil())))),Nil()))),Nil())))
+          Div(Cons(deriv(x), Cons(y, Nil()))),
+          Cons(
+            Div(
+              Cons(x,
+              Cons(
+                Mul(Cons(y, Cons(y, Cons(deriv(y), Nil())))), Nil()))),
+                Nil())))
     case Num(_) => Num(0)
     case X() => Num(1)
-    case _ => panic("Bad Expression")
+    case _ => X() // panic("Bad Expression")
   }
-}
 
-def mk_exp(a:Expr,b:Expr) : Expr = { 
+def mk_exp(a: Expr, b: Expr): Expr =
   Add(
     Cons(
       Mul(Cons(Num(3), Cons(X(), Cons(X(), Nil())))),
@@ -59,9 +67,8 @@ def mk_exp(a:Expr,b:Expr) : Expr = {
         Cons(
           Mul(Cons(b, Cons(X(), Nil()))),
           Cons(Num(5), Nil())))))
-}
 
-def mk_ans(a:Expr,b:Expr) : Expr = {
+def mk_ans(a: Expr, b: Expr): Expr =
   Add(
     Cons(
       Mul(
@@ -98,29 +105,28 @@ def mk_ans(a:Expr,b:Expr) : Expr = {
                     Cons(Div(Cons(Num(1), Cons(X(), Nil()))), Nil()))),
                 Nil()))),
           Cons(Num(0), Nil())))))
-}
 
-def main_loop(iters:Int,n:Int,m:Int) : Unit = {
-  val res = deriv(mk_exp(Num(n),Num(m)))
-  val expected = mk_ans(Num(n),Num(m))
-  if (iters==1){
-    if (equal(res,expected)){
+def main_loop(iters: Int, n: Int, m: Int): Unit = {
+  val res = deriv(mk_exp(Num(n), Num(m)))
+  val expected = mk_ans(Num(n), Num(m))
+  if (iters == 1){
+    if (equal(expected, res)){
       println("1")
-    }else{
+    } else {
       println("0")
     }
-  }else{
-    main_loop(iters - 1,n,m)
+  } else {
+    main_loop(iters - 1, n, m)
   }
 }
 
-def main() : Unit = {
-  commandLineArgs() match{
-    case Cons(iters_str,Cons(n_str,Cons(m_str,Nil()))) => 
-      val iters = try { string::toInt(iters_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) } }
-      val n = try { string::toInt(n_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) } }
-      val m = try { string::toInt(m_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) } }
-      main_loop(iters,n,m)
-    case _ => panic("Please provide arguments \"iters\",\"n\",\"m\"")
+def main() =
+  commandLineArgs() match {
+    case Cons(iters_str, Cons(n_str, Cons(m_str, Nil()))) =>
+      with on[WrongFormat].panic
+      val iters = string::toInt(iters_str)
+      val n = string::toInt(n_str)
+      val m = string::toInt(m_str)
+      main_loop(iters, n, m)
+    case _ => panic("Expected Arguments \"iters\", \"n\" and \"m\"")
   }
-}

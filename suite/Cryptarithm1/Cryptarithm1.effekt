@@ -70,7 +70,7 @@ def map[A, B](l: List[A]) { f: A => B }: List[B] = l match {
 
 def test_cryptarithm_nofib(n: Int): List[List[List[Int]]] =
   enum_from_to(1, n).map { i =>
-    enum_from_to(0,9 + i)
+    enum_from_to(0, 9 + i)
       .take(10)
       .permutations
       .filter { l => condition(l) }
