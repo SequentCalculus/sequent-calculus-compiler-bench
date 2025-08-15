@@ -3,7 +3,7 @@ use super::{
     config::Config,
     errors::Error,
     langs::BenchmarkLanguage,
-    paths::{RAW_PATH, PLOTS_PATH, SUITE_PATH, bin_path_aarch, bin_path_x86},
+    paths::{PLOTS_PATH, RAW_PATH, SUITE_PATH, bin_path_aarch, bin_path_x86},
 };
 use std::{
     fs::{create_dir_all, read_dir},
@@ -75,9 +75,8 @@ impl Benchmark {
     }
 
     pub fn result_path(&self, lang: &BenchmarkLanguage) -> Result<PathBuf, Error> {
-        create_dir_all(RAW_PATH).map_err(|_| {
-            Error::path_access(&PathBuf::from(RAW_PATH), "create hyperfine path")
-        })?;
+        create_dir_all(RAW_PATH)
+            .map_err(|_| Error::path_access(&PathBuf::from(RAW_PATH), "create hyperfine path"))?;
         let mut path = PathBuf::from(RAW_PATH).join(self.name.clone());
         create_dir_all(&path).map_err(|_| Error::path_access(&path, "crate results dir"))?;
         path = path.join(self.name.clone() + "_" + lang.suffix());
@@ -231,6 +230,7 @@ impl Benchmark {
         command.arg(call_str);
         command.arg("--runs");
         command.arg(self.config.runs.to_string());
+        command.args(["--warmup", "3"]);
         command.arg("--export-csv");
         command.arg(&out_path);
         println!("hyperfine command: {command:?}");
