@@ -4,15 +4,15 @@ structure TakGoto = struct
   fun tak x y z k = 
     if y<x then
       tak 
-      (CC.callcc (fn a => tak (x-1) y z a))
-      (CC.callcc (fn b => tak (y-1) z x b))
-      (CC.callcc (fn c => tak (z-1) x y c))
+      (CC.callcc (tak (x-1) y z))
+      (CC.callcc (tak (y-1) z x))
+      (CC.callcc (tak (z-1) x y))
       k
     else 
       CC.throw k z 
 
   fun main_loop iters x y z = 
-  let val res = CC.callcc (fn k => tak x y z k)
+  let val res = CC.callcc (tak x y z)
   in if iters=1
     then print ((Int.toString res) ^ "\n")
     else main_loop (iters-1) x y z

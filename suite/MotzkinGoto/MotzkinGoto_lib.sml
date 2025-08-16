@@ -13,17 +13,17 @@ structure MotzkinGoto = struct
     else 
       let val limit = n-2
         val product = fn i => 
-        (CC.callcc (fn a => motz i a)) 
-        * (CC.callcc (fn b => motz (limit - i) b))
+        (CC.callcc (motz i)) 
+        * (CC.callcc (motz (limit - i)))
       in 
         CC.throw k (
-        (CC.callcc (fn a => motz (n-1) a))
-        + (CC.callcc (fn b => sum product 0 limit b))
+        (CC.callcc (motz (n-1)))
+        + (CC.callcc (sum product 0 limit))
         )
       end
 
   fun main_loop iters n = 
-  let val res = CC.callcc (fn k => motz n k)
+  let val res = CC.callcc (motz n)
       in if iters=1
     then print ((Int.toString res) ^ "\n")
     else main_loop (iters-1) n 
