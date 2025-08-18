@@ -31,11 +31,12 @@ ulimit -s 2048000; nix run -i --store /path/to/chroot-store
 ```
 
 Depending on your hardware, running the benchmarks may take several hours.
-In particular, the `EvenoddGoto` benchmark for SML/NJ takes a long time.
-To exclude it, you can temprarily rename it with, for example,
+In particular, the `EvenoddGoto` benchmark for SML/NJ and OCaml takes a long time.
+To exclude them, you can temprarily rename them with, for example,
 
 ```
-mv suite/EvenoddGoto/EvenoddGotocm suite/EvenoddGoto/EvenoddGoto_cm
+mv suite/EvenoddGoto/EvenoddGoto.cm suite/EvenoddGoto/EvenoddGoto_cm
+mv suite/EvenoddGoto/EvenoddGoto.ml suite/EvenoddGoto/EvenoddGoto_ml
 ```
 
 The MLton version of this benchmark is excluded, because it takes very long, and the Koka version is excluded becuase it segfaults.
