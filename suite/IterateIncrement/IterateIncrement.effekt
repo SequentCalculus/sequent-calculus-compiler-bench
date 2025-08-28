@@ -1,13 +1,13 @@
 import args
 
-def iterate(i : Int, a : Int) { f: Int => Int } : Int =
+def iterate(i: Int, a: Int) { f: Int => Int }: Int =
   if (i == 0) {
     a
   } else {
     iterate(i - 1, f(a)) { f }
   }
 
-def main_loop(iters : Int, n : Int) : Unit = {
+def main_loop(iters: Int, n: Int): Unit = {
   val res = iterate(n, 0) { x => x + 1 }
   if (iters == 1) {
     println(res)
