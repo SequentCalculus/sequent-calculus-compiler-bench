@@ -1,53 +1,65 @@
-import args 
+import args
 
-def tabulate_loop(n:Int,len:Int,acc:List[Int]) { f:Int => Int }: List[Int] ={
-  if (n<len){
-    tabulate_loop(n + 1, len, Cons(f(n),acc)) {f}
-  }else{
-    list::reverse(acc)
+def rev_loop(l: List[Int], acc: List[Int]): List[Int] =
+  l match {
+    case Nil() => acc
+    case Cons(p, ps) => rev_loop(ps, Cons(p, acc))
   }
-}
 
-def tabulate(n:Int) { f: Int => Int } : List[Int] = {
-  if (n<0){
-    panic("n should be posivitive")
-  }else{
-    tabulate_loop(0,n,Nil()) {f}
+def rev(l: List[Int]): List[Int] =
+  rev_loop(l, Nil())
+
+def tabulate_loop(n: Int, len: Int, acc: List[Int]) { f: Int => Int }: List[Int] =
+  if (n < len) {
+    tabulate_loop(n + 1, len, Cons(f(n), acc)) { f }
+  } else {
+    reverse(acc)
   }
-}
 
-def merge(l1:List[Int],l2:List[Int]) : List[Int] = {
-  l1 match{
+def tabulate(n: Int) { f: Int => Int }: List[Int] =
+  if (n < 0) {
+    Nil()
+  } else {
+    tabulate_loop(0, n, Nil()) { f }
+  }
+
+def merge(l1: List[Int], l2: List[Int]): List[Int] =
+  l1 match {
     case Nil() => l2
-    case Cons(x1,xs1) => l2 match{
+    case Cons(x1, xs1) => l2 match {
       case Nil() => l1
-      case Cons(x2,xs2) => 
-        if (x1<=x2){
-          Cons(x1,merge(xs1,l2))
-        }else{
-          Cons(x2,merge(l2,xs2))
+      case Cons(x2, xs2) =>
+        if (x1 <= x2) {
+          Cons(x1, merge(xs1, l2))
+        } else {
+          Cons(x2, merge(l1, xs2))
         }
     }
   }
-}
 
-def main_loop(iters:Int,l1:List[Int],l2:List[Int]) : Unit = {
-  val res = merge(l1,l2)
-  if (iters==1){
-    println(option::getOrElse(list::headOption(res)){panic("Empty List")})
-  }else{
-    main_loop(iters - 1,l1,l2)
+def head(l: List[Int]): Int =
+  l match {
+    case Nil() => -1
+    case Cons(x, xs) => x
+  }
+
+def main_loop(iters: Int, l1: List[Int], l2: List[Int]): Unit = {
+  val res = merge(l1, l2)
+  if (iters == 1) {
+    println(res.head)
+  } else {
+    main_loop(iters - 1, l1, l2)
   }
 }
 
-def main() : Unit = {
-  commandLineArgs() match{
-    case Cons(iters_str,Cons(n_str,Nil())) => 
-      val iters = try { string::toInt(iters_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) } }
-      val n = try { string::toInt(n_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) } }
+def main() =
+  commandLineArgs() match {
+    case Cons(iters_str, Cons(n_str, Nil())) =>
+      with on[WrongFormat].panic
+      val iters = string::toInt(iters_str)
+      val n = string::toInt(n_str)
       val l1 = tabulate(n) { x => 2 * x }
-      val l2 = tabulate(n) { x => (2 * x) + 1 }  
-      main_loop(iters,l1,l2)
-    case _ => panic("Expceted arguments \"iters\",\"n\"")
+      val l2 = tabulate(n) { x => (2 * x) + 1 }
+      main_loop(iters, l1, l2)
+    case _ => panic("Expected Arguments \"iters\",\"n\"")
   }
-}
