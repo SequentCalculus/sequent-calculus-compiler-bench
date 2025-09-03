@@ -3,7 +3,7 @@ use super::{
     config::Config,
     errors::Error,
     langs::BenchmarkLanguage,
-    paths::{HYPERFINE_PATH, REPORTS_PATH, SUITE_PATH, bin_path_aarch, bin_path_x86},
+    paths::{PLOTS_PATH, RAW_PATH, SUITE_PATH, bin_path_aarch, bin_path_x86},
 };
 use std::{
     fs::{create_dir_all, read_dir},
@@ -75,10 +75,9 @@ impl Benchmark {
     }
 
     pub fn result_path(&self, lang: &BenchmarkLanguage) -> Result<PathBuf, Error> {
-        create_dir_all(HYPERFINE_PATH).map_err(|_| {
-            Error::path_access(&PathBuf::from(HYPERFINE_PATH), "create hyperfine path")
-        })?;
-        let mut path = PathBuf::from(HYPERFINE_PATH).join(self.name.clone());
+        create_dir_all(RAW_PATH)
+            .map_err(|_| Error::path_access(&PathBuf::from(RAW_PATH), "create hyperfine path"))?;
+        let mut path = PathBuf::from(RAW_PATH).join(self.name.clone());
         create_dir_all(&path).map_err(|_| Error::path_access(&path, "crate results dir"))?;
         path = path.join(self.name.clone() + "_" + lang.suffix());
         path.set_extension("csv");
@@ -86,9 +85,9 @@ impl Benchmark {
     }
 
     pub fn report_path(&self, lang: &BenchmarkLanguage) -> Result<PathBuf, Error> {
-        create_dir_all(REPORTS_PATH)
-            .map_err(|_| Error::path_access(&PathBuf::from(REPORTS_PATH), "create report path"))?;
-        let mut path = PathBuf::from(REPORTS_PATH).join(self.name.clone() + "_" + lang.suffix());
+        create_dir_all(PLOTS_PATH)
+            .map_err(|_| Error::path_access(&PathBuf::from(PLOTS_PATH), "create report path"))?;
+        let mut path = PathBuf::from(PLOTS_PATH).join(self.name.clone() + "_" + lang.suffix());
         path.set_extension("png");
         Ok(path)
     }
@@ -231,6 +230,7 @@ impl Benchmark {
         command.arg(call_str);
         command.arg("--runs");
         command.arg(self.config.runs.to_string());
+        command.args(["--warmup", "3"]);
         command.arg("--export-csv");
         command.arg(&out_path);
         println!("hyperfine command: {command:?}");

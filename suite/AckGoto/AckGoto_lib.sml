@@ -6,10 +6,10 @@ structure AckGoto = struct
     then CC.throw k (n+1)
     else if n=0
     then ack (m-1) 1 k
-    else ack (m-1) (CC.callcc (fn a => ack m (n-1) a)) k
+    else ack (m-1) (CC.callcc (ack m (n-1))) k
 
   fun main_loop iters m n = 
-    let val res = CC.callcc (fn k => ack m n k)
+    let val res = CC.callcc (ack m n)
     in if iters=1
        then print ((Int.toString res) ^ "\n")
        else main_loop (iters-1) m n 

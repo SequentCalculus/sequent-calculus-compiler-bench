@@ -12,23 +12,10 @@ data Expr {
   X()
 }
 
-
 def map_list(f: Fun[Expr, Expr], l: List[Expr]): List[Expr] {
   l.case[Expr] {
     Nil => Nil,
     Cons(x, xs) => Cons(f.apply[Expr, Expr](x), map_list(f,xs))
-  }
-
-}
-
-def map_expr(f: Fun[Expr, Expr], e: Expr): Expr {
-  e.case {
-    Add(sums) => Add(map_list(f, sums)),
-    Sub(subs) => Sub(map_list(f, subs)),
-    Mul(muls) => Mul(map_list(f, muls)),
-    Div(divs) => Div(map_list(f, divs)),
-    Num(i)    => f.apply[Expr, Expr](Num(i)),
-    X()       => f.apply[Expr, Expr](X())
   }
 }
 

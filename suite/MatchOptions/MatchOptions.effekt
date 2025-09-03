@@ -1,33 +1,33 @@
-import args 
+import args
 
-def attempt(i:Int) : Option[Int] = {
-  if (i==0){
+def attempt(i: Int): Option[Int] =
+  if (i == 0) {
     Some(i)
-  }else{
+  } else {
     attempt(i - 1) match {
       case None() => None()
       case Some(x) => Some(x + 1)
     }
   }
-}
 
-def main_loop(iters:Int,n:Int) : Unit = {
-  val res = attempt(n) match{
+def main_loop(iters: Int, n: Int): Unit = {
+  val res = attempt(n) match {
     case None() => -1
-    case Some(x) => x 
+    case Some(x) => x
   }
-  if (iters==1){
+  if (iters == 1) {
     println(res)
-  }else{
-    main_loop(iters - 1,n)
+  } else {
+    main_loop(iters - 1, n)
   }
 }
 
-def main() : Unit = 
-  commandLineArgs() match{
-    case Cons(iters_str,Cons(n_str,Nil())) => 
-      val iters = try { string::toInt(iters_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) } }
-      val n = try { string::toInt(n_str) } with Exception[WrongFormat] { def raise(_,msg) = { panic(msg) } }
-      main_loop(iters,n)
-    case _ => panic("Expected Arguments \"iters\",\"n\"")
+def main() =
+  commandLineArgs() match {
+    case Cons(iters_str, Cons(n_str, Nil())) =>
+      with on[WrongFormat].panic
+      val iters = string::toInt(iters_str)
+      val n = string::toInt(n_str)
+      main_loop(iters, n)
+    case _ => panic("Expected Arguments \"iters\", \"n\"")
   }
