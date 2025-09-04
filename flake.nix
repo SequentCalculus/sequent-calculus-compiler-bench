@@ -14,67 +14,69 @@
 
   outputs = { self, nixpkgs, flake-utils, effekt, scc, ... }:
     flake-utils.lib.eachDefaultSystem (system:
-        let
+      let
         pkgs = import nixpkgs { inherit system; };
-
         effekt-lib = effekt.lib.${system};
         effektBackends = with effekt-lib.effektBackends; [ llvm ];
         effektBuild = effekt-lib.getEffekt { backends = effektBackends; };
-
         rustPlatform = pkgs.rustPlatform;
-
         dependencies = [
-#compilers
-        pkgs.ocaml
-        pkgs.koka
-        pkgs.smlnj
-        pkgs.mlton
-        effektBuild
-        scc.packages.${system}.default
-        pkgs.rustc
+          #compilers
+          pkgs.ocaml
+          pkgs.koka
+          pkgs.smlnj
+          pkgs.mlton
+          effektBuild
+          scc.packages.${system}.default
+          pkgs.rustc
 
-#required by rustc
-        pkgs.gcc
-#required by smlnj
-        pkgs.gnugrep
-        pkgs.gnused
-#required by mlton
-        pkgs.coreutils
+          #required by rustc
+          pkgs.gcc
+          #required by smlnj
+          pkgs.gnugrep
+          pkgs.gnused
+          #required by mlton
+          pkgs.coreutils
 
-#hyperfine
-        pkgs.hyperfine
-        pkgs.bash
-
+          #hyperfine
+          pkgs.hyperfine
+          pkgs.bash
         ];
-  in {
-    packages.${system}.default = pkgs.rustPlatform.buildRustPackage {
-      pname = "Sequent-Calculus-Bench";
-      version = "0.1.0";
-      src = ./.;
-      nativeBuildInputs = [ pkgs.makeWrapper pkgs.pkgconf ];
-      buildInputs = dependencies ++ [ pkgs.fontconfig pkgs.expat ];
-      cargoDeps = rustPlatform.importCargoLock { lockFile = ./Cargo.lock; };
-      postFixup = ''
-        makeWrapper $out/bin/bench $out/bin/run-bench \
-        --set PATH "${pkgs.lib.makeBinPath dependencies}";
-      '';
+      in {
+        packages = {
+          sccBench = pkgs.rustPlatform.buildRustPackage {
+            pname = "Sequent-Calculus-Bench";
+            version = "0.1.0";
+            src = ./.;
+            nativeBuildInputs = [ pkgs.makeWrapper pkgs.pkgconf ];
+            buildInputs = dependencies ++ [ pkgs.fontconfig pkgs.expat ];
+            cargoDeps = rustPlatform.importCargoLock { lockFile = ./Cargo.lock; };
+            postFixup = ''
+              makeWrapper $out/bin/bench $out/bin/run-bench \
+              --set PATH "${pkgs.lib.makeBinPath dependencies}";
+              '';
+        };
+        default=self.packages.${system}.sccBench;
+      };
 
-    };
+      devShells = {
+        sccShell = pkgs.mkShell {
+          buildInputs = [ self.packages.${system}.default ];
 
-    devShells.${system}.default = pkgs.mkShell {
-      buildInputs = [ self.packages.${system}.default ];
+          shellHook = ''
+            export name=""
+            echo "Call 'run-bench' to start benchmarks"
+            '';
+        };
+        default=self.devShells.${system}.sccShell;
+      };
 
-      shellHook = ''
-        export name=""
-        echo "Call 'run-bench' to start benchmarks"
-        '';
-
-    };
-
-    apps.${system}.default = {
-      type = "app";
-      program = "${self.packages.${system}.default}/bin/run-bench";
-    };
-
+      apps = {
+        sccApp = {
+          type = "app";
+          program = "${self.packages.${system}.default}/bin/run-bench";
+        };
+        default = self.apps.${system}.sccApp;
+      };
   }); 
 }
