@@ -13,7 +13,6 @@ check:
 	cargo fmt --all -- --check
 	cargo clippy
 
-
 .PHONY: bench
 bench:
 ifeq ($(name),)
@@ -21,6 +20,10 @@ ifeq ($(name),)
 else
 	ulimit -s $(stack_size) && cargo run -- -n $(name)
 endif
+
+.PHONY: plots
+plots:
+	cargo run -p report
 
 .PHONY: clean
 clean:

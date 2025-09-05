@@ -1,10 +1,10 @@
-# Benchmarks for "Compiling Through Sequent Calculus"
+# Benchmarks for "Compiling with the Sequent Calculus"
 
-This repository contains benchmarks for [Compiling with the Sequent Calculus](https://github.com/ps-tuebingen/sequent-calculus-compiler/).
+This repository contains benchmarks for the [Sequent Calculus Compiler (scc)](https://github.com/ps-tuebingen/sequent-calculus-compiler/).
 
 ## Languages
 
-The benchmarks are implemented in the following languages 
+The benchmarks are implemented in the following languages:
 
 * Fun (the surface language of the above compiler)
 * Rust
@@ -16,8 +16,9 @@ The benchmarks are implemented in the following languages
 ## Usage
 
 To install all laguages and run the benchmarks, the provided Nix flake can be used.
+This has been tested on x86-64 Linux.
 To avoid overflowing the stack, we increase the stack size to 2GB.
-With a working Nix installation, simply run
+With a working Nix installation, with [support for flakes enabled](https://nixos.wiki/wiki/flakes), simply run
 
 ```
 ulimit -s 2048000; nix run -i
@@ -40,3 +41,14 @@ mv suite/EvenoddGoto/EvenoddGoto.ml suite/EvenoddGoto/EvenoddGoto_ml
 ```
 
 The MLton version of this benchmark is excluded, because it takes very long, and the Koka version is excluded becuase it segfaults.
+
+### Results
+
+The raw results will be stored under [`./results/raw/`](./results/raw/).
+To obtain graphical representations of the relative speedups with `scc` as the baseline (above `1` and higher is better), you can run
+
+```
+make plots
+```
+
+The resulting bar plots (SVG) will be stored under [`./results/plots/`](./results/plots/).
