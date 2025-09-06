@@ -1,6 +1,6 @@
 # Benchmarks for "Compiling with the Sequent Calculus"
 
-This repository contains benchmarks for the [Sequent Calculus Compiler (scc)](https://github.com/ps-tuebingen/sequent-calculus-compiler/).
+This repository contains benchmarks for the [Sequent Calculus Compiler (scc)](https://github.com/SequentCalculus/sequent-calculus-compiler/).
 
 ## Languages
 
@@ -17,18 +17,21 @@ The benchmarks are implemented in the following languages:
 
 To install all laguages and run the benchmarks, the provided Nix flake can be used.
 This has been tested on x86-64 Linux.
-To avoid overflowing the stack, we increase the stack size to 2GB.
-With a working Nix installation, with [support for flakes enabled](https://nixos.wiki/wiki/flakes), simply run
+To avoid overflowing the stack, we increase the stack size to 3GB.
+With a working Nix installation, with [support for flakes enabled](https://nixos.wiki/wiki/flakes), you can thus simply run (you may need to use `sudo` for the `ulimit` command)
 
 ```
-ulimit -s 2048000; nix run -i
+ulimit -s 3096000; nix run -i
 ```
 
-This takes about 9GB additional memory in the Nix store under `/nix/store`.
+Depending on your system, there may be a hard limit for the stack size and you may need to increase that.
+On Linux you can typically do so with `ulimit -Hs 3096000`.
+
+Running the benchmarks takes about 9GB additional memory in the Nix store under `/nix/store`.
 If you do not have enough space there, you can specify a path to an alternative chroot store
 
 ```
-ulimit -s 2048000; nix run -i --store /path/to/chroot-store
+ulimit -s 3096000; nix run -i --store /path/to/chroot-store
 ```
 
 Depending on your hardware, running the benchmarks may take several hours.
@@ -40,15 +43,15 @@ mv suite/EvenoddGoto/EvenoddGoto.cm suite/EvenoddGoto/EvenoddGoto_cm
 mv suite/EvenoddGoto/EvenoddGoto.ml suite/EvenoddGoto/EvenoddGoto_ml
 ```
 
-The MLton version of this benchmark is excluded, because it takes very long, and the Koka version is excluded becuase it segfaults.
+The MLton version of this benchmark is already excluded, because it takes very long.
 
 ### Results
 
-The raw results will be stored under [`./results/raw/`](./results/raw/).
-To obtain graphical representations of the relative speedups with `scc` as the baseline (above `1` and higher is better), you can run
+The raw results will be stored under `results/raw/`.
+To obtain graphical representations of the relative speedups on a logarithmic scale with `scc` as the baseline (i.e., above `1` means faster than `scc` and higher is better), you can run
 
 ```
 make plots
 ```
 
-The resulting bar plots (SVG) will be stored under [`./results/plots/`](./results/plots/).
+The resulting bar plots (SVG) will be stored under `results/plots/`.

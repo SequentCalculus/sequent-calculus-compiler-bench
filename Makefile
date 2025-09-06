@@ -1,4 +1,4 @@
-stack_size = 2048000
+stack_size = 3096000
 
 .PHONY: test 
 test: 

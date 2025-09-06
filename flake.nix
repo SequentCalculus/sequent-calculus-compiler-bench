@@ -32,7 +32,7 @@
 
           #required by rustc
           pkgs.gcc
-          #required by ocaml
+          #required by ocaml (on MacOS)
           pkgs.clang
           #required by smlnj
           pkgs.gnugrep
