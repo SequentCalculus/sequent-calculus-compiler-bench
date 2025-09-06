@@ -66,12 +66,18 @@ impl Benchmark {
         create_dir_all(&bin_path)
             .map_err(|_| Error::path_access(&PathBuf::from(&bin_path), "create bin path"))?;
         let mut bin_name = self.name.clone();
+
         if *lang != BenchmarkLanguage::Scc {
             bin_name += "_";
             bin_name += lang.suffix();
         }
+        let bin_path = if *lang == BenchmarkLanguage::Effekt {
+            bin_path.join(bin_name).join(&self.name)
+        } else {
+            bin_path.join(bin_name)
+        };
 
-        Ok(bin_path.join(bin_name))
+        Ok(bin_path)
     }
 
     pub fn result_path(&self, lang: &BenchmarkLanguage) -> Result<PathBuf, Error> {
@@ -81,14 +87,6 @@ impl Benchmark {
         create_dir_all(&path).map_err(|_| Error::path_access(&path, "crate results dir"))?;
         path = path.join(self.name.clone() + "_" + lang.suffix());
         path.set_extension("csv");
-        Ok(path)
-    }
-
-    pub fn report_path(&self, lang: &BenchmarkLanguage) -> Result<PathBuf, Error> {
-        create_dir_all(PLOTS_PATH)
-            .map_err(|_| Error::path_access(&PathBuf::from(PLOTS_PATH), "create report path"))?;
-        let mut path = PathBuf::from(PLOTS_PATH).join(self.name.clone() + "_" + lang.suffix());
-        path.set_extension("png");
         Ok(path)
     }
 
@@ -161,8 +159,6 @@ impl Benchmark {
             cmd.arg("@SMLload");
             cmd.arg(bin_path);
             Ok(cmd)
-        } else if *lang == BenchmarkLanguage::Effekt {
-            Ok(Command::new(bin_path.join(&self.name)))
         } else {
             Ok(Command::new(bin_path))
         }
@@ -208,14 +204,7 @@ impl Benchmark {
 
         let mut command = Command::new("hyperfine");
         let path_err = Error::path_access(&bin_path, "Path as String");
-        let bin_str = if *lang == BenchmarkLanguage::Effekt {
-            bin_path.join(&self.name)
-        } else {
-            bin_path
-        }
-        .to_str()
-        .ok_or(path_err)?
-        .to_owned();
+        let bin_str = bin_path.to_str().ok_or(path_err)?.to_owned();
 
         let mut call_str = if *lang == BenchmarkLanguage::SmlNj {
             format!("sml @SMLload {bin_str}")

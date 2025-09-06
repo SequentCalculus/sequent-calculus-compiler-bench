@@ -9,16 +9,16 @@ pub struct Args {
     /// Optional: heap size in MB, default is 512
     #[arg(long)]
     heap_size: Option<usize>,
-    ///Optional: skip benchmarks with existing results
+    /// Optional: skip benchmarks with existing results
     #[arg(long, short)]
     skip_existing: bool,
-    ///Optional: Run benchmark instead of hypefine
+    /// Optional: Run benchmark instead of hyperfine
     #[arg(long, short)]
     exec: bool,
-    ///Optional: Exclude language
+    /// Optional: Exclude language
     #[arg(long)]
     exclude_language: Vec<BenchmarkLanguage>,
-    ///Optional: Exclude benchmark
+    /// Optional: Exclude benchmark
     #[arg(long)]
     exclude_bench: Vec<String>,
 }
