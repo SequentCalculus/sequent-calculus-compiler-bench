@@ -20,12 +20,10 @@ impl BenchResult {
         let dir_path = PathBuf::from(RAW_PATH);
         let dir_contents = read_dir(&dir_path).map_err(|err| Error::read_dir(&dir_path, err))?;
         let mut results = vec![];
-        for bench_dir in dir_contents {
-            let bench_name = bench_dir
+        for bench in dir_contents {
+            let bench_name = bench
                 .map_err(|_| Error::path_access(&dir_path, "Read Dir Name"))?
-                .file_name()
-                .into_string()
-                .map_err(|_| Error::path_access(&dir_path, "Read Dir Name (as String)"))?;
+                .path();
             results.push(BenchResult::new(&bench_name)?)
         }
 
@@ -93,35 +91,59 @@ impl BenchResult {
         }
     }
 
-    pub fn new(name: &str) -> Result<BenchResult, Error> {
-        let bench_path = PathBuf::from(RAW_PATH).join(name);
-        let dir_contents =
-            read_dir(&bench_path).map_err(|err| Error::read_dir(&bench_path, err))?;
+    pub fn new(path: &PathBuf) -> Result<BenchResult, Error> {
+        let name = path
+            .file_stem()
+            .ok_or(Error::path_access(path, "Read CSV file name"))?
+            .to_str()
+            .ok_or(Error::path_access(path, "Read CSV file name (as string)"))?;
 
-        let mut paths = vec![];
-        for csv_path in dir_contents {
-            let csv_path = csv_path
-                .map_err(|_| Error::path_access(&bench_path, "Read CSV file Path"))?
-                .path();
-            paths.push(csv_path);
+        let data_contents = std::fs::read_to_string(path)
+            .map_err(|err| Error::file_access(&path, "Read CSV data", err))?;
+        let mut data_lines = data_contents.split_terminator("\n");
+        // skip header
+        data_lines.next();
+
+        let mut data_all = Vec::new();
+        for line in data_lines {
+            let mut data = line.split_terminator(",");
+            let command = match data.next() {
+                None => continue,
+                Some(command) => command,
+            };
+
+            let bin_name = command
+                .split_terminator("/")
+                .nth(3)
+                .ok_or(Error::wrong_format_command(command))?;
+            let lang = match bin_name
+                .split(" ")
+                .next()
+                .ok_or(Error::wrong_format_command(command))?
+                .split_once("_")
+            {
+                None => BenchmarkLanguage::Scc,
+                Some((_, suffix)) => BenchmarkLanguage::from_suffix(suffix)?,
+            };
+
+            data_all.push(BenchData::new(data, lang, path)?);
         }
 
-        let scc_ind = paths
+        let index_scc = data_all
             .iter()
             .enumerate()
-            .find(|(_, path)| path.ends_with(format!("{name}_scc.csv",)))
+            .find(|(_, datum)| datum.lang == BenchmarkLanguage::Scc)
             .ok_or(Error::missing_lang(BenchmarkLanguage::Scc))?
             .0;
-        let scc_path = paths.remove(scc_ind);
-        let baseline = BenchData::new_baseline(&scc_path)?;
-
-        let mut data = vec![];
-        for path in paths {
-            data.push(BenchData::new(&path, &baseline)?);
-        }
+        let baseline = data_all.remove(index_scc);
+        let mut data: Vec<BenchData> = data_all
+            .into_iter()
+            .map(|datum| datum.to_relative(&baseline))
+            .collect();
 
         for lang in BenchmarkLanguage::all() {
-            if lang == BenchmarkLanguage::Scc || data.iter().find(|dat| dat.lang == lang).is_some()
+            if lang == BenchmarkLanguage::Scc
+                || data.iter().find(|datum| datum.lang == lang).is_some()
             {
                 continue;
             }
@@ -174,35 +196,11 @@ impl BenchResult {
 }
 
 impl BenchData {
-    pub fn new(path: &PathBuf, baseline: &BenchData) -> Result<BenchData, Error> {
-        let mut data = BenchData::new_baseline(path)?;
-        let diff_mean = baseline.mean / data.mean;
-        data.adjusted_mean = diff_mean.log10();
-
-        Ok(data)
-    }
-
-    pub fn new_baseline(path: &PathBuf) -> Result<BenchData, Error> {
-        let stem = path
-            .file_stem()
-            .ok_or(Error::path_access(path, "Read CSV file name"))?
-            .to_str()
-            .ok_or(Error::path_access(path, "Read CSV file name (as string)"))?;
-        let lang_ext = stem
-            .split_once("_")
-            .ok_or(Error::unknown_lang("read lang extension", &stem))?
-            .1;
-        let lang = BenchmarkLanguage::from_suffix(lang_ext)?;
-
-        let data_contents = std::fs::read_to_string(path)
-            .map_err(|err| Error::file_access(&path, "Read CSV data", err))?;
-        let mut data_lines = data_contents.split_terminator("\n");
-        data_lines.next();
-        let mut data = data_lines
-            .next()
-            .ok_or(Error::csv(&path, "Missing contents"))?
-            .split_terminator(",");
-        data.next(); //command
+    pub fn new<'a>(
+        mut data: impl Iterator<Item = &'a str>,
+        lang: BenchmarkLanguage,
+        path: &PathBuf,
+    ) -> Result<BenchData, Error> {
         let mean_str = data.next().ok_or(Error::csv(&path, "Missing mean"))?;
         let mean = mean_str
             .parse::<f64>()
@@ -212,6 +210,13 @@ impl BenchData {
             mean,
             adjusted_mean: 0.0,
         })
+    }
+
+    pub fn to_relative(mut self, baseline: &BenchData) -> BenchData {
+        let diff_mean = baseline.mean / self.mean;
+        self.adjusted_mean = diff_mean.log10();
+
+        self
     }
 
     pub fn empty(lang: &BenchmarkLanguage) -> BenchData {
