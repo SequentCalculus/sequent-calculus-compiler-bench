@@ -45,10 +45,15 @@ pub fn generate_plot(res: BenchResult, y_min: f64, y_max: f64) -> Result<(), Err
     let x_min = 1.0 - BAR_THICKNESS + AXIS_MARGINS;
     let x_max = res.data.len() as f64 + BAR_THICKNESS;
 
+    let caption = if res.benchmark.contains("Mean") {
+        ""
+    } else {
+        &res.benchmark
+    };
     let mut chart = ChartBuilder::on(&root)
         .margin(MARGIN)
         .margin_top(MARGIN_TOP)
-        .caption(&res.benchmark, ("sans-serif", CAPTION_SIZE).into_font())
+        .caption(caption, ("sans-serif", CAPTION_SIZE).into_font())
         .x_label_area_size(LABEL_SIZE)
         .y_label_area_size(LABEL_SIZE)
         .margin_right(0)
