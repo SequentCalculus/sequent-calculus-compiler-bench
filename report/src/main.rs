@@ -14,14 +14,14 @@ fn main() -> Result<(), Error> {
             y_max = res
                 .data
                 .iter()
-                .map(|dat| dat.adjusted_mean)
+                .map(|dat| dat.log_speedup)
                 .max_by(|m1, m2| m1.partial_cmp(&m2).unwrap())
                 .unwrap_or(f64::INFINITY - 0.1)
                 + 0.1;
             y_min = res
                 .data
                 .iter()
-                .map(|dat| dat.adjusted_mean)
+                .map(|dat| dat.log_speedup)
                 .min_by(|m1, m2| m1.partial_cmp(&m2).unwrap())
                 .unwrap_or(f64::NEG_INFINITY + 0.02)
                 - 0.02;

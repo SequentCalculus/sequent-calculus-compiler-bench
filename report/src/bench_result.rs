@@ -12,7 +12,7 @@ pub struct BenchResult {
 pub struct BenchData {
     pub lang: BenchmarkLanguage,
     pub mean: f64,
-    pub adjusted_mean: f64,
+    pub log_speedup: f64,
 }
 
 impl BenchResult {
@@ -69,21 +69,21 @@ impl BenchResult {
                         res.data.iter().find(|dat| dat.lang == lang)
                     }
                 })
-                .filter(|dat| !dat.mean.is_nan() && !dat.adjusted_mean.is_nan())
+                .filter(|dat| !dat.mean.is_nan() && !dat.log_speedup.is_nan())
                 .collect::<Vec<&BenchData>>();
             let lang_mean = lang_results.iter().fold(0.0, |mean, dat| mean + dat.mean)
                 / lang_results.len() as f64;
-            let lang_adjusted_mean = lang_results
+            let lang_log_speedup = lang_results
                 .iter()
-                .fold(1.0, |mean, dat| mean + dat.adjusted_mean)
+                .fold(0.0, |mean, dat| mean + dat.log_speedup)
                 / lang_results.len() as f64;
             avg_data.push(BenchData {
                 lang,
                 mean: lang_mean,
-                adjusted_mean: lang_adjusted_mean,
+                log_speedup: lang_log_speedup,
             });
         }
-        avg_data.sort_by(|dat1, dat2| dat1.adjusted_mean.partial_cmp(&dat2.adjusted_mean).unwrap());
+        avg_data.sort_by(|dat1, dat2| dat1.log_speedup.partial_cmp(&dat2.log_speedup).unwrap());
         let suffix = if skip_goto { "" } else { " with Goto" };
         BenchResult {
             benchmark: format!("Geometric Mean{suffix}"),
@@ -164,12 +164,12 @@ impl BenchResult {
                 res.data
                     .iter()
                     .max_by(|dat1, dat2| {
-                        dat1.adjusted_mean
-                            .partial_cmp(&dat2.adjusted_mean)
+                        dat1.log_speedup
+                            .partial_cmp(&dat2.log_speedup)
                             .unwrap_or(Ordering::Less)
                     })
                     .unwrap()
-                    .adjusted_mean
+                    .log_speedup
             })
             .max_by(|max1, max2| max1.partial_cmp(&max2).unwrap_or(Ordering::Less))
             .unwrap()
@@ -180,12 +180,12 @@ impl BenchResult {
                 res.data
                     .iter()
                     .min_by(|dat1, dat2| {
-                        dat1.adjusted_mean
-                            .partial_cmp(&dat2.adjusted_mean)
+                        dat1.log_speedup
+                            .partial_cmp(&dat2.log_speedup)
                             .unwrap_or(Ordering::Greater)
                     })
                     .unwrap()
-                    .adjusted_mean
+                    .log_speedup
             })
             .min_by(|max1, max2| max1.partial_cmp(&max2).unwrap_or(Ordering::Greater))
             .unwrap()
@@ -208,13 +208,13 @@ impl BenchData {
         Ok(BenchData {
             lang,
             mean,
-            adjusted_mean: 0.0,
+            log_speedup: 0.0,
         })
     }
 
     pub fn to_relative(mut self, baseline: &BenchData) -> BenchData {
-        let diff_mean = baseline.mean / self.mean;
-        self.adjusted_mean = diff_mean.log10();
+        let speedup = baseline.mean / self.mean;
+        self.log_speedup = speedup.log10();
 
         self
     }
@@ -223,7 +223,7 @@ impl BenchData {
         BenchData {
             lang: *lang,
             mean: f64::NAN,
-            adjusted_mean: f64::NAN,
+            log_speedup: f64::NAN,
         }
     }
 }

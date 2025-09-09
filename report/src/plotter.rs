@@ -92,9 +92,9 @@ pub fn generate_plot(res: BenchResult, y_min: f64, y_max: f64) -> Result<(), Err
 
     chart
         .draw_series(res.data.iter().enumerate().filter_map(|(ind, dat)| {
-            (!dat.adjusted_mean.is_nan()).then_some({
+            (!dat.log_speedup.is_nan()).then_some({
                 Rectangle::new(
-                    [(x_left(ind), 0.0), (x_right(ind), dat.adjusted_mean)],
+                    [(x_left(ind), 0.0), (x_right(ind), dat.log_speedup)],
                     lang_color(&dat.lang).filled(),
                 )
             })
@@ -103,7 +103,7 @@ pub fn generate_plot(res: BenchResult, y_min: f64, y_max: f64) -> Result<(), Err
 
     chart
         .draw_series(res.data.iter().enumerate().filter_map(|(ind, dat)| {
-            dat.adjusted_mean.is_nan().then_some(PathElement::new(
+            dat.log_speedup.is_nan().then_some(PathElement::new(
                 vec![(x_left(ind), -CROSS_HEIGHT), (x_right(ind), CROSS_HEIGHT)],
                 RED.stroke_width(CROSS_THICKNESS),
             ))
@@ -112,7 +112,7 @@ pub fn generate_plot(res: BenchResult, y_min: f64, y_max: f64) -> Result<(), Err
 
     chart
         .draw_series(res.data.iter().enumerate().filter_map(|(ind, dat)| {
-            dat.adjusted_mean.is_nan().then_some(PathElement::new(
+            dat.log_speedup.is_nan().then_some(PathElement::new(
                 vec![(x_left(ind), CROSS_HEIGHT), (x_right(ind), -CROSS_HEIGHT)],
                 RED.stroke_width(CROSS_THICKNESS),
             ))
