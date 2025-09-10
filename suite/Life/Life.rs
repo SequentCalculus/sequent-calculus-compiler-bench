@@ -139,7 +139,11 @@ impl Gen {
     }
 
     fn nth(self, i: u64) -> Gen {
-        if i == 0 { self } else { self.next().nth(i - 1) }
+        if i == 0 {
+            self
+        } else {
+            self.next().nth(i - 1)
+        }
     }
 
     fn non_steady() -> Gen {

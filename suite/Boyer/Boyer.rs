@@ -941,7 +941,11 @@ fn apply_subst<'a>(subst: List<(Id, Term<'a>)>, t: Term<'a>) -> Term<'a> {
     match t {
         Term::Var(vid) => {
             let (found, value) = find(&vid, subst);
-            if found { value } else { Term::Var(vid) }
+            if found {
+                value
+            } else {
+                Term::Var(vid)
+            }
         }
         Term::Fun(f, args, ls) => Term::Fun(
             f,
@@ -1029,7 +1033,11 @@ fn test_boyer_nofib(n: u64) -> bool {
 fn main_loop(iters: u64, n: u64) {
     let res = test_boyer_nofib(n);
     if iters == 1 {
-        if res { println!("1") } else { println!("0") }
+        if res {
+            println!("1")
+        } else {
+            println!("0")
+        }
     } else {
         main_loop(iters - 1, n)
     }

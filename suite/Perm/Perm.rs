@@ -126,7 +126,11 @@ fn sumlists(x: List<List<u64>>) -> u64 {
 }
 
 fn factorial(n: u64) -> u64 {
-    if n == 1 { 1 } else { n * factorial(n - 1) }
+    if n == 1 {
+        1
+    } else {
+        n * factorial(n - 1)
+    }
 }
 
 fn loop_work(m: u64, mut perms: List<List<u64>>) -> List<List<u64>> {
@@ -152,7 +156,11 @@ fn perm9(m: u64, n: u64) -> bool {
 fn main_loop(iters: u64, m: u64, n: u64) {
     let res = perm9(m, n);
     if iters == 1 {
-        if res { println!("1") } else { println!("0") }
+        if res {
+            println!("1")
+        } else {
+            println!("0")
+        }
     } else {
         main_loop(iters - 1, m, n)
     }
