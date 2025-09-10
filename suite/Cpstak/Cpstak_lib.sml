@@ -8,8 +8,10 @@ structure Cpstak = struct
       cps_tak (z-1) x y (fn v3 => 
       cps_tak v1 v2 v3 k)))
 
+  fun tak x y z = cps_tak x y z (fn a => a)
+
   fun main_loop iters x y z = 
-  let val res = cps_tak x y z (fn a => a) 
+  let val res = tak x y z
   in 
     if iters=1 then print ((Int.toString res) ^ "\n")
     else main_loop (iters-1) x y z

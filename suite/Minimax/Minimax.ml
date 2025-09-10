@@ -4,16 +4,23 @@ type player = X | O
 
 type 'a rosetree = Rose of 'a * ('a rosetree) list
 
-let other p = 
-  match p with 
-    | X -> O 
-    | O -> X 
-
 let mk_leaf p = Rose (p,[])
 
 let top (Rose (p,_)) = p
 
 let snd (_,x) = x 
+
+let other p = 
+  match p with 
+    | X -> O 
+    | O -> X 
+
+let rec tabulate_loop n len f =
+  if n=len then []
+  else (f ()) :: tabulate_loop (n+1) len f
+
+let tabulate len f =
+  if len < 0 then [] else tabulate_loop 0 len f
 
 let rec nth l i = 
   match l with 
@@ -25,30 +32,10 @@ let rec find l i =
     | [] -> None
     | p::ps -> if i=0 then p else find ps (i-1)
 
-let rec tabulate_loop n len f =
-  if n=len then []
-  else (f ()) :: tabulate_loop (n+1) len f
-
-let tabulate len f =
-  if len < 0 then [] else tabulate_loop 0 len f
-
-let list_extreme f l = 
-  match l with 
-    | [] -> 0 
-    | i::is -> List.fold_right f is i
-
-let listmax l = list_extreme Int.max l
-
-let listmin l = list_extreme Int.min l
-
 let emptyBoard = tabulate 9 (fun () -> None)
 
-let rows = 
-  (0::1::2::[])::(3::4::5::[])::(6::7::8::[])::[]
-let cols = 
-  (0::3::6::[])::(1::4::7::[])::(2::5::8::[])::[]
-let diags = 
-  (0::4::8::[])::(2::4::6::[])::[]
+let is_full board =
+  List.for_all (fun p -> Option.is_some p) board
 
 let player_occupies p board i =
   match find board i with 
@@ -56,10 +43,14 @@ let player_occupies p board i =
     | Some p0 -> p=p0
 
 let has_trip board p l =
-  List.for_all (fun i -> player_occupies p board i) l 
+  List.for_all (fun i -> player_occupies p board i) l
 
-let is_full board =
-  List.for_all (fun p -> Option.is_some p) board
+let rows = 
+  (0::1::2::[])::(3::4::5::[])::(6::7::8::[])::[]
+let cols = 
+  (0::3::6::[])::(1::4::7::[])::(2::5::8::[])::[]
+let diags = 
+  (0::4::8::[])::(2::4::6::[])::[]
 
 let has_row board p = 
   List.exists (fun l -> has_trip board p l) rows
@@ -73,10 +64,22 @@ let has_diag board p =
 let is_win_for board p = 
   (has_row board p) || (has_col board p) || (has_diag board p)
 
-let is_win board = (is_win_for board X) || (is_win_for board O)
-
 let is_cat board = 
   (is_full board) && (not (is_win_for board X)) && (not (is_win_for board O))
+
+let list_extreme f l = 
+  match l with 
+    | [] -> 0 
+    | i::is -> List.fold_right f is i
+
+let listmax l = list_extreme Int.max l
+
+let listmin l = list_extreme Int.min l
+
+let is_occupied board i = Option.is_some (nth board i)
+
+
+let is_win board = (is_win_for board X) || (is_win_for board O)
 
 let game_over board = (is_win board) || (is_cat board)
 
@@ -84,8 +87,6 @@ let score board =
   if is_win_for board X then 1 
   else if is_win_for board O then -1 
   else 0 
-
-let is_occupied board i = Option.is_some (nth board i)
 
 let rec put_at x xs i = 
   if i=0 then (x::List.tl xs) 
@@ -105,7 +106,6 @@ let rec all_moves_rec n board acc =
         | None -> all_moves_rec (n+1) more (n::acc))
 
 let all_moves board = all_moves_rec 0 board [] 
-
 let successors board p = 
   List.map (fun i -> move_to board p i) (all_moves board)
 

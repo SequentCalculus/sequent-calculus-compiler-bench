@@ -1,15 +1,5 @@
 exception EmptyList 
 
-let rec enum_from_to from to_ = 
-  if from<=to_ then 
-    from::enum_from_to (from+1) to_
-  else []
-
-let rec max ls = 
-  match ls with 
-    | [] -> raise EmptyList
-    | x::[] -> x
-    | x::y::ys -> if x < y then max (y::ys) else max (x::ys)
 let quot_rem a b = (a/b, a mod b)
 
 let rec g (u1,u2,u3) (v1,v2,v3) = 
@@ -20,6 +10,18 @@ let rec g (u1,u2,u3) (v1,v2,v3) =
 
 let gcd_e x y =
   if x=0 then (y,0,1) else g (1,0,x) (0,1,y)
+
+let rec max ls = 
+  match ls with 
+    | [] -> raise EmptyList
+    | x::[] -> x
+    | x::y::ys -> if x < y then max (y::ys) else max (x::ys)
+
+
+let rec enum_from_to from to_ = 
+  if from<=to_ then 
+    from::enum_from_to (from+1) to_
+  else []
 
 let rec to_pair i l = 
   match l with

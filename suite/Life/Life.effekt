@@ -28,8 +28,6 @@ def pair_eq(p1: (Int, Int), p2: (Int, Int)): Bool = {
   }
 }
 
-
-
 // List Functions
 
 def fold[A](xs: List[A], acc: List[A]) { f: (List[A], A) => List[A] }: List[A] =

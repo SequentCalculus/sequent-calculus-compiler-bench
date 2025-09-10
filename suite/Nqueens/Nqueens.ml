@@ -27,7 +27,7 @@ let rec gen n nq =
 let nsoln n = List.length (gen n n)
 
 let rec main_loop iters n = 
-  let res = nsoln n in 
+  let res = nsoln n in
   if iters=1 then 
     print_endline (string_of_int res) 
   else main_loop (iters-1) n 

@@ -1,22 +1,4 @@
 structure Perm = struct 
-  fun loop_one2n n p = 
-    if n=0 then p else loop_one2n (n-1) (n::p)
-
-  fun one2n n = loop_one2n n nil
-
-  fun factorial n = 
-    if n=1 then 1 else n*(factorial (n-1))
-
-  fun loop_sum y = 
-    case y of
-       [] => 0
-      | is::iss => is + (loop_sum iss)
-
-  fun sumlists x = 
-    case x of
-       [] => 0
-      | is::iss => (loop_sum is) + (sumlists iss)
-
   fun list_tail x n = 
     if n=0 then x else list_tail (tl x) (n-1)
 
@@ -43,9 +25,28 @@ structure Perm = struct
   if 1<n then loop_p (n-1) perms x n 
   else (perms,x)
 
+
   fun permutations x0 = 
   let val (final_perms,_) = p (length x0) (x0::nil) x0
       in final_perms end
+
+  fun loop_sum y = 
+    case y of
+       [] => 0
+      | is::iss => is + (loop_sum iss)
+
+  fun sumlists x = 
+    case x of
+       [] => 0
+      | is::iss => (loop_sum is) + (sumlists iss)
+
+  fun loop_one2n n p = 
+    if n=0 then p else loop_one2n (n-1) (n::p)
+
+  fun one2n n = loop_one2n n nil
+
+  fun factorial n = 
+    if n=1 then 1 else n*(factorial (n-1))
 
   fun loop_work m perms = 
     if m=0 then perms 

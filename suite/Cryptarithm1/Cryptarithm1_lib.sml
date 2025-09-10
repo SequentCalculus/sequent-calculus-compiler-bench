@@ -1,11 +1,11 @@
 structure Cryptarithm1 = struct
+  fun expand a b c d e f =
+    f + (10*e) + (100*d) + (1000*c) + (10000*b) + (100000*a)
+
   fun enum_from_to from to =
     if to >= from
     then from::(enum_from_to (from+1) to)
     else nil
-
-  fun expand a b c d e f =
-    f + (10*e) + (100*d) + (1000*c) + (10000*b) + (100000*a)
 
   fun condition thirywelvn =
     case thirywelvn of

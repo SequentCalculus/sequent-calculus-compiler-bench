@@ -14,13 +14,6 @@ def map_list[A, B](l: List[A]) { f: A => B }: List[B] = l match {
   case Cons(a, as) => Cons(f(a), as.map_list {f})
 }
 
-def equal_list(ls1: List[Expr], ls2: List[Expr]): Bool =
-  (ls1, ls2) match {
-    case (Nil(), Nil()) => true
-    case (Cons(e1, es1), Cons(e2, es2)) => equal(e1, e2) && equal_list(es1, es2)
-    case _ => false
-  }
-
 def equal(a: Expr, b: Expr): Bool =
   (a, b) match {
     case (Add(sums1), Add(sums2)) => equal_list(sums1, sums2)
@@ -32,6 +25,12 @@ def equal(a: Expr, b: Expr): Bool =
     case _ => false
   }
 
+def equal_list(ls1: List[Expr], ls2: List[Expr]): Bool =
+  (ls1, ls2) match {
+    case (Nil(), Nil()) => true
+    case (Cons(e1, es1), Cons(e2, es2)) => equal(e1, e2) && equal_list(es1, es2)
+    case _ => false
+  }
 
 def deriv(e: Expr): Expr =
   e match {

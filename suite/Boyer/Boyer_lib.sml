@@ -75,17 +75,13 @@ structure Boyer = struct
            then (true,val2)
            else find vid bs
 
-  fun boyer_a () = Var A
-  and boyer_b () = Var B
-  and boyer_c () = Var C
-  and boyer_d () = Var D
-  and boyer_x () = Var X
-  and boyer_y () = Var Y
-  and boyer_z () = Var Z
-  and boyer_u () = Var U
-  and boyer_w () = Var W
-  and boyer_f a = Func (F,a::nil,fn () => nil)
+  fun boyer_add1 a = Func(ADD1,a::nil, fn () => nil)
   and boyer_zero () = Func (ZERO,nil,fn () => nil)
+  and boyer_zerop a = Func(ZEROP,a::nil,fn () =>
+  (
+  boyer_zerop (boyer_x()),
+  boyer_equal (boyer_x()) (boyer_zero())
+  )::nil)
   and boyer_one () = Func (ONE,nil,fn () =>
   (
   boyer_one(),
@@ -100,45 +96,6 @@ structure Boyer = struct
   (
   boyer_four(),
   boyer_add1 (boyer_add1 (boyer_two()))
-  )::nil)
-  and boyer_true() = Func (TRUE,nil,fn () => nil)
-  and boyer_false() = Func (FALSE,nil,fn () => nil)
-  and boyer_and_ a b = Func(AND,(a::b::nil),fn () =>
-  (
-  boyer_and_ (boyer_x()) (boyer_y()),
-  boyer_if_
-  (boyer_x())
-  (boyer_if_
-  (boyer_y())
-  (boyer_true())
-  (boyer_false())
-  )
-  (boyer_false())
-  )::nil)
-  and boyer_or_ a b = Func(OR,a::b::nil,fn () =>
-  (
-  boyer_or_ (boyer_x()) (boyer_y()),
-  boyer_if_
-  (boyer_x())
-  (boyer_true())
-  (boyer_if_ (boyer_y()) (boyer_true()) (boyer_false()))
-  )::nil)
-  and boyer_not_ a = Func(NOT,a::nil,fn () =>
-  (
-  boyer_not_ (boyer_x()),
-  boyer_if_ (boyer_x()) (boyer_false()) (boyer_true())
-  )::nil)
-  and boyer_implies a b = Func (IMPLIES,a::b::nil,fn () =>
-  (
-  boyer_implies (boyer_x()) (boyer_y()),
-  boyer_if_
-  (boyer_x())
-  (boyer_if_
-  (boyer_y())
-  (boyer_true())
-  (boyer_false())
-  )
-  (boyer_true())
   )::nil)
   and boyer_if_ a b c = Func(IF,a::b::c::nil,fn () =>
   (
@@ -156,128 +113,22 @@ structure Boyer = struct
   (boyer_if_ (boyer_z()) (boyer_u()) (boyer_w()))
   )::nil
   )
-  and boyer_zerop a = Func(ZEROP,a::nil,fn () =>
+  and boyer_not_ a = Func(NOT,a::nil,fn () =>
   (
-  boyer_zerop (boyer_x()),
-  boyer_equal (boyer_x()) (boyer_zero())
+  boyer_not_ (boyer_x()),
+  boyer_if_ (boyer_x()) (boyer_false()) (boyer_true())
   )::nil)
-  and boyer_plus a b = Func(PLUS,a::b::nil,fn () =>
+  and boyer_and_ a b = Func(AND,(a::b::nil),fn () =>
   (
-  boyer_plus
-  (boyer_plus (boyer_x()) (boyer_y()))
-  (boyer_z()),
-  boyer_plus
+  boyer_and_ (boyer_x()) (boyer_y()),
+  boyer_if_
   (boyer_x())
-  (boyer_plus (boyer_y()) (boyer_z()))
-  )::(
-  boyer_plus
-  (boyer_remainder (boyer_x()) (boyer_y()))
-  (boyer_times
+  (boyer_if_
   (boyer_y())
-  (boyer_quotient (boyer_x()) (boyer_y()))
-  ),
-  boyer_x()
-  )::(
-  boyer_plus (boyer_x()) (boyer_add1 (boyer_y())),
-  boyer_add1 (boyer_plus (boyer_x()) (boyer_y()))
-  )::nil
+  (boyer_true())
+  (boyer_false())
   )
-  and boyer_add1 a = Func(ADD1,a::nil, fn () => nil)
-  and boyer_difference a b = Func(DIFFERENCE,a::b::nil,fn () =>
-  (
-  boyer_difference (boyer_x()) (boyer_x()),
-  boyer_zero()
-  )::(
-  boyer_difference
-  (boyer_plus
-  (boyer_x())
-  (boyer_y())
-  )
-  (boyer_x()),
-  boyer_y()
-  )::(
-  boyer_difference
-  (boyer_plus (boyer_y()) (boyer_x()))
-  (boyer_x()),
-  boyer_y()
-  )::(
-  boyer_difference
-  (boyer_plus (boyer_x()) (boyer_y()))
-  (boyer_plus (boyer_x()) (boyer_z())),
-  boyer_difference (boyer_y()) (boyer_z())
-  )::(
-  boyer_difference
-  (boyer_plus (boyer_y()) (boyer_plus (boyer_x()) (boyer_z())))
-  (boyer_x()),
-  boyer_plus (boyer_y()) (boyer_z())
-  )::(
-  boyer_difference
-  (boyer_add1 (boyer_plus (boyer_y()) (boyer_z())))
-  (boyer_z()),
-  boyer_add1 (boyer_y())
-  )::(
-  boyer_difference (boyer_add1 (boyer_add1 (boyer_x()))) (boyer_two()),
-  boyer_x()
-  )::nil)
-  and boyer_quotient a  b = Func(QUOTIENT,a::b::nil,fn () =>
-  (
-  boyer_quotient
-  (boyer_plus
-  (boyer_x())
-  (boyer_plus (boyer_x()) (boyer_y()))
-  )
-  (boyer_two()),
-  boyer_plus
-  (boyer_x())
-  (boyer_quotient (boyer_y()) (boyer_two()))
-  )::nil)
-  and boyer_remainder a b = Func(REMAINDER,a::b::nil,fn () =>
-  (
-  boyer_remainder (boyer_x()) (boyer_one()),
-  boyer_zero()
-  )::(
-  boyer_remainder (boyer_x()) (boyer_x()),
-  boyer_zero()
-  )::(
-  boyer_remainder
-  (boyer_times (boyer_x()) (boyer_y()))
-  (boyer_x()),
-  boyer_zero()
-  )::(
-  boyer_remainder
-  (boyer_times (boyer_x()) (boyer_y()))
-  (boyer_y()),
-  boyer_zero()
-  )::nil)
-  and boyer_times a b = Func(TIMES,a::b::nil,fn () =>
-  (
-  boyer_times
-  (boyer_x())
-  (boyer_plus (boyer_y()) (boyer_z())),
-  boyer_plus
-  (boyer_times (boyer_x()) (boyer_y()))
-  (boyer_times (boyer_x()) (boyer_z()))
-  )::(
-  boyer_times
-  (boyer_times (boyer_x()) (boyer_y()))
-  (boyer_z()),
-  boyer_times
-  (boyer_x())
-  (boyer_times (boyer_y()) (boyer_z()))
-  )::(
-  boyer_times
-  (boyer_x())
-  (boyer_difference (boyer_y()) (boyer_z())),
-  boyer_difference
-  (boyer_times (boyer_y()) (boyer_x()))
-  (boyer_times (boyer_z()) (boyer_x()))
-  )::(
-  boyer_times
-  (boyer_x())
-  (boyer_add1 (boyer_y())),
-  boyer_plus
-  (boyer_x())
-  (boyer_times (boyer_x()) (boyer_y()))
+  (boyer_false())
   )::nil)
   and boyer_equal a b = Func(EQUAL,a::b::nil, fn () =>
   (
@@ -359,6 +210,34 @@ structure Boyer = struct
   (boyer_equal (boyer_true()) (boyer_z()))
   (boyer_equal (boyer_false()) (boyer_z()))
   )::nil)
+  and boyer_append_ a b = Func(APPEND,a::b::nil,fn () =>
+  (
+  boyer_append_
+  (boyer_append_ (boyer_x()) (boyer_y()))
+  (boyer_z()),
+  boyer_append_
+  (boyer_x())
+  (boyer_append_ (boyer_y()) (boyer_z()))
+  )::nil)
+  and boyer_x () = Var X
+  and boyer_y () = Var Y
+  and boyer_z () = Var Z
+  and boyer_u () = Var U
+  and boyer_w () = Var W
+  and boyer_a () = Var A
+  and boyer_b () = Var B
+  and boyer_c () = Var C
+  and boyer_d () = Var D
+  and boyer_false() = Func (FALSE,nil,fn () => nil)
+  and boyer_true() = Func (TRUE,nil,fn () => nil)
+  and boyer_or_ a b = Func(OR,a::b::nil,fn () =>
+  (
+  boyer_or_ (boyer_x()) (boyer_y()),
+  boyer_if_
+  (boyer_x())
+  (boyer_true())
+  (boyer_if_ (boyer_y()) (boyer_true()) (boyer_false()))
+  )::nil)
   and boyer_lessp a b = Func(LESSP,a::b::nil,fn () =>
   (
   boyer_lessp
@@ -390,21 +269,114 @@ structure Boyer = struct
   (boyer_plus (boyer_x()) (boyer_y())),
   boyer_not_ (boyer_zerop (boyer_x()))
   )::nil)
-  and boyer_nil () = Func(NIL,nil,fn () => nil)
   and boyer_cons a b = Func(CONS,a::b::nil,fn () => nil)
-  and boyer_member a b = Func(MEMBER,a::b::nil,fn () =>
+  and boyer_remainder a b = Func(REMAINDER,a::b::nil,fn () =>
   (
-  boyer_member
-  (boyer_x())
-  (boyer_append_ (boyer_y()) (boyer_z())),
-  boyer_or_
-  (boyer_member (boyer_x()) (boyer_y()))
-  (boyer_member (boyer_x()) (boyer_z()))
+  boyer_remainder (boyer_x()) (boyer_one()),
+  boyer_zero()
   )::(
-  boyer_member
+  boyer_remainder (boyer_x()) (boyer_x()),
+  boyer_zero()
+  )::(
+  boyer_remainder
+  (boyer_times (boyer_x()) (boyer_y()))
+  (boyer_x()),
+  boyer_zero()
+  )::(
+  boyer_remainder
+  (boyer_times (boyer_x()) (boyer_y()))
+  (boyer_y()),
+  boyer_zero()
+  )::nil)
+  and boyer_quotient a  b = Func(QUOTIENT,a::b::nil,fn () =>
+  (
+  boyer_quotient
+  (boyer_plus
   (boyer_x())
-  (boyer_reverse_ (boyer_y())),
-  boyer_member (boyer_x()) (boyer_y())
+  (boyer_plus (boyer_x()) (boyer_y()))
+  )
+  (boyer_two()),
+  boyer_plus
+  (boyer_x())
+  (boyer_quotient (boyer_y()) (boyer_two()))
+  )::nil)
+  and boyer_times a b = Func(TIMES,a::b::nil,fn () =>
+  (
+  boyer_times
+  (boyer_x())
+  (boyer_plus (boyer_y()) (boyer_z())),
+  boyer_plus
+  (boyer_times (boyer_x()) (boyer_y()))
+  (boyer_times (boyer_x()) (boyer_z()))
+  )::(
+  boyer_times
+  (boyer_times (boyer_x()) (boyer_y()))
+  (boyer_z()),
+  boyer_times
+  (boyer_x())
+  (boyer_times (boyer_y()) (boyer_z()))
+  )::(
+  boyer_times
+  (boyer_x())
+  (boyer_difference (boyer_y()) (boyer_z())),
+  boyer_difference
+  (boyer_times (boyer_y()) (boyer_x()))
+  (boyer_times (boyer_z()) (boyer_x()))
+  )::(
+  boyer_times
+  (boyer_x())
+  (boyer_add1 (boyer_y())),
+  boyer_plus
+  (boyer_x())
+  (boyer_times (boyer_x()) (boyer_y()))
+  )::nil)
+  and boyer_difference a b = Func(DIFFERENCE,a::b::nil,fn () =>
+  (
+  boyer_difference (boyer_x()) (boyer_x()),
+  boyer_zero()
+  )::(
+  boyer_difference
+  (boyer_plus
+  (boyer_x())
+  (boyer_y())
+  )
+  (boyer_x()),
+  boyer_y()
+  )::(
+  boyer_difference
+  (boyer_plus (boyer_y()) (boyer_x()))
+  (boyer_x()),
+  boyer_y()
+  )::(
+  boyer_difference
+  (boyer_plus (boyer_x()) (boyer_y()))
+  (boyer_plus (boyer_x()) (boyer_z())),
+  boyer_difference (boyer_y()) (boyer_z())
+  )::(
+  boyer_difference
+  (boyer_plus (boyer_y()) (boyer_plus (boyer_x()) (boyer_z())))
+  (boyer_x()),
+  boyer_plus (boyer_y()) (boyer_z())
+  )::(
+  boyer_difference
+  (boyer_add1 (boyer_plus (boyer_y()) (boyer_z())))
+  (boyer_z()),
+  boyer_add1 (boyer_y())
+  )::(
+  boyer_difference (boyer_add1 (boyer_add1 (boyer_x()))) (boyer_two()),
+  boyer_x()
+  )::nil)
+  and boyer_implies a b = Func (IMPLIES,a::b::nil,fn () =>
+  (
+  boyer_implies (boyer_x()) (boyer_y()),
+  boyer_if_
+  (boyer_x())
+  (boyer_if_
+  (boyer_y())
+  (boyer_true())
+  (boyer_false())
+  )
+  (boyer_true())
   )::nil)
   and boyer_length_ a = Func(LENGTH,a::nil,fn() =>
   (
@@ -422,20 +394,49 @@ structure Boyer = struct
   (boyer_four())
   (boyer_length_ (boyer_w()))
   )::nil)
-  and boyer_append_ a b = Func(APPEND,a::b::nil,fn () =>
-  (
-  boyer_append_
-  (boyer_append_ (boyer_x()) (boyer_y()))
-  (boyer_z()),
-  boyer_append_
-  (boyer_x())
-  (boyer_append_ (boyer_y()) (boyer_z()))
-  )::nil)
   and boyer_reverse_ a = Func(REVERSE,a::nil,fn () =>
   (
   boyer_reverse_ (boyer_append_ (boyer_x()) (boyer_y())),
   boyer_append_ (boyer_reverse_ (boyer_y())) (boyer_reverse_ (boyer_x()))
   )::nil)
+  and boyer_nil () = Func(NIL,nil,fn () => nil)
+  and boyer_member a b = Func(MEMBER,a::b::nil,fn () =>
+  (
+  boyer_member
+  (boyer_x())
+  (boyer_append_ (boyer_y()) (boyer_z())),
+  boyer_or_
+  (boyer_member (boyer_x()) (boyer_y()))
+  (boyer_member (boyer_x()) (boyer_z()))
+  )::(
+  boyer_member
+  (boyer_x())
+  (boyer_reverse_ (boyer_y())),
+  boyer_member (boyer_x()) (boyer_y())
+  )::nil)
+  and boyer_plus a b = Func(PLUS,a::b::nil,fn () =>
+  (
+  boyer_plus
+  (boyer_plus (boyer_x()) (boyer_y()))
+  (boyer_z()),
+  boyer_plus
+  (boyer_x())
+  (boyer_plus (boyer_y()) (boyer_z()))
+  )::(
+  boyer_plus
+  (boyer_remainder (boyer_x()) (boyer_y()))
+  (boyer_times
+  (boyer_y())
+  (boyer_quotient (boyer_x()) (boyer_y()))
+  ),
+  boyer_x()
+  )::(
+  boyer_plus (boyer_x()) (boyer_add1 (boyer_y())),
+  boyer_add1 (boyer_plus (boyer_x()) (boyer_y()))
+  )::nil
+  )
+  and boyer_f a = Func (F,a::nil,fn () => nil)
+
 
   fun one_way_unify term1 term2 = one_way_unify1 term1 term2 nil
   and one_way_unify1 term1 term2 subst =
@@ -451,6 +452,7 @@ structure Boyer = struct
                      one_way_unify1_lst as1 as2 subst else (false,nil)
                    | ERROR => (false,nil))
                    | ERROR => (false,nil)
+
   and one_way_unify1_lst tts1 tts2 subst =
   case (tts1,tts2) of
        (nil,nil) => (true,subst)
@@ -528,20 +530,6 @@ structure Boyer = struct
   fun tautp x =
     tautologyp (rewrite x) nil nil
 
-  fun boyer_theorem xxxx =
-    boyer_implies
-    (boyer_and_
-    (boyer_implies xxxx (boyer_y()))
-    (boyer_and_
-    (boyer_implies (boyer_y()) (boyer_z()))
-    (boyer_and_
-    (boyer_implies (boyer_z()) (boyer_u()))
-    (boyer_implies (boyer_u()) (boyer_w()))
-    )
-    )
-    )
-    (boyer_implies (boyer_x()) (boyer_w()))
-
   fun boyer_subst0 () =
     [
     (X,boyer_f
@@ -577,6 +565,20 @@ structure Boyer = struct
     )
     )
     ]
+
+  fun boyer_theorem xxxx =
+    boyer_implies
+    (boyer_and_
+    (boyer_implies xxxx (boyer_y()))
+    (boyer_and_
+    (boyer_implies (boyer_y()) (boyer_z()))
+    (boyer_and_
+    (boyer_implies (boyer_z()) (boyer_u()))
+    (boyer_implies (boyer_u()) (boyer_w()))
+    )
+    )
+    )
+    (boyer_implies (boyer_x()) (boyer_w()))
 
   fun test0 xxxx =
     tautp (apply_subst (boyer_subst0()) (boyer_theorem xxxx))

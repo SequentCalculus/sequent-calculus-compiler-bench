@@ -17,17 +17,6 @@ impl<A> List<A> {
         }
     }
 
-    fn from_iterator<T>(t: T) -> List<A>
-    where
-        T: Iterator<Item = A>,
-    {
-        let mut ls = List::Nil;
-        for it in t {
-            ls = List::Cons(it, Rc::new(ls));
-        }
-        ls
-    }
-
     fn map<B>(self, f: &impl Fn(A) -> B) -> List<B>
     where
         A: Clone,
@@ -37,25 +26,31 @@ impl<A> List<A> {
             List::Cons(a, as_) => List::Cons(f(a), Rc::new(Rc::unwrap_or_clone(as_).map(f))),
         }
     }
+}
 
-    fn fold<B>(self, start: B, f: &impl Fn(A, B) -> B) -> B
-    where
-        A: Clone,
-    {
-        match self {
-            List::Nil => start,
-            List::Cons(a, as_) => {
-                let new_start = f(a, start);
-                Rc::unwrap_or_clone(as_).fold(new_start, f)
-            }
+impl List<i64> {
+    fn enum_from_to(from: i64, to: i64) -> List<i64> {
+        if from <= to {
+            List::Cons(from, Rc::new(List::enum_from_to(from + 1, to)))
+        } else {
+            List::Nil
         }
     }
 
-    fn max(self) -> A
-    where
-        A: PartialOrd + Default + Clone,
-    {
-        self.fold(A::default(), &|a, mx| if a > mx { a } else { mx })
+    fn max(self) -> i64 {
+        match self {
+            List::Nil => panic!("Empty List"),
+            List::Cons(x, xs) => match Rc::unwrap_or_clone(xs) {
+                List::Nil => x,
+                List::Cons(y, ys) => {
+                    if x > y {
+                        List::Cons(x, ys).max()
+                    } else {
+                        List::Cons(y, ys).max()
+                    }
+                }
+            },
+        }
     }
 }
 
@@ -80,13 +75,6 @@ fn gcd_e(x: i64, y: i64) -> (i64, i64, i64) {
     }
 }
 
-fn to_pair(i: i64, l: List<i64>) -> List<(i64, i64)> {
-    match l {
-        List::Nil => List::Nil,
-        List::Cons(j, js) => List::Cons((i, j), Rc::new(to_pair(i, Rc::unwrap_or_clone(js)))),
-    }
-}
-
 fn cartesian_product(p1: List<i64>, m1: List<i64>) -> List<(i64, i64)> {
     match p1 {
         List::Nil => List::Nil,
@@ -96,13 +84,24 @@ fn cartesian_product(p1: List<i64>, m1: List<i64>) -> List<(i64, i64)> {
     }
 }
 
-fn test_gcd_nofib(d: i64) -> i64 {
-    let ns: List<i64> = List::from_iterator(5000..=(5000 + d));
-    let ms: List<i64> = List::from_iterator(10000..=(10000 + d));
+fn to_pair(i: i64, l: List<i64>) -> List<(i64, i64)> {
+    match l {
+        List::Nil => List::Nil,
+        List::Cons(j, js) => List::Cons((i, j), Rc::new(to_pair(i, Rc::unwrap_or_clone(js)))),
+    }
+}
+
+fn test(d: i64) -> i64 {
+    let ns: List<i64> = List::enum_from_to(5000, 5000 + d);
+    let ms: List<i64> = List::enum_from_to(10000, 10000 + d);
     let tripls: List<(i64, i64, (i64, i64, i64))> =
         cartesian_product(ns, ms).map(&|(x, y)| (x, y, gcd_e(x, y)));
     let rs: List<i64> = tripls.map(&|(_, _, (gg, u, v))| (gg + u + v).abs());
     rs.max()
+}
+
+fn test_gcd_nofib(d: i64) -> i64 {
+    test(d)
 }
 
 fn main_loop(iters: u64, n: i64) {

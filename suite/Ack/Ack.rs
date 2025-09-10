@@ -9,12 +9,11 @@ fn ack(m: u64, n: u64) -> u64 {
 }
 
 fn main_loop(iters: u64, m: u64, n: u64) {
-    let res = ack(m, n);
-    if iters == 1 {
-        println!("{res}");
-    } else {
-        main_loop(iters - 1, m, n)
+    let mut res = ack(m, n);
+    for _ in 1..=iters {
+        res = ack(m, n);
     }
+    println!("{res}");
 }
 
 fn main() {

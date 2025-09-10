@@ -3,37 +3,11 @@ module lcss
 import std/os/env
 import std/num/int64
 
-fun is_singleton(xs:list<a>): total maybe<a>{
-  match xs
-    Cons(x,Nil) -> Just(x)
-    _ -> Nothing
-}
-
-fun in_list(x:int64,ls:list<int64>): div bool{
-  match ls
-    Nil -> False
-    Cons(x_,xs) -> 
-      if x==x_ then
-        True
-      else 
-        in_list(x,xs)
-}
-
 fun enum_from_then_to(from:int64,then_:int64,to:int64): div list<int64>{
   if from<=to then
     Cons(from,enum_from_then_to(then_, (2.int64 * then_) - from,to))
   else
     Nil
-}
-
-fun findk(k:int64,km:int64,m:int64,ls:list<(int64,int64)>): div int64{
-  match ls
-    Nil -> km
-    Cons((x,y),xys) -> 
-      if m <= (x + y) then
-        findk(k + 1.int64,k,x + y,xys)
-      else 
-        findk(k + 1.int64,km,m,xys)
 }
 
 fun algb2(x:int64,k0j1:int64,k1j1:int64,yss:list<(int64,int64)>): div list<(int64,int64)>{
@@ -62,6 +36,32 @@ fun add_zero(xs:list<int64>): div list<(int64,int64)>{
 
 fun algb(xs:list<int64>,ys:list<int64>): div list<int64>{
   Cons(0.int64,algb1(xs,add_zero(ys)))
+}
+
+fun findk(k:int64,km:int64,m:int64,ls:list<(int64,int64)>): div int64{
+  match ls
+    Nil -> km
+    Cons((x,y),xys) -> 
+      if m <= (x + y) then
+        findk(k + 1.int64,k,x + y,xys)
+      else 
+        findk(k + 1.int64,km,m,xys)
+}
+
+fun is_singleton(xs:list<a>): total maybe<a>{
+  match xs
+    Cons(x,Nil) -> Just(x)
+    _ -> Nothing
+}
+
+fun in_list(x:int64,ls:list<int64>): div bool{
+  match ls
+    Nil -> False
+    Cons(x_,xs) -> 
+      if x==x_ then
+        True
+      else 
+        in_list(x,xs)
 }
 
 fun algc(m:int64,n:int64,xs:list<int64>,ys:list<int64>): div (list<int64> -> div list<int64>) {

@@ -1,19 +1,3 @@
-let rec factorial n = 
-  if n=1 then 1 else n*(factorial (n-1))
-
-let rec loop_one2n n p = 
-  if n=0 then p else loop_one2n (n-1) (n::p)
-
-let one2n n = loop_one2n n []
-
-let rec loop_sum y = match y with 
-  | [] -> 0 
-  | i::is -> i + (loop_sum is)
-
-let rec sumlists x = match x with
-  | [] -> 0
-  | is::iss -> (loop_sum is) + (sumlists iss)
-
 let rec rev_loop x n y = 
   if n=0 then y else 
     rev_loop (List.tl x) (n-1) ((List.hd x)::y)
@@ -36,9 +20,27 @@ and p n perms x =
   if 1<n then loop_p (n-1) perms x n 
   else (perms,x)
 
+
 let permutations x0 =
   let (final_perms,_) = p (List.length x0) (x0::[]) x0
   in final_perms
+
+let rec loop_sum y = match y with 
+  | [] -> 0 
+  | i::is -> i + (loop_sum is)
+
+let rec sumlists x = match x with
+  | [] -> 0
+  | is::iss -> (loop_sum is) + (sumlists iss)
+
+let rec loop_one2n n p = 
+  if n=0 then p else loop_one2n (n-1) (n::p)
+
+let one2n n = loop_one2n n []
+
+let rec factorial n = 
+  if n=1 then 1 else n*(factorial (n-1))
+
 
 let rec loop_work m perms = 
   if m=0 then perms 

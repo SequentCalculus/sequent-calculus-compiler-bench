@@ -21,16 +21,6 @@ impl<A> List<A> {
         }
     }
 
-    fn split_head(self) -> (A, List<A>)
-    where
-        A: Clone,
-    {
-        match self {
-            List::Nil => panic!("Cannot take head of empty list"),
-            List::Cons(a, as_) => (a, Rc::unwrap_or_clone(as_)),
-        }
-    }
-
     fn take(self, n: usize) -> List<A>
     where
         A: Clone,
@@ -98,20 +88,44 @@ fn expand(a: i64, b: i64, c: i64, d: i64, e: i64, f: i64) -> i64 {
 }
 
 fn condition(thirywelvn: &List<i64>) -> bool {
-    if thirywelvn.len() != 10 {
-        return false;
+    match thirywelvn {
+        List::Nil => false,
+        List::Cons(t, ts) => match ts.as_ref() {
+            List::Nil => false,
+            List::Cons(h, hs) => match hs.as_ref() {
+                List::Nil => false,
+                List::Cons(i, is) => match is.as_ref() {
+                    List::Nil => false,
+                    List::Cons(r, rs) => match rs.as_ref() {
+                        List::Nil => false,
+                        List::Cons(y, ys) => match ys.as_ref() {
+                            List::Nil => false,
+                            List::Cons(w, ws) => match ws.as_ref() {
+                                List::Nil => false,
+                                List::Cons(e, es) => match es.as_ref() {
+                                    List::Nil => false,
+                                    List::Cons(l, ls) => match ls.as_ref() {
+                                        List::Nil => false,
+                                        List::Cons(v, vs) => match vs.as_ref() {
+                                            List::Nil => false,
+                                            List::Cons(n, ns) => match ns.as_ref() {
+                                                List::Nil => {
+                                                    expand(*t, *h, *i, *r, *t, *y)
+                                                        + (5 * expand(*t, *w, *e, *l, *v, *e))
+                                                        == expand(*n, *i, *n, *e, *t, *y)
+                                                }
+                                                List::Cons(_, _) => false,
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
     }
-    let (t, ls) = thirywelvn.clone().split_head();
-    let (h, ls) = ls.split_head();
-    let (i, ls) = ls.split_head();
-    let (r, ls) = ls.split_head();
-    let (y, ls) = ls.split_head();
-    let (w, ls) = ls.split_head();
-    let (e, ls) = ls.split_head();
-    let (l, ls) = ls.split_head();
-    let (v, ls) = ls.split_head();
-    let (n, _) = ls.split_head();
-    expand(t, h, i, r, t, y) + 5 * expand(t, w, e, l, v, e) == expand(n, i, n, e, t, y)
 }
 
 fn push_k(p1: List<List<i64>>, k: i64) -> List<List<i64>> {

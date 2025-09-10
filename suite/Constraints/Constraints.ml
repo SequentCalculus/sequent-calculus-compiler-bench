@@ -1,17 +1,28 @@
-type conflict_set = 
-  | Known of int list 
-  | Unknown
-
 type assign = Assign of int * int 
 
 type csp = CSP of int * int * ((assign * assign) -> bool)
 
 type 'a tree = Node of 'a * 'a tree list
 
+type conflict_set = 
+  | Known of int list 
+  | Unknown
+
 let value (Assign(_,value)) = value
 let level (Assign(varr,_)) = varr
 
 let label (Node(a,_)) = a
+
+let rec enum_from_to from to_ = 
+  if from<=to_ then 
+    from::(enum_from_to (from+1) to_)
+  else []
+
+let rec zip_with f x y = 
+  match (x,y) with 
+    | ([],_) -> []
+    | (_,[]) -> []
+    | (c::cs,p::ps) -> f(c,p) :: zip_with f cs ps
 
 let rec map_tree f (Node(l,ls)) = 
   Node(f l,List.map (fun x -> map_tree f x) ls)
@@ -25,29 +36,20 @@ let rec filter_tree p n =
   in 
   fold_tree f n 
 
-let prune f n = 
-  filter_tree (fun x -> not (f x)) n
-
 let rec leaves n = 
   match n with
     | Node(leaf,[]) -> leaf::[]
     | Node(leaf,cs) -> List.concat (List.map (fun x -> leaves x) cs)
 
-let rec enum_from_to from to_ = 
-  if from<=to_ then 
-    from::(enum_from_to (from+1) to_)
-  else []
+let prune f n = 
+  filter_tree (fun x -> not (f x)) n
 
 let max_level ls = 
   match ls with 
     | [] -> 0
     | Assign(v,_)::_ -> v
 
-
-let rec nub_by f l = 
-  match l with 
-    | [] -> []
-    | h::t -> h::nub_by f (List.filter (fun y -> not (f(h,y))) t)
+let complete (CSP (v,_,_)) s = max_level s = v
 
 let rec delete_by f x ys = 
   match ys with 
@@ -55,6 +57,11 @@ let rec delete_by f x ys =
     | y::ys -> 
         if (f (x,y)) then ys
         else y::delete_by f x ys
+
+let rec nub_by f l = 
+  match l with 
+    | [] -> []
+    | h::t -> h::nub_by f (List.filter (fun y -> not (f(h,y))) t)
 
 let union_by f l1 l2 = 
   List.append l1 
@@ -64,14 +71,8 @@ let union_by f l1 l2 =
     l1
   )
 
+
 let union l1 l2 = union_by (fun (x,y) -> x=y) l1 l2
-
-let rec zip_with f x y = 
-  match (x,y) with 
-    | ([],_) -> []
-    | (_,[]) -> []
-    | (c::cs,p::ps) -> f(c,p) :: zip_with f cs ps
-
 
 let rec combine ls acc = 
   match ls with 
@@ -85,7 +86,6 @@ let rec combine ls acc =
 
 let rec init_tree f x = 
   Node(x, List.map (fun y -> init_tree f y) (f x))
-
 
 let rec to_assign ls ss = 
   match ls with 
@@ -108,26 +108,18 @@ let rec collect ls =
     | Known cs :: css -> union cs (collect css)
     | Unknown :: _ -> []
 
-let known_conflict c = 
-  match c with 
-    | Known [] -> false 
-    | Known (_::_) -> true
-    | Unknown -> false
-
 let known_solution c = 
   match c with 
     | Known [] -> true
     | Known (_::_) -> false 
     | Unknown -> false
 
-let earliest_inconsistency (CSP(_,_,rel)) aas = 
-  match aas with 
-    | [] -> None
-    | a::as_ -> 
-        (match (List.filter (fun x -> not (rel(a,x))) (List.rev as_)) with
-          | [] -> None
-          | b::bs_ -> Some(level a, level b)
-        )
+let known_conflict c = 
+  match c with 
+    | Known [] -> false 
+    | Known (_::_) -> true
+    | Unknown -> false
+
 
 let domain_wipeout csp t = 
   let f8 = fun ((as_,cs),tbl) ->
@@ -140,11 +132,17 @@ let domain_wipeout csp t =
   in 
   map_tree f8 t 
 
-let complete (CSP (v,_,_)) s = max_level s = v
-
 let check_complete csp s = 
   if complete csp s then Known [] else Unknown
 
+let earliest_inconsistency (CSP(_,_,rel)) aas = 
+  match aas with 
+    | [] -> None
+    | a::as_ -> 
+        (match (List.filter (fun x -> not (rel(a,x))) (List.rev as_)) with
+          | [] -> None
+          | b::bs_ -> Some(level a, level b)
+        )
 
 let lookup_cache csp t = 
   let f5 = fun (csp, (ls,tbl)) -> 
@@ -161,29 +159,18 @@ let lookup_cache csp t =
   in 
   map_tree (fun x -> f5 (csp,x)) t
 
-let rec n_unknown ls n = 
-  match ls with 
-    | [] -> []
-    | _::t1 -> 
-        (to_unknown (enum_from_to 1 n)) 
-        :: (n_unknown t1 n) 
-and to_unknown ls = 
-  match ls with
-    | [] -> []
-    | _::t2 -> Unknown::(to_unknown t2)
-and empty_table (CSP(vars,vals,_)) = 
-  []::(n_unknown (enum_from_to 1 vars) vals)
-
 let rec to_pairs ls varrr = 
   match ls with 
     | [] -> []
     | valll::t2 -> (varrr,valll) :: (to_pairs t2 varrr)
+
 
 let rec n_pairs ls vals = 
   match ls with 
     | [] -> []
     | varrr::t1 -> 
         (to_pairs (enum_from_to 1 vals) varrr)::(n_pairs t1 vals)
+
 
 let fill_table s (CSP(vars,vals,rel)) tbl = 
   match s with 
@@ -202,8 +189,6 @@ let fill_table s (CSP(vars,vals,rel)) tbl =
           tbl
           (n_pairs (enum_from_to (var_+1) vars) vals)
 
-
-
 let rec cache_checks csp tbl (Node (s,cs)) = 
   Node ((s,tbl),
     List.map 
@@ -212,6 +197,19 @@ let rec cache_checks csp tbl (Node (s,cs)) =
           (fill_table s csp (List.tl tbl)) 
         x) 
       cs)
+
+let rec n_unknown ls n = 
+  match ls with 
+    | [] -> []
+    | _::t1 -> 
+        (to_unknown (enum_from_to 1 n)) 
+        :: (n_unknown t1 n) 
+and to_unknown ls = 
+  match ls with
+    | [] -> []
+    | _::t2 -> Unknown::(to_unknown t2)
+and empty_table (CSP(vars,vals,_)) = 
+  []::(n_unknown (enum_from_to 1 vars) vals)
 
 let search labeler csp = 
   List.map (fun (x,_) -> x)

@@ -2,9 +2,12 @@ type gen = MkGen of (int*int) list
 
 let member l p = List.exists (fun p1 -> p=p1) l
 
-let accumulate a xs f = List.fold_left f a xs
+let rec fold_list xs acc f = 
+  match xs with
+    | [] -> acc
+    | h::t -> fold_list t (f acc h) f
 
-let revonto x y = accumulate x y (fun t -> fun h -> h::t)
+let revonto x y = fold_list x y (fun t -> fun h -> h::t)
 
 let rec collect_accum sofar xs f =
   match xs with

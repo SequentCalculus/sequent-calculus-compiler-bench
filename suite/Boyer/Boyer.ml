@@ -27,59 +27,19 @@ let rec replicate_term n t =
   if n=0 then []
   else t :: (replicate_term (n-1) t)
 
-let rec boyer_a = Var A
-and boyer_b = Var B
-and boyer_c = Var C
-and boyer_d = Var D
-and boyer_u = Var U
-and boyer_w = Var W
-and boyer_x = Var X
-and boyer_y = Var Y
-and boyer_z = Var Z
-and boyer_f a = Func(F,a::[],fun () -> [])
-and boyer_true = Func(TRUE,[],fun () -> [])
-and boyer_false = Func(FALSE,[], fun() -> [])
-and boyer_if_ a b c = Func(IF,a::b::c::[],fun () ->
-  (
-    boyer_if_
-      (boyer_if_ boyer_x boyer_y boyer_z)
-      boyer_u boyer_w,
-    boyer_if_ boyer_x
-      (boyer_if_ boyer_y boyer_u boyer_w)
-      (boyer_if_ boyer_z boyer_u boyer_w)
-  )::[])
-and boyer_implies a b = Func(IMPLIES,a::b::[],fun () ->
-  (
-    boyer_implies boyer_x boyer_y,
-    boyer_if_
-      boyer_x
-      (boyer_if_ boyer_y boyer_true boyer_false)
-      boyer_true
-  )::[])
-and boyer_not_ a = Func(NOT,a::[],fun () ->
-  (
-    boyer_not_ boyer_x,
-    boyer_if_ boyer_x boyer_false boyer_true
-  )::[])
-and boyer_and_ a b = Func(AND,a::b::[],fun () ->
-  (
-    boyer_and_ boyer_x boyer_y,
-    boyer_if_ boyer_x
-      (boyer_if_ boyer_y boyer_true boyer_false)
-      boyer_false
-  )::[])
-and boyer_or_ a b = Func(OR,a::b::[],fun () ->
-  (
-    boyer_or_ boyer_x boyer_y,
-    boyer_if_ boyer_x boyer_true
-      (boyer_if_ boyer_y boyer_true boyer_false)
-  )::[])
+let rec find vid ls =
+  match ls with
+    | [] -> (false,ERROR)
+    | (vid2,val2)::bs ->
+        if vid=vid2 then (true,val2) else find vid bs
+
+let rec boyer_add1 a = Func(ADD1,a::[], fun () -> [])
+and boyer_zero = Func(ZERO,[],fun () -> [])
 and boyer_zerop a = Func(ZEROP,a::[],fun () ->
   (
     boyer_zerop boyer_x,
     boyer_equal boyer_x boyer_zero
   )::[])
-and boyer_zero = Func(ZERO,[],fun () -> [])
 and boyer_one  = Func(ONE,[],fun () -> (
   boyer_one,
   boyer_add1 boyer_zero
@@ -93,108 +53,26 @@ and boyer_four = Func(FOUR,[],fun () ->
     boyer_four,
     boyer_add1 (boyer_add1 boyer_two)
   )::[])
-and boyer_add1 a = Func(ADD1,a::[], fun () -> [])
-and boyer_plus a b = Func(PLUS,a::b::[],fun () ->
+and boyer_if_ a b c = Func(IF,a::b::c::[],fun () ->
   (
-    boyer_plus
-      (boyer_plus boyer_x boyer_y)
-      boyer_z,
-    boyer_plus boyer_x
-      (boyer_plus boyer_y boyer_z)
-  )::(
-    boyer_plus
-      (boyer_remainder boyer_x boyer_y)
-      (boyer_times boyer_y
-        (boyer_quotient boyer_x boyer_y)
-      ),
-    boyer_x
-  )::(
-    boyer_plus boyer_x (boyer_add1 boyer_y),
-    boyer_add1 (boyer_plus boyer_x boyer_y)
+    boyer_if_
+      (boyer_if_ boyer_x boyer_y boyer_z)
+      boyer_u boyer_w,
+    boyer_if_ boyer_x
+      (boyer_if_ boyer_y boyer_u boyer_w)
+      (boyer_if_ boyer_z boyer_u boyer_w)
   )::[])
-and boyer_difference a b = Func(DIFFERENCE,a::b::[], fun() ->
+and boyer_not_ a = Func(NOT,a::[],fun () ->
   (
-    boyer_difference boyer_x boyer_x,
-    boyer_zero
-  )::(
-    boyer_difference
-      (boyer_plus boyer_x boyer_y)
-      boyer_x,
-    boyer_y
-  )::(
-    boyer_difference
-      (boyer_plus boyer_y boyer_x)
-      boyer_x,
-    boyer_y
-  )::(
-    boyer_difference
-      (boyer_plus boyer_x boyer_y)
-      (boyer_plus boyer_x boyer_z),
-    boyer_difference boyer_y boyer_z
-  )::(
-    boyer_difference
-      (boyer_plus boyer_y
-        (boyer_plus boyer_x boyer_z))
-      boyer_x,
-      boyer_plus boyer_y boyer_z
-  )::(
-    boyer_difference
-      (boyer_add1 (boyer_plus boyer_y boyer_z))
-      boyer_z,
-    boyer_add1 boyer_y
-  )::(
-    boyer_difference (boyer_add1 (boyer_add1 boyer_x))
-    boyer_two,
-    boyer_x
+    boyer_not_ boyer_x,
+    boyer_if_ boyer_x boyer_false boyer_true
   )::[])
-and boyer_times a b = Func(TIMES,a::b::[], fun () ->
+and boyer_and_ a b = Func(AND,a::b::[],fun () ->
   (
-    boyer_times boyer_x
-      (boyer_plus boyer_y boyer_z),
-    boyer_plus
-      (boyer_times boyer_x boyer_y)
-      (boyer_times boyer_x boyer_z)
-  )::(
-    boyer_times
-      (boyer_times boyer_x boyer_y) boyer_z,
-    boyer_times boyer_x
-      (boyer_times boyer_y boyer_z)
-  )::(
-    boyer_times boyer_x
-      (boyer_difference boyer_y boyer_z),
-    boyer_difference
-      (boyer_times boyer_y boyer_x)
-      (boyer_times boyer_z boyer_x)
-  )::(
-    boyer_times boyer_x (boyer_add1 boyer_y),
-    boyer_plus boyer_x
-      (boyer_times boyer_x boyer_y)
-  )::[])
-and boyer_quotient a b = Func(QUOTIENT,a::b::[],fun() ->
-  (
-    boyer_quotient
-      (boyer_plus boyer_x (boyer_plus boyer_x boyer_y))
-      boyer_two,
-    boyer_plus boyer_x
-      (boyer_quotient boyer_y boyer_two)
-  )::[])
-and boyer_remainder a b = Func(REMAINDER,a::b::[],fun() ->
-  (
-    boyer_remainder boyer_x boyer_one,
-    boyer_zero
-  )::(
-    boyer_remainder boyer_x boyer_x,
-    boyer_zero
-  )::(
-    boyer_remainder
-      (boyer_times boyer_x boyer_y)
-      boyer_x,
-    boyer_zero
-  )::(
-    boyer_remainder
-      (boyer_times boyer_x boyer_y)
-      boyer_y,
-    boyer_zero
+    boyer_and_ boyer_x boyer_y,
+    boyer_if_ boyer_x
+      (boyer_if_ boyer_y boyer_true boyer_false)
+      boyer_false
   )::[])
 and boyer_equal a b = Func(EQUAL,a::b::[],fun () ->
   (
@@ -265,6 +143,31 @@ and boyer_equal a b = Func(EQUAL,a::b::[],fun () ->
       (boyer_equal boyer_true boyer_z)
       (boyer_equal boyer_false boyer_z)
   )::[])
+and boyer_append_ a b = Func(APPEND,a::b::[],fun () ->
+  (
+    boyer_append_
+      (boyer_append_ boyer_x boyer_y)
+      boyer_z,
+    boyer_append_ boyer_x
+      (boyer_append_ boyer_y boyer_z)
+  )::[])
+and boyer_x = Var X
+and boyer_y = Var Y
+and boyer_z = Var Z
+and boyer_u = Var U
+and boyer_w = Var W
+and boyer_a = Var A
+and boyer_b = Var B
+and boyer_c = Var C
+and boyer_d = Var D
+and boyer_false = Func(FALSE,[], fun() -> [])
+and boyer_true = Func(TRUE,[],fun () -> [])
+and boyer_or_ a b = Func(OR,a::b::[],fun () ->
+  (
+    boyer_or_ boyer_x boyer_y,
+    boyer_if_ boyer_x boyer_true
+      (boyer_if_ boyer_y boyer_true boyer_false)
+  )::[])
 and boyer_lessp a b = Func(LESSP,a::b::[],fun () ->
   (
     boyer_lessp
@@ -272,19 +175,98 @@ and boyer_lessp a b = Func(LESSP,a::b::[],fun () ->
       boyer_y,
     boyer_not_ (boyer_zerop boyer_y)
   )::[])
-and boyer_nil = Func(NIL,[],fun () -> [])
 and boyer_cons a b  = Func(CONS,a::b::[],fun () -> [])
-and boyer_member a b = Func(MEMBER,a::b::[],fun () ->
+and boyer_remainder a b = Func(REMAINDER,a::b::[],fun() ->
   (
-    boyer_member boyer_x
-      (boyer_append_ boyer_y boyer_z),
-    boyer_or_
-      (boyer_member boyer_x boyer_y)
-      (boyer_member boyer_x boyer_z)
+    boyer_remainder boyer_x boyer_one,
+    boyer_zero
   )::(
-    boyer_member boyer_x
-      (boyer_reverse_ boyer_y),
-    boyer_member boyer_x boyer_y
+    boyer_remainder boyer_x boyer_x,
+    boyer_zero
+  )::(
+    boyer_remainder
+      (boyer_times boyer_x boyer_y)
+      boyer_x,
+    boyer_zero
+  )::(
+    boyer_remainder
+      (boyer_times boyer_x boyer_y)
+      boyer_y,
+    boyer_zero
+  )::[])
+and boyer_quotient a b = Func(QUOTIENT,a::b::[],fun() ->
+  (
+    boyer_quotient
+      (boyer_plus boyer_x (boyer_plus boyer_x boyer_y))
+      boyer_two,
+    boyer_plus boyer_x
+      (boyer_quotient boyer_y boyer_two)
+  )::[])
+and boyer_times a b = Func(TIMES,a::b::[], fun () ->
+  (
+    boyer_times boyer_x
+      (boyer_plus boyer_y boyer_z),
+    boyer_plus
+      (boyer_times boyer_x boyer_y)
+      (boyer_times boyer_x boyer_z)
+  )::(
+    boyer_times
+      (boyer_times boyer_x boyer_y) boyer_z,
+    boyer_times boyer_x
+      (boyer_times boyer_y boyer_z)
+  )::(
+    boyer_times boyer_x
+      (boyer_difference boyer_y boyer_z),
+    boyer_difference
+      (boyer_times boyer_y boyer_x)
+      (boyer_times boyer_z boyer_x)
+  )::(
+    boyer_times boyer_x (boyer_add1 boyer_y),
+    boyer_plus boyer_x
+      (boyer_times boyer_x boyer_y)
+  )::[])
+and boyer_difference a b = Func(DIFFERENCE,a::b::[], fun() ->
+  (
+    boyer_difference boyer_x boyer_x,
+    boyer_zero
+  )::(
+    boyer_difference
+      (boyer_plus boyer_x boyer_y)
+      boyer_x,
+    boyer_y
+  )::(
+    boyer_difference
+      (boyer_plus boyer_y boyer_x)
+      boyer_x,
+    boyer_y
+  )::(
+    boyer_difference
+      (boyer_plus boyer_x boyer_y)
+      (boyer_plus boyer_x boyer_z),
+    boyer_difference boyer_y boyer_z
+  )::(
+    boyer_difference
+      (boyer_plus boyer_y
+        (boyer_plus boyer_x boyer_z))
+      boyer_x,
+      boyer_plus boyer_y boyer_z
+  )::(
+    boyer_difference
+      (boyer_add1 (boyer_plus boyer_y boyer_z))
+      boyer_z,
+    boyer_add1 boyer_y
+  )::(
+    boyer_difference (boyer_add1 (boyer_add1 boyer_x))
+    boyer_two,
+    boyer_x
+  )::[])
+and boyer_implies a b = Func(IMPLIES,a::b::[],fun () ->
+  (
+    boyer_implies boyer_x boyer_y,
+    boyer_if_
+      boyer_x
+      (boyer_if_ boyer_y boyer_true boyer_false)
+      boyer_true
   )::[])
 and boyer_length_ a = Func(LENGTH,a::[],fun () ->
   (
@@ -303,33 +285,38 @@ and boyer_reverse_ a = Func(REVERSE,a::[],fun () ->
     boyer_reverse_ (boyer_append_ boyer_x boyer_y),
     boyer_append_ (boyer_reverse_ boyer_y) (boyer_reverse_ boyer_x)
   )::[])
-and boyer_append_ a b = Func(APPEND,a::b::[],fun () ->
+and boyer_nil = Func(NIL,[],fun () -> [])
+and boyer_member a b = Func(MEMBER,a::b::[],fun () ->
   (
-    boyer_append_
-      (boyer_append_ boyer_x boyer_y)
-      boyer_z,
-    boyer_append_ boyer_x
-      (boyer_append_ boyer_y boyer_z)
+    boyer_member boyer_x
+      (boyer_append_ boyer_y boyer_z),
+    boyer_or_
+      (boyer_member boyer_x boyer_y)
+      (boyer_member boyer_x boyer_z)
+  )::(
+    boyer_member boyer_x
+      (boyer_reverse_ boyer_y),
+    boyer_member boyer_x boyer_y
   )::[])
-
-let rec find vid ls =
-  match ls with
-    | [] -> (false,ERROR)
-    | (vid2,val2)::bs ->
-        if vid=vid2 then (true,val2) else find vid bs
-
-let rec apply_subst subst t =
-  match t with
-    | Var vid ->
-        (match (find vid subst) with
-          | (true,value) -> value
-          | (false,_) -> Var vid)
-    | Func(f,args,ls) ->
-        Func(
-          f,
-          (List.map (fun x -> apply_subst subst x) args),
-          ls)
-    | ERROR -> ERROR
+and boyer_plus a b = Func(PLUS,a::b::[],fun () ->
+  (
+    boyer_plus
+      (boyer_plus boyer_x boyer_y)
+      boyer_z,
+    boyer_plus boyer_x
+      (boyer_plus boyer_y boyer_z)
+  )::(
+    boyer_plus
+      (boyer_remainder boyer_x boyer_y)
+      (boyer_times boyer_y
+        (boyer_quotient boyer_x boyer_y)
+      ),
+    boyer_x
+  )::(
+    boyer_plus boyer_x (boyer_add1 boyer_y),
+    boyer_add1 (boyer_plus boyer_x boyer_y)
+  )::[])
+and boyer_f a = Func(F,a::[],fun () -> [])
 
 let rec one_way_unify term1 term2 =
   one_way_unify1 term1 term2 []
@@ -357,6 +344,19 @@ and one_way_unify1_lst tts1 tts2 subst =
       let (hd_ok,subst_) = one_way_unify1 t1 t2 subst in
       let (tl_ok,subst__) = one_way_unify1_lst ts1 ts2 subst_ in
       (hd_ok && tl_ok, subst__)
+
+let rec apply_subst subst t =
+  match t with
+    | Var vid ->
+        (match (find vid subst) with
+          | (true,value) -> value
+          | (false,_) -> Var vid)
+    | Func(f,args,ls) ->
+        Func(
+          f,
+          (List.map (fun x -> apply_subst subst x) args),
+          ls)
+    | ERROR -> ERROR
 
 let rec rewrite t =
   match t with
@@ -410,21 +410,6 @@ let rec tautologyp x true_lst false_lst =
 let tautp x =
   tautologyp (rewrite x) [] []
 
-let boyer_theorem xxxx =
-  boyer_implies
-    (boyer_and_
-      (boyer_implies xxxx boyer_y)
-      (boyer_and_
-        (boyer_implies boyer_y boyer_z)
-        (boyer_and_
-          (boyer_implies boyer_z boyer_u)
-          (boyer_implies boyer_u boyer_w)
-        )
-      )
-    )
-    (boyer_implies boyer_x boyer_w)
-
-
 let boyer_subst0 =
   (X,boyer_f
     (boyer_plus
@@ -455,8 +440,23 @@ let boyer_subst0 =
     (boyer_member boyer_a (boyer_length_ boyer_b))
   )::[]
 
+let boyer_theorem xxxx =
+  boyer_implies
+    (boyer_and_
+      (boyer_implies xxxx boyer_y)
+      (boyer_and_
+        (boyer_implies boyer_y boyer_z)
+        (boyer_and_
+          (boyer_implies boyer_z boyer_u)
+          (boyer_implies boyer_u boyer_w)
+        )
+      )
+    )
+    (boyer_implies boyer_x boyer_w)
+
 let test0 xxxx =
   tautp (apply_subst boyer_subst0 (boyer_theorem xxxx))
+
 
 let test_boyer_nofib n =
   List.for_all test0 (replicate_term n (Var X))

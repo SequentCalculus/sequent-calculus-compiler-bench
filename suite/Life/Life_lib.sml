@@ -1,16 +1,12 @@
 structure Life = struct
   datatype gen = MkGen of ((int * int) list)
 
-  fun exists l f =
-    case l of
-         nil => false
-       | p::ps => (f p) orelse (exists ps f)
-
-  fun member l p = exists l (fn p1 => p=p1)
-
-  fun accumulate a xs f = List.foldl f a xs
-
-  fun revonto x y = accumulate x y (fn (h,t) => h::t)
+  fun fold xs acc f = 
+    case xs of 
+         nil => acc
+       | h::t => fold t (f h acc) f
+  
+  fun revonto x y = fold x y (fn h => fn t => h::t)
 
   fun collect_accum sofar xs f =
     case xs of
@@ -18,6 +14,13 @@ structure Life = struct
        | p::xs => collect_accum (revonto sofar (f p)) xs f
 
   fun collect l f  = collect_accum nil l f
+
+  fun exists l f =
+    case l of
+         nil => false
+       | p::ps => (f p) orelse (exists ps f)
+
+  fun member l p = exists l (fn p1 => p=p1)
 
   fun diff x y = List.filter (fn p => not (member y p) ) x
 
@@ -27,7 +30,6 @@ structure Life = struct
     (fst-1,snd-1) :: (fst-1,snd) :: (fst-1,snd+1)
     :: (fst, snd-1) :: (fst, snd+1)
     :: (fst+1,snd-1) :: (fst+1,snd) :: (fst+1,snd+1) :: nil
-
 
   fun twoorthree n = n=2 orelse n=3
 
@@ -49,14 +51,11 @@ structure Life = struct
     collect_neighbors nil nil nil nil l
 
   fun nextgen g =
-  let val living  = alive g
-    val isalive = fn p => member living p
+  let val living= alive g
+    val isalive= fn p => member living p
     val liveneighbors = fn p => length (List.filter isalive (neighbors p))
     val survivors = List.filter (fn p => twoorthree (liveneighbors(p))) living
-    val newbrnlist =
-      collect
-      living
-      (fn p => List.filter (fn n => not (isalive n)) (neighbors p))
+    val newbrnlist= collect living (fn p => List.filter (fn n => not (isalive n)) (neighbors p))
     val newborn = occurs3 newbrnlist
   in
     MkGen (survivors @ newborn)

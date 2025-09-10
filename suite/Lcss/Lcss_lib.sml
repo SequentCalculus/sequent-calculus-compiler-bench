@@ -3,31 +3,7 @@ structure Lcss = struct
     if from <= to
     then from :: (enum_from_then_to th ((2*th)-from) to)
     else nil
-
-  fun is_singleton ls = 
-    case ls of 
-         x::nil => SOME x
-       | _ => NONE
-
-  fun in_list x ls = 
-    case ls of 
-         nil => false 
-       | y::ys => if x=y then true else in_list x ys
-
-  fun zip xs ys = 
-    case (xs,ys) of 
-         (nil,_) => nil
-       | (_,nil) => nil
-       | (x::xs,y::ys) => (x,y)::(zip xs ys)
-
-  fun findk k km m ls =
-    case ls of 
-         nil => km
-       | (x,y)::xys => 
-           if m <= (x+y) 
-           then findk (k+1) k (x+y) xys
-           else findk (k+1) km m xys
-
+  
   fun algb2 x k0j1 k1j1 yss = 
     case yss of 
          nil => nil
@@ -50,6 +26,30 @@ structure Lcss = struct
 
   fun algb xs ys = 
     0::(algb1 xs (add_zero ys))
+  fun findk k km m ls =
+    case ls of 
+         nil => km
+       | (x,y)::xys => 
+           if m <= (x+y) 
+           then findk (k+1) k (x+y) xys
+           else findk (k+1) km m xys
+
+
+  fun is_singleton ls = 
+    case ls of 
+         x::nil => SOME x
+       | _ => NONE
+
+  fun zip xs ys = 
+    case (xs,ys) of 
+         (nil,_) => nil
+       | (_,nil) => nil
+       | (x::xs,y::ys) => (x,y)::(zip xs ys)
+
+  fun in_list x ls = 
+    case ls of 
+         nil => false 
+       | y::ys => if x=y then true else in_list x ys
 
   fun algc m n xs ys = 
     if null ys 
@@ -86,16 +86,16 @@ structure Lcss = struct
     lcss_main 1 2 c 100 101 f
 
   fun main_loop iters c f = 
-    let val res = test_lcss_nofib c f in 
-      if iters=1 then print ((Int.toString (hd res)) ^ "\n")
-      else main_loop (iters-1) c f
-    end
+  let val res = test_lcss_nofib c f in 
+    if iters=1 then print ((Int.toString (hd res)) ^ "\n")
+    else main_loop (iters-1) c f
+             end
 
   fun run args =   
-    let val iters = valOf (Int.fromString (hd args))
-      val c = valOf (Int.fromString (hd (tl args)))
-      val f = valOf (Int.fromString (hd (tl (tl args))))
-    in 
-      main_loop iters c f
-    end
-end 
+  let val iters = valOf (Int.fromString (hd args))
+    val c = valOf (Int.fromString (hd (tl args)))
+    val f = valOf (Int.fromString (hd (tl (tl args))))
+  in 
+    main_loop iters c f
+  end
+  end 

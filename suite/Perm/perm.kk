@@ -3,26 +3,6 @@ module perm
 import std/os/env
 import std/num/int64
 
-fun tail_n(l:list<int64>,n:int64): div list<int64>{
-  if n == 0.int64 then
-    l 
-  else 
-    tail_n(tail(l),n - 1.int64)
-}
-
-fun rev_loop(x:list<int64>,n:int64,y:list<int64>): <div,exn> list<int64>{
-  if n == 0.int64 then
-    y 
-  else 
-    rev_loop(tail(x),n - 1.int64,Cons(unjust(head(x)),y))
-}
-
-fun f(n:int64,perms:list<list<int64>>,x:list<int64>): <div,exn> (list<list<int64>>,list<int64>){
-  val x_ = rev_loop(x,n,tail_n(x,n))
-  val perms_ = Cons(x_,perms)
-  (perms_,x_)
-}
-
 fun loop_p(j:int64,perms:list<list<int64>>,x:list<int64>,n:int64): <div,exn> (list<list<int64>>,list<int64>){
   if j == 0.int64 then
     p(n - 1.int64,perms,x)
@@ -37,6 +17,27 @@ fun p(n:int64,perms:list<list<int64>>,x:list<int64>): <div,exn> (list<list<int64
     loop_p(n - 1.int64, perms,x,n)
   else 
     (perms,x)
+}
+
+fun f(n:int64,perms:list<list<int64>>,x:list<int64>): <div,exn> (list<list<int64>>,list<int64>){
+  val x_ = rev_loop(x,n,tail_n(x,n))
+  val perms_ = Cons(x_,perms)
+  (perms_,x_)
+}
+
+
+fun rev_loop(x:list<int64>,n:int64,y:list<int64>): <div,exn> list<int64>{
+  if n == 0.int64 then
+    y 
+  else 
+    rev_loop(tail(x),n - 1.int64,Cons(unjust(head(x)),y))
+}
+
+fun tail_n(l:list<int64>,n:int64): div list<int64>{
+  if n == 0.int64 then
+    l 
+  else 
+    tail_n(tail(l),n - 1.int64)
 }
 
 fun permutations(x0:list<int64>): <div,exn> list<list<int64>>{
@@ -68,13 +69,6 @@ fun one2n(n:int64): div list<int64>{
   loop_one2n(n,Nil)
 }
 
-fun run_benchmark(
-  work: () -> <div,exn> list<list<int64>>,
-  result:list<list<int64>> -> div bool
-) : <div,exn> bool{
-  result(work())
-}
-
 fun factorial(n:int64): div int64{
   if n == 1.int64 then
     n
@@ -88,6 +82,14 @@ fun loop_work(m:int64,perms:list<list<int64>>): <div,exn> list<list<int64>>{
   else 
     loop_work(m - 1.int64,permutations(unjust(head(perms))))
 }
+
+fun run_benchmark(
+  work: () -> <div,exn> list<list<int64>>,
+  result:list<list<int64>> -> div bool
+) : <div,exn> bool{
+  result(work())
+}
+
 
 fun perm9(m:int64,n:int64): <div,exn> bool{
   run_benchmark(

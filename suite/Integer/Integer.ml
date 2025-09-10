@@ -1,14 +1,4 @@
 type ('a,'b) either = Left of 'a | Right of 'b 
-
-let print_either e = 
-  match e with 
-    | Left i -> print_endline (string_of_int i)
-    | Right b -> 
-        if b then 
-          print_endline "11"
-        else 
-          print_endline "00"
-
 let rec enum_from_then_to from th to_ = 
   if from<=to_ then
     from::enum_from_then_to th ((2*th) - from) to_
@@ -63,6 +53,14 @@ let runalltests astart astep alim =
 let test_integer_nofib n = 
   runalltests (-2100000000) n 2100000000
 
+let print_either e = 
+  match e with 
+    | Left i -> print_endline (string_of_int i)
+    | Right b -> 
+        if b then 
+          print_endline "11"
+        else 
+          print_endline "00"
 
 let rec main_loop iters n = 
   let res = test_integer_nofib n in 

@@ -1,19 +1,6 @@
 structure Gcd = struct 
   exception EmptyList
 
-  fun enum_from_to from to = 
-    if from<=to 
-    then from::(enum_from_to (from+1) to) 
-    else nil
-
-  fun max ls = 
-    case ls of 
-         nil => raise EmptyList
-       | x::nil => x
-       | x::y::ys => 
-           if x < y then max (y::ys) else max (x::ys)
-
-
   fun quot_rem a b = (a div b, a mod b)
 
   fun g (u1,u2,u3) (v1,v2,v3) = 
@@ -26,6 +13,18 @@ structure Gcd = struct
 
   fun gcd_e x y = 
     if x=0 then (y,0,1) else g (1,0,x) (0,1,y)
+
+  fun max ls = 
+    case ls of 
+         nil => raise EmptyList
+       | x::nil => x
+       | x::y::ys => 
+           if x < y then max (y::ys) else max (x::ys)
+
+  fun enum_from_to from to = 
+    if from<=to 
+    then from::(enum_from_to (from+1) to) 
+    else nil
 
   fun to_pair i ls = 
     case ls of 

@@ -6,15 +6,19 @@ import std/num/int64
 struct gen
   coordslist: list<(int64,int64)>
 
-fun accumulate<t>(
-  a:list<t>,xs:list<t>,
-  f:(list<t>,t) -> list<t>
-): total list<t> {
-  foldl(xs,a,f)
+fun pair_eq(p1:(int64,int64),p2:(int64,int64)): total bool {
+  match (p1, p2)
+    ((fst1, snd1), (fst2, snd2)) -> (fst1 == fst2) && (snd1 == snd2)
+}
+
+fun fold_list<a>(xs:list<a>,acc:list<a>,f:(list<a>,a) -> list<a>): total list<a> {
+  match xs
+    Nil -> acc
+    Cons(h,t) -> fold_list(t,f(acc,h),f)
 }
 
 fun revonto<t>(x:list<t>,y:list<t>): total list<t>{
-  accumulate(x,y,fn(tl,hd) -> Cons(hd,tl))
+  fold_list(x,y,fn(tl,hd) -> Cons(hd,tl))
 }
 
 fun collect_accum<t>(
@@ -35,11 +39,6 @@ fun exists_l<t>(l:list<t>,f:t -> bool): total bool{
   match l
     Nil -> False
     Cons(p,ps) -> f(p) || exists_l(ps,f)
-}
-
-fun pair_eq(p1:(int64,int64),p2:(int64,int64)): total bool {
-  match (p1, p2)
-    ((fst1, snd1), (fst2, snd2)) -> (fst1 == fst2) && (snd1 == snd2)
 }
 
 fun member(l:list<(int64,int64)>,p:(int64,int64)): total bool{
@@ -116,30 +115,6 @@ fun nthgen(g:gen,i:int64): div gen {
     nthgen(nextgen(g), i - 1.int64)
 }
 
-fun at_pos(coordlist:list<(int64,int64)>,p:(int64,int64)): total list<(int64,int64)>{
-  val move = fn((fst1,snd1))
-    match p
-      (fst2,snd2) -> (fst1 + fst2, snd1 + snd2)
-  map(coordlist,move)
-}
-
-fun shuttle(): total list<(int64,int64)>{
-  val r4 = Cons((4.int64, 1.int64), Cons((4.int64, 0.int64), Cons((4.int64, 5.int64), Cons((4.int64, 6.int64), Nil))));
-  val r3 = Cons((3.int64, 2.int64), Cons((3.int64, 3.int64), Cons((3.int64, 4.int64), r4)));
-  val r2 = Cons((2.int64, 1.int64), Cons((2.int64, 5.int64), r3));
-  val r1 = Cons((1.int64, 2.int64), Cons((1.int64, 4.int64), r2));
-  Cons((0.int64, 3.int64), r1)
-}
-
-fun bail(): total list<(int64,int64)>{
-  Cons((0.int64, 0.int64), Cons((0.int64, 1.int64), Cons((1.int64, 0.int64), Cons((1.int64, 1.int64), Nil))))
-
-}
-
-fun center_line(): total int64{
-  5.int64
-}
-
 fun gun(): total gen{
   val r9 = Cons((9.int64, 29.int64), Cons((9.int64, 30.int64), Cons((9.int64, 31.int64), Cons((9.int64, 32.int64), Nil))))
   val r8 = Cons((8.int64, 20.int64), Cons((8.int64, 28.int64), Cons((8.int64, 29.int64), Cons((8.int64, 30.int64),
@@ -156,6 +131,30 @@ fun gun(): total gen{
   val r3 = Cons((3.int64, 19.int64), Cons((3.int64, 21.int64), r4))
   val r2 = Cons((2.int64, 20.int64), r3)
   Gen(r2)
+}
+
+fun at_pos(coordlist:list<(int64,int64)>,p:(int64,int64)): total list<(int64,int64)>{
+  val move = fn((fst1,snd1))
+    match p
+      (fst2,snd2) -> (fst1 + fst2, snd1 + snd2)
+  map(coordlist,move)
+}
+
+fun center_line(): total int64{
+  5.int64
+}
+
+fun bail(): total list<(int64,int64)>{
+  Cons((0.int64, 0.int64), Cons((0.int64, 1.int64), Cons((1.int64, 0.int64), Cons((1.int64, 1.int64), Nil))))
+
+}
+
+fun shuttle(): total list<(int64,int64)>{
+  val r4 = Cons((4.int64, 1.int64), Cons((4.int64, 0.int64), Cons((4.int64, 5.int64), Cons((4.int64, 6.int64), Nil))));
+  val r3 = Cons((3.int64, 2.int64), Cons((3.int64, 3.int64), Cons((3.int64, 4.int64), r4)));
+  val r2 = Cons((2.int64, 1.int64), Cons((2.int64, 5.int64), r3));
+  val r1 = Cons((1.int64, 2.int64), Cons((1.int64, 4.int64), r2));
+  Cons((0.int64, 3.int64), r1)
 }
 
 fun non_steady(): total gen {

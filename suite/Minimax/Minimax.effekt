@@ -39,7 +39,6 @@ def other(p: Player): Player =
     case O() => X()
   }
 
-
 // Option functions
 
 def is_some(p: Option[Player]): Bool =
@@ -124,6 +123,44 @@ def emptyBoard(): List[Option[Player]] =
 def is_full(board: List[Option[Player]]): Bool =
   all(board) { p => is_some(p) }
 
+def player_occupies(p: Player, board: List[Option[Player]], i: Int): Bool =
+  find(board, i) match {
+    case Some(p0) => player_equal(p, p0)
+    case None() => false
+  }
+
+def has_trip(board: List[Option[Player]], p: Player, l: List[Int]): Bool =
+  all(l) { i => player_occupies(p, board, i) }
+
+def rows(): List[List[Int]] =
+  Cons(Cons(0, Cons(1, Cons(2, Nil()))),
+    Cons(Cons(3, Cons(4, Cons(5, Nil()))),
+      Cons(Cons(6, Cons(7, Cons(8, Nil()))),
+        Nil())))
+
+def cols(): List[List[Int]] =
+  Cons(Cons(0, Cons(3, Cons(6, Nil()))),
+    Cons(Cons(1, Cons(4, Cons(7, Nil()))),
+      Cons(Cons(2, Cons(5, Cons(8, Nil()))),
+        Nil())))
+
+def diags(): List[List[Int]] =
+  Cons(Cons(0, Cons(4, Cons(8, Nil()))),
+    Cons(Cons(2, Cons(4, Cons(6, Nil()))),
+      Nil()))
+
+def has_row(board: List[Option[Player]], p: Player): Bool =
+  exists(rows()) { l => has_trip(board, p, l) }
+
+def has_col(board: List[Option[Player]], p: Player): Bool =
+  exists(cols()) { l => has_trip(board, p, l) }
+
+def has_diag(board: List[Option[Player]], p: Player): Bool =
+  exists(diags()) { l => has_trip(board, p, l) }
+
+def is_win_for(board: List[Option[Player]], p: Player): Bool =
+  has_row(board, p) || has_col(board, p) || has_diag(board, p)
+
 def is_cat(board: List[Option[Player]]): Bool =
   is_full(board) && not(is_win_for(board, X())) && not(is_win_for(board, O()))
 
@@ -145,46 +182,8 @@ def listmax(l: List[Int]): Int =
 def listmin(l: List[Int]): Int =
   list_extreme(l) { (a, b) => if (a < b) a else b }
 
-def rows(): List[List[Int]] =
-  Cons(Cons(0, Cons(1, Cons(2, Nil()))),
-    Cons(Cons(3, Cons(4, Cons(5, Nil()))),
-      Cons(Cons(6, Cons(7, Cons(8, Nil()))),
-        Nil())))
-
-def cols(): List[List[Int]] =
-  Cons(Cons(0, Cons(3, Cons(6, Nil()))),
-    Cons(Cons(1, Cons(4, Cons(7, Nil()))),
-      Cons(Cons(2, Cons(5, Cons(8, Nil()))),
-        Nil())))
-
-def diags(): List[List[Int]] =
-  Cons(Cons(0, Cons(4, Cons(8, Nil()))),
-    Cons(Cons(2, Cons(4, Cons(6, Nil()))),
-      Nil()))
-
 def is_occupied(board: List[Option[Player]], i: Int): Bool =
   is_some(nth(board, i))
-
-def player_occupies(p: Player, board: List[Option[Player]], i: Int): Bool =
-  find(board, i) match {
-    case Some(p0) => player_equal(p, p0)
-    case None() => false
-  }
-
-def has_trip(board: List[Option[Player]], p: Player, l: List[Int]): Bool =
-  all(l) { i => player_occupies(p, board, i) }
-
-def has_row(board: List[Option[Player]], p: Player): Bool =
-  exists(rows()) { l => has_trip(board, p, l) }
-
-def has_col(board: List[Option[Player]], p: Player): Bool =
-  exists(cols()) { l => has_trip(board, p, l) }
-
-def has_diag(board: List[Option[Player]], p: Player): Bool =
-  exists(diags()) { l => has_trip(board, p, l) }
-
-def is_win_for(board: List[Option[Player]], p: Player): Bool =
-  has_row(board, p) || has_col(board, p) || has_diag(board, p)
 
 def is_win(board: List[Option[Player]]): Bool =
   is_win_for(board, X()) || is_win_for(board, O())

@@ -134,16 +134,6 @@ impl<A> List<A> {
     }
 }
 
-impl<A, const N: usize> From<[A; N]> for List<A> {
-    fn from(as_: [A; N]) -> List<A> {
-        let mut list = List::Nil;
-        for a in as_ {
-            list = List::Cons(a, Rc::new(list));
-        }
-        list
-    }
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Player {
     X,
@@ -178,16 +168,12 @@ impl<A> RoseTree<A> {
     }
 }
 
-fn diags() -> List<List<i64>> {
-    [[0, 4, 8].into(), [1, 4, 7].into(), [2, 5, 8].into()].into()
-}
-
-fn rows() -> List<List<i64>> {
-    [[0, 1, 2].into(), [3, 4, 5].into(), [6, 7, 8].into()].into()
-}
-
-fn cols() -> List<List<i64>> {
-    [[0, 3, 6].into(), [1, 4, 7].into(), [2, 5, 8].into()].into()
+fn nth(board: &List<Option<Player>>, i: i64) -> Option<Player> {
+    match board {
+        List::Nil => None,
+        List::Cons(p, _) if i == 0 => p.clone(),
+        List::Cons(_, ps) => nth(&ps, i - 1),
+    }
 }
 
 fn empty_board() -> List<Option<Player>> {
@@ -198,16 +184,78 @@ fn is_full(board: &List<Option<Player>>) -> bool {
     board.all(&|p| p.is_some())
 }
 
-fn is_win(board: &List<Option<Player>>) -> bool {
-    is_win_for(board, Player::X) || is_win_for(board, Player::O)
-}
-
 fn is_cat(board: &List<Option<Player>>) -> bool {
     is_full(board) && !is_win_for(board, Player::X) && !is_win_for(board, Player::O)
 }
 
-fn game_over(board: &List<Option<Player>>) -> bool {
-    is_win(board) || is_cat(board)
+fn rows() -> List<List<i64>> {
+    List::Cons(
+        List::Cons(
+            0,
+            Rc::new(List::Cons(1, Rc::new(List::Cons(2, Rc::new(List::Nil))))),
+        ),
+        Rc::new(List::Cons(
+            List::Cons(
+                3,
+                Rc::new(List::Cons(4, Rc::new(List::Cons(5, Rc::new(List::Nil))))),
+            ),
+            Rc::new(List::Cons(
+                List::Cons(
+                    6,
+                    Rc::new(List::Cons(7, Rc::new(List::Cons(8, Rc::new(List::Nil))))),
+                ),
+                Rc::new(List::Nil),
+            )),
+        )),
+    )
+}
+
+fn cols() -> List<List<i64>> {
+    List::Cons(
+        List::Cons(
+            0,
+            Rc::new(List::Cons(3, Rc::new(List::Cons(6, Rc::new(List::Nil))))),
+        ),
+        Rc::new(List::Cons(
+            List::Cons(
+                1,
+                Rc::new(List::Cons(4, Rc::new(List::Cons(7, Rc::new(List::Nil))))),
+            ),
+            Rc::new(List::Cons(
+                List::Cons(
+                    2,
+                    Rc::new(List::Cons(5, Rc::new(List::Cons(8, Rc::new(List::Nil))))),
+                ),
+                Rc::new(List::Nil),
+            )),
+        )),
+    )
+}
+
+fn diags() -> List<List<i64>> {
+    List::Cons(
+        List::Cons(
+            0,
+            Rc::new(List::Cons(4, Rc::new(List::Cons(8, Rc::new(List::Nil))))),
+        ),
+        Rc::new(List::Cons(
+            List::Cons(
+                1,
+                Rc::new(List::Cons(4, Rc::new(List::Cons(7, Rc::new(List::Nil))))),
+            ),
+            Rc::new(List::Cons(
+                List::Cons(
+                    2,
+                    Rc::new(List::Cons(5, Rc::new(List::Cons(8, Rc::new(List::Nil))))),
+                ),
+                Rc::new(List::Nil),
+            )),
+        )),
+    )
+}
+
+fn is_occupied(board: &List<Option<Player>>, i: i64) -> bool {
+    nth(board, i).is_some()
 }
 
 fn player_occupies(p: Player, board: &List<Option<Player>>, i: i64) -> bool {
@@ -241,6 +289,14 @@ fn is_win_for(board: &List<Option<Player>>, p: Player) -> bool {
     has_row(board, p) || has_col(board, p) || has_diag(board, p)
 }
 
+fn is_win(board: &List<Option<Player>>) -> bool {
+    is_win_for(board, Player::X) || is_win_for(board, Player::O)
+}
+
+fn game_over(board: &List<Option<Player>>) -> bool {
+    is_win(board) || is_cat(board)
+}
+
 fn score(board: &List<Option<Player>>) -> i64 {
     if is_win_for(board, Player::X) {
         1
@@ -249,18 +305,6 @@ fn score(board: &List<Option<Player>>) -> i64 {
     } else {
         0
     }
-}
-
-fn nth(board: &List<Option<Player>>, i: i64) -> Option<Player> {
-    match board {
-        List::Nil => None,
-        List::Cons(p, _) if i == 0 => p.clone(),
-        List::Cons(_, ps) => nth(&ps, i - 1),
-    }
-}
-
-fn is_occupied(board: &List<Option<Player>>, i: i64) -> bool {
-    nth(board, i).is_some()
 }
 
 fn put_at(x: Option<Player>, xs: List<Option<Player>>, i: i64) -> List<Option<Player>> {

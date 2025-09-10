@@ -5,9 +5,9 @@ structure Minimax = struct
 
   datatype 'a rosetree = Rose of 'a * ('a rosetree) list
 
-  fun top (Rose (p,_)) = p
-
   fun mk_leaf p = Rose (p,nil)
+
+  fun top (Rose (p,_)) = p
 
   fun snd (_,x) = x
 
@@ -24,15 +24,6 @@ structure Minimax = struct
   fun tabulate len f = 
     if len < 0 then nil else tabulate_loop 0 len f 
 
-  fun list_extreme f l = 
-    case l of 
-         nil => 0
-       | i::is => List.foldr f i is
-
-  fun listmax l = list_extreme Int.max l
-
-  fun listmin l = list_extreme Int.min l
-
   fun nth l i = 
     case l of 
          nil => raise BadIndex 
@@ -45,9 +36,8 @@ structure Minimax = struct
 
   fun emptyBoard () = tabulate 9 (fn () => NONE)
 
-  fun rows () = [[0,1,2],[3,4,5],[6,7,8]]
-  fun cols () = [[0,3,6],[1,4,7],[2,5,8]]
-  fun diags() = [[0,4,8],[2,4,6]]
+  fun is_full board = 
+    List.all (fn p => Option.isSome p) board
 
   fun player_occupies p board i = 
     case find board i of 
@@ -56,6 +46,10 @@ structure Minimax = struct
 
   fun has_trip board p l = 
     List.all (fn i => player_occupies p board i) l
+
+  fun rows () = [[0,1,2],[3,4,5],[6,7,8]]
+  fun cols () = [[0,3,6],[1,4,7],[2,5,8]]
+  fun diags() = [[0,4,8],[2,4,6]]
 
   fun has_row board p = 
     List.exists (fn l => has_trip board p l) (rows())
@@ -66,14 +60,22 @@ structure Minimax = struct
   fun has_diag board p =
     List.exists (fn l => has_trip board p l) (diags())
 
-  fun is_full board = 
-    List.all (fn p => Option.isSome p) board
-
   fun is_win_for board p = 
     (has_row board p) orelse (has_col board p) orelse (has_diag board p)
 
   fun is_cat board = 
     (is_full board) andalso (not (is_win_for board X)) andalso (not (is_win_for board O))
+
+  fun list_extreme f l = 
+    case l of 
+         nil => 0
+       | i::is => List.foldr f i is
+
+  fun listmax l = list_extreme Int.max l
+
+  fun listmin l = list_extreme Int.min l
+
+  fun is_occupied board i = Option.isSome (nth board i)
 
   fun is_win board = 
     (is_win_for board X) orelse (is_win_for board O)
@@ -84,8 +86,6 @@ structure Minimax = struct
     if is_win_for board X then 1 
     else if is_win_for board O then ~1 
     else 0
-
-  fun is_occupied board i = Option.isSome (nth board i)
 
   fun put_at x xs i = 
     if i=0 then (x::tl xs)

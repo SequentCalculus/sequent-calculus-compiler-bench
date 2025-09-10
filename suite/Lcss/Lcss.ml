@@ -3,30 +3,6 @@ let rec enum_from_then_to from th to_ =
   then from :: (enum_from_then_to th ((2*th)-from) to_)
   else []
 
-let is_singleton ls = 
-  match ls with 
-    | x::[] -> Some x 
-    | _ -> None
-
-let rec in_list x ls = 
-  match ls with 
-    | [] -> false 
-    | y::ys -> if x=y then true else in_list x ys
-
-let rec zip xs ys = 
-  match (xs,ys) with 
-    ([],_) -> []
-  | (_,[]) -> []
-  | (x::xs,y::ys) -> (x,y) :: zip xs ys
-
-let rec findk k km m ls = 
-  match ls with 
-    | [] -> km 
-    | (x,y) :: xys -> 
-        if m <= (x+y) 
-        then findk (k+1) k (x+y) xys 
-        else findk (k+1) km m xys
-
 let rec algb2 x k0j1 k1j1 yss = 
   match yss with 
     | [] -> []
@@ -46,6 +22,31 @@ let rec add_zero ls =
 
 let algb xs ys = 
   0 :: (algb1 xs (add_zero ys))
+
+let rec findk k km m ls = 
+  match ls with 
+    | [] -> km 
+    | (x,y) :: xys -> 
+        if m <= (x+y) 
+        then findk (k+1) k (x+y) xys 
+        else findk (k+1) km m xys
+
+let is_singleton ls = 
+  match ls with 
+    | x::[] -> Some x 
+    | _ -> None
+
+let rec zip xs ys = 
+  match (xs,ys) with 
+    ([],_) -> []
+  | (_,[]) -> []
+  | (x::xs,y::ys) -> (x,y) :: zip xs ys
+
+
+let rec in_list x ls = 
+  match ls with 
+    | [] -> false 
+    | y::ys -> if x=y then true else in_list x ys
 
 let rec algc m n xs ys = 
   if List.is_empty ys then fun x -> x 

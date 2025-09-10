@@ -114,19 +114,6 @@ impl<T> List<T> {
     }
 }
 
-fn findk(k: usize, km: usize, m: i64, ls: List<(i64, i64)>) -> usize {
-    match ls {
-        List::Nil => km,
-        List::Cons((x, y), xys) => {
-            if m <= x + y {
-                findk(k + 1, k, x + y, Rc::unwrap_or_clone(xys))
-            } else {
-                findk(k + 1, km, m, Rc::unwrap_or_clone(xys))
-            }
-        }
-    }
-}
-
 fn enum_from_then_to(from: i64, then: i64, t: i64) -> List<i64> {
     if from <= t {
         List::Cons(from, Rc::new(enum_from_then_to(then, (2 * then) - from, t)))
@@ -155,8 +142,28 @@ fn algb1(xss: List<i64>, yss: List<(i64, i64)>) -> List<i64> {
     }
 }
 
+fn add_zero(ls: List<i64>) -> List<(i64, i64)> {
+    match ls {
+        List::Nil => List::Nil,
+        List::Cons(h, t) => List::Cons((h, 0), Rc::new(add_zero(Rc::unwrap_or_clone(t)))),
+    }
+}
+
 fn algb(xs: List<i64>, ys: List<i64>) -> List<i64> {
-    List::Cons(0, Rc::new(algb1(xs, ys.map(&|x| (x, 0)))))
+    List::Cons(0, Rc::new(algb1(xs, add_zero(ys))))
+}
+
+fn findk(k: usize, km: usize, m: i64, ls: List<(i64, i64)>) -> usize {
+    match ls {
+        List::Nil => km,
+        List::Cons((x, y), xys) => {
+            if m <= x + y {
+                findk(k + 1, k, x + y, Rc::unwrap_or_clone(xys))
+            } else {
+                findk(k + 1, km, m, Rc::unwrap_or_clone(xys))
+            }
+        }
+    }
 }
 
 fn algc(m: usize, n: usize, xs: List<i64>, ys: List<i64>) -> Box<dyn Fn(List<i64>) -> List<i64>> {

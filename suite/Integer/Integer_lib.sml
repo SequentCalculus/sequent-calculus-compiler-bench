@@ -1,7 +1,6 @@
 structure Integer = struct 
   datatype ('a, 'b) either = Left of 'a | Right of 'b 
 
-
   fun enum_from_then_to from th to = 
     if from<=to
     then from::(enum_from_then_to th ((2*th) - from) to)

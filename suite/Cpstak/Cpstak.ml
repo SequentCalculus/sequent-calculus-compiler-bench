@@ -6,8 +6,10 @@ let rec cps_tak x y z k =
     cps_tak (z-1) x y (fun v3 -> 
     cps_tak v1 v2 v3 k)))
 
+let tak x y z = cps_tak x y z (fun a -> a)
+
 let rec main_loop iters x y z = 
-  let res = cps_tak x y z (fun a -> a) in 
+  let res = tak x y z in
   if iters = 1 then 
     print_endline (string_of_int res)
   else main_loop (iters-1) x y z

@@ -1,88 +1,33 @@
 use std::rc::Rc;
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq)]
 enum List<T> {
     Nil,
     Cons(T, Rc<List<T>>),
 }
 
-impl<T> List<T> {
-    fn three(self) -> Option<(T, T, T)>
-    where
-        T: Clone,
-    {
-        match self {
-            List::Nil => None,
-            List::Cons(t1, ts1) => match Rc::unwrap_or_clone(ts1) {
-                List::Nil => None,
-                List::Cons(t2, ts2) => match Rc::unwrap_or_clone(ts2) {
-                    List::Nil => None,
-                    List::Cons(t3, ts3) => match Rc::unwrap_or_clone(ts3) {
-                        List::Nil => Some((t1, t2, t3)),
-                        List::Cons(_, _) => None,
-                    },
-                },
-            },
-        }
-    }
-
-    fn contains(&self, t: &T) -> bool
-    where
-        T: PartialEq,
-    {
+impl<'a> List<Term<'a>> {
+    fn term_in_list(&self, term: &Term<'a>) -> bool {
         match self {
             List::Nil => false,
-            List::Cons(t1, ts) => {
-                if t1 == t {
-                    true
-                } else {
-                    ts.contains(t)
-                }
-            }
+            List::Cons(t, ts) => term == t || ts.term_in_list(term),
         }
     }
 
-    fn all(self, f: impl Fn(T) -> bool) -> bool
-    where
-        T: Clone,
-    {
+    fn all_term(&self, pred: &impl Fn(&Term<'a>) -> bool) -> bool {
         match self {
             List::Nil => true,
-            List::Cons(t, ts) => {
-                if f(t) {
-                    Rc::unwrap_or_clone(ts).all(f)
-                } else {
-                    false
-                }
-            }
+            List::Cons(t, ts) => pred(t) && ts.all_term(pred),
         }
     }
 
-    fn map<U>(self, f: impl Fn(T) -> U) -> List<U>
-    where
-        T: Clone,
-    {
+    fn map(self, f: impl Fn(Term<'a>) -> Term<'a>) -> List<Term<'a>> {
         match self {
             List::Nil => List::Nil,
             List::Cons(t, ts) => List::Cons(f(t), Rc::new(Rc::unwrap_or_clone(ts).map(f))),
         }
     }
 }
-
-impl<T> PartialEq for List<T>
-where
-    T: PartialEq,
-{
-    fn eq(&self, other: &List<T>) -> bool {
-        match (self, other) {
-            (List::Nil, List::Nil) => true,
-            (List::Cons(t1, ts1), List::Cons(t2, ts2)) => t1 == t2 && ts1 == ts2,
-            _ => false,
-        }
-    }
-}
-
-impl<T> Eq for List<T> where T: Eq {}
 
 #[derive(PartialEq, Eq, Clone, Copy)]
 enum Id {
@@ -155,56 +100,42 @@ fn replicate_term<'a>(n: u64, t: Term<'a>) -> List<Term<'a>> {
     }
 }
 
-fn boyer_a<'a>() -> Term<'a> {
-    Term::Var(Id::A)
+fn find<'a>(vid: &Id, ls: List<(Id, Term<'a>)>) -> (bool, Term<'a>) {
+    match ls {
+        List::Nil => (false, Term::ERROR),
+        List::Cons((vid2, val2), bs) => {
+            if *vid == vid2 {
+                (true, val2)
+            } else {
+                find(vid, Rc::unwrap_or_clone(bs))
+            }
+        }
+    }
 }
 
-fn boyer_b<'a>() -> Term<'a> {
-    Term::Var(Id::B)
-}
-
-fn boyer_c<'a>() -> Term<'a> {
-    Term::Var(Id::C)
-}
-
-fn boyer_d<'a>() -> Term<'a> {
-    Term::Var(Id::D)
-}
-
-fn boyer_x<'a>() -> Term<'a> {
-    Term::Var(Id::X)
-}
-
-fn boyer_y<'a>() -> Term<'a> {
-    Term::Var(Id::Y)
-}
-
-fn boyer_z<'a>() -> Term<'a> {
-    Term::Var(Id::Z)
-}
-
-fn boyer_u<'a>() -> Term<'a> {
-    Term::Var(Id::U)
-}
-
-fn boyer_w<'a>() -> Term<'a> {
-    Term::Var(Id::W)
-}
-
-fn boyer_false<'a>() -> Term<'a> {
-    Term::Fun(Id::FALSE, Rc::new(List::Nil), &|| List::Nil)
-}
-
-fn boyer_nil<'a>() -> Term<'a> {
-    Term::Fun(Id::NIL, Rc::new(List::Nil), &|| List::Nil)
-}
-
-fn boyer_true<'a>() -> Term<'a> {
-    Term::Fun(Id::TRUE, Rc::new(List::Nil), &|| List::Nil)
+fn boyer_add1<'a>(a: Term<'a>) -> Term<'a> {
+    Term::Fun(
+        Id::ADD1,
+        Rc::new(List::Cons(a, Rc::new(List::Nil))),
+        &|| List::Nil,
+    )
 }
 
 fn boyer_zero<'a>() -> Term<'a> {
     Term::Fun(Id::ZERO, Rc::new(List::Nil), &|| List::Nil)
+}
+
+fn boyer_zerop<'a>(a: Term<'a>) -> Term<'a> {
+    Term::Fun(
+        Id::ZEROP,
+        Rc::new(List::Cons(a, Rc::new(List::Nil))),
+        &|| {
+            List::Cons(
+                (boyer_zerop(boyer_x()), boyer_equal(boyer_x(), boyer_zero())),
+                Rc::new(List::Nil),
+            )
+        },
+    )
 }
 
 fn boyer_one<'a>() -> Term<'a> {
@@ -226,14 +157,6 @@ fn boyer_four<'a>() -> Term<'a> {
             Rc::new(List::Nil),
         )
     })
-}
-
-fn boyer_add1<'a>(a: Term<'a>) -> Term<'a> {
-    Term::Fun(
-        Id::ADD1,
-        Rc::new(List::Cons(a, Rc::new(List::Nil))),
-        &|| List::Nil,
-    )
 }
 
 fn boyer_if<'a>(a: Term<'a>, b: Term<'a>, c: Term<'a>) -> Term<'a> {
@@ -290,91 +213,6 @@ fn boyer_and<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
                     ),
                 ),
                 Rc::new(List::Nil),
-            )
-        },
-    )
-}
-
-fn boyer_append<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(
-        Id::APPEND,
-        Rc::new(List::Cons(a, Rc::new(List::Cons(b, Rc::new(List::Nil))))),
-        &|| {
-            List::Cons(
-                (
-                    boyer_append(boyer_append(boyer_x(), boyer_y()), boyer_z()),
-                    boyer_append(boyer_x(), boyer_append(boyer_y(), boyer_z())),
-                ),
-                Rc::new(List::Nil),
-            )
-        },
-    )
-}
-
-fn boyer_cons<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(
-        Id::CONS,
-        Rc::new(List::Cons(a, Rc::new(List::Cons(b, Rc::new(List::Nil))))),
-        &|| List::Nil,
-    )
-}
-
-fn boyer_difference<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(
-        Id::DIFFERENCE,
-        Rc::new(List::Cons(a, Rc::new(List::Cons(b, Rc::new(List::Nil))))),
-        &|| {
-            List::Cons(
-                (boyer_difference(boyer_x(), boyer_x()), boyer_zero()),
-                Rc::new(List::Cons(
-                    (
-                        boyer_difference(boyer_plus(boyer_x(), boyer_y()), boyer_x()),
-                        boyer_y(),
-                    ),
-                    Rc::new(List::Cons(
-                        (
-                            boyer_difference(boyer_plus(boyer_y(), boyer_x()), boyer_x()),
-                            boyer_y(),
-                        ),
-                        Rc::new(List::Cons(
-                            (
-                                boyer_difference(
-                                    boyer_plus(boyer_x(), boyer_y()),
-                                    boyer_plus(boyer_x(), boyer_z()),
-                                ),
-                                boyer_difference(boyer_y(), boyer_z()),
-                            ),
-                            Rc::new(List::Cons(
-                                (
-                                    boyer_difference(
-                                        boyer_plus(boyer_y(), boyer_plus(boyer_x(), boyer_z())),
-                                        boyer_x(),
-                                    ),
-                                    boyer_plus(boyer_y(), boyer_z()),
-                                ),
-                                Rc::new(List::Cons(
-                                    (
-                                        boyer_difference(
-                                            boyer_add1(boyer_plus(boyer_y(), boyer_z())),
-                                            boyer_z(),
-                                        ),
-                                        boyer_add1(boyer_y()),
-                                    ),
-                                    Rc::new(List::Cons(
-                                        (
-                                            boyer_difference(
-                                                boyer_add1(boyer_add1(boyer_x())),
-                                                boyer_two(),
-                                            ),
-                                            boyer_x(),
-                                        ),
-                                        Rc::new(List::Nil),
-                                    )),
-                                )),
-                            )),
-                        )),
-                    )),
-                )),
             )
         },
     )
@@ -543,25 +381,15 @@ fn boyer_equal<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
     )
 }
 
-fn boyer_f<'a>(a: Term<'a>) -> Term<'a> {
-    Term::Fun(Id::F, Rc::new(List::Cons(a, Rc::new(List::Nil))), &|| {
-        List::Nil
-    })
-}
-
-fn boyer_implies<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
+fn boyer_append<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
     Term::Fun(
-        Id::IMPLIES,
+        Id::APPEND,
         Rc::new(List::Cons(a, Rc::new(List::Cons(b, Rc::new(List::Nil))))),
         &|| {
             List::Cons(
                 (
-                    boyer_implies(boyer_x(), boyer_y()),
-                    boyer_if(
-                        boyer_x(),
-                        boyer_if(boyer_y(), boyer_true(), boyer_false()),
-                        boyer_true(),
-                    ),
+                    boyer_append(boyer_append(boyer_x(), boyer_y()), boyer_z()),
+                    boyer_append(boyer_x(), boyer_append(boyer_y(), boyer_z())),
                 ),
                 Rc::new(List::Nil),
             )
@@ -569,29 +397,65 @@ fn boyer_implies<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
     )
 }
 
-fn boyer_length<'a>(a: Term<'a>) -> Term<'a> {
+fn boyer_x<'a>() -> Term<'a> {
+    Term::Var(Id::X)
+}
+
+fn boyer_y<'a>() -> Term<'a> {
+    Term::Var(Id::Y)
+}
+
+fn boyer_z<'a>() -> Term<'a> {
+    Term::Var(Id::Z)
+}
+
+fn boyer_u<'a>() -> Term<'a> {
+    Term::Var(Id::U)
+}
+
+fn boyer_w<'a>() -> Term<'a> {
+    Term::Var(Id::W)
+}
+
+fn boyer_a<'a>() -> Term<'a> {
+    Term::Var(Id::A)
+}
+
+fn boyer_b<'a>() -> Term<'a> {
+    Term::Var(Id::B)
+}
+
+fn boyer_c<'a>() -> Term<'a> {
+    Term::Var(Id::C)
+}
+
+fn boyer_d<'a>() -> Term<'a> {
+    Term::Var(Id::D)
+}
+
+fn boyer_false<'a>() -> Term<'a> {
+    Term::Fun(Id::FALSE, Rc::new(List::Nil), &|| List::Nil)
+}
+
+fn boyer_true<'a>() -> Term<'a> {
+    Term::Fun(Id::TRUE, Rc::new(List::Nil), &|| List::Nil)
+}
+
+fn boyer_or<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
     Term::Fun(
-        Id::LENGTH,
-        Rc::new(List::Cons(a, Rc::new(List::Nil))),
+        Id::OR,
+        Rc::new(List::Cons(a, Rc::new(List::Cons(b, Rc::new(List::Nil))))),
         &|| {
             List::Cons(
                 (
-                    boyer_length(boyer_reverse(boyer_x())),
-                    boyer_length(boyer_x()),
-                ),
-                Rc::new(List::Cons(
-                    (
-                        boyer_length(boyer_cons(
-                            boyer_x(),
-                            boyer_cons(
-                                boyer_y(),
-                                boyer_cons(boyer_z(), boyer_cons(boyer_y(), boyer_w())),
-                            ),
-                        )),
-                        boyer_plus(boyer_four(), boyer_length(boyer_w())),
+                    boyer_or(boyer_x(), boyer_y()),
+                    boyer_if(
+                        boyer_x(),
+                        boyer_true(),
+                        boyer_if(boyer_y(), boyer_true(), boyer_false()),
                     ),
-                    Rc::new(List::Nil),
-                )),
+                ),
+                Rc::new(List::Nil),
             )
         },
     )
@@ -649,104 +513,11 @@ fn boyer_lessp<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
     )
 }
 
-fn boyer_member<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
+fn boyer_cons<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
     Term::Fun(
-        Id::MEMBER,
+        Id::CONS,
         Rc::new(List::Cons(a, Rc::new(List::Cons(b, Rc::new(List::Nil))))),
-        &|| {
-            List::Cons(
-                (
-                    boyer_member(boyer_x(), boyer_append(boyer_y(), boyer_z())),
-                    boyer_or(
-                        boyer_member(boyer_x(), boyer_y()),
-                        boyer_member(boyer_x(), boyer_z()),
-                    ),
-                ),
-                Rc::new(List::Cons(
-                    (
-                        boyer_member(boyer_x(), boyer_reverse(boyer_y())),
-                        boyer_member(boyer_x(), boyer_y()),
-                    ),
-                    Rc::new(List::Nil),
-                )),
-            )
-        },
-    )
-}
-
-fn boyer_or<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(
-        Id::OR,
-        Rc::new(List::Cons(a, Rc::new(List::Cons(b, Rc::new(List::Nil))))),
-        &|| {
-            List::Cons(
-                (
-                    boyer_or(boyer_x(), boyer_y()),
-                    boyer_if(
-                        boyer_x(),
-                        boyer_true(),
-                        boyer_if(boyer_y(), boyer_true(), boyer_false()),
-                    ),
-                ),
-                Rc::new(List::Nil),
-            )
-        },
-    )
-}
-
-fn boyer_plus<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(
-        Id::PLUS,
-        Rc::new(List::Cons(a, Rc::new(List::Cons(b, Rc::new(List::Nil))))),
-        &|| {
-            List::Cons(
-                (
-                    boyer_plus(boyer_plus(boyer_x(), boyer_y()), boyer_z()),
-                    boyer_plus(boyer_x(), boyer_plus(boyer_y(), boyer_z())),
-                ),
-                Rc::new(List::Cons(
-                    (
-                        boyer_plus(
-                            boyer_remainder(boyer_x(), boyer_y()),
-                            boyer_times(boyer_y(), boyer_quotient(boyer_x(), boyer_y())),
-                        ),
-                        boyer_x(),
-                    ),
-                    Rc::new(List::Cons(
-                        (
-                            boyer_plus(boyer_x(), boyer_add1(boyer_y())),
-                            boyer_add1(boyer_plus(boyer_x(), boyer_y())),
-                        ),
-                        Rc::new(List::Nil),
-                    )),
-                )),
-            )
-        },
-    )
-}
-
-fn boyer_quotient<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
-    Term::Fun(
-        Id::QUOTIENT,
-        Rc::new(List::Cons(a, Rc::new(List::Cons(b, Rc::new(List::Nil))))),
-        &|| {
-            List::Cons(
-                (
-                    boyer_quotient(
-                        boyer_plus(boyer_x(), boyer_plus(boyer_x(), boyer_y())),
-                        boyer_two(),
-                    ),
-                    boyer_plus(boyer_x(), boyer_quotient(boyer_y(), boyer_two())),
-                ),
-                Rc::new(List::Cons(
-                    (
-                        boyer_quotient(boyer_times(boyer_y(), boyer_x()), boyer_y()),
-                        boyer_if(boyer_zerop(boyer_y()), boyer_zero(), boyer_x()),
-                    ),
-                    Rc::new(List::Nil),
-                )),
-            )
-        },
+        &|| List::Nil,
     )
 }
 
@@ -778,17 +549,26 @@ fn boyer_remainder<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
     )
 }
 
-fn boyer_reverse<'a>(a: Term<'a>) -> Term<'a> {
+fn boyer_quotient<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
     Term::Fun(
-        Id::REVERSE,
-        Rc::new(List::Cons(a, Rc::new(List::Nil))),
+        Id::QUOTIENT,
+        Rc::new(List::Cons(a, Rc::new(List::Cons(b, Rc::new(List::Nil))))),
         &|| {
             List::Cons(
                 (
-                    boyer_reverse(boyer_append(boyer_x(), boyer_y())),
-                    boyer_append(boyer_reverse(boyer_y()), boyer_reverse(boyer_x())),
+                    boyer_quotient(
+                        boyer_plus(boyer_x(), boyer_plus(boyer_x(), boyer_y())),
+                        boyer_two(),
+                    ),
+                    boyer_plus(boyer_x(), boyer_quotient(boyer_y(), boyer_two())),
                 ),
-                Rc::new(List::Nil),
+                Rc::new(List::Cons(
+                    (
+                        boyer_quotient(boyer_times(boyer_y(), boyer_x()), boyer_y()),
+                        boyer_if(boyer_zerop(boyer_y()), boyer_zero(), boyer_x()),
+                    ),
+                    Rc::new(List::Nil),
+                )),
             )
         },
     )
@@ -834,30 +614,195 @@ fn boyer_times<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
     )
 }
 
-fn boyer_zerop<'a>(a: Term<'a>) -> Term<'a> {
+fn boyer_difference<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
     Term::Fun(
-        Id::ZEROP,
-        Rc::new(List::Cons(a, Rc::new(List::Nil))),
+        Id::DIFFERENCE,
+        Rc::new(List::Cons(a, Rc::new(List::Cons(b, Rc::new(List::Nil))))),
         &|| {
             List::Cons(
-                (boyer_zerop(boyer_x()), boyer_equal(boyer_x(), boyer_zero())),
+                (boyer_difference(boyer_x(), boyer_x()), boyer_zero()),
+                Rc::new(List::Cons(
+                    (
+                        boyer_difference(boyer_plus(boyer_x(), boyer_y()), boyer_x()),
+                        boyer_y(),
+                    ),
+                    Rc::new(List::Cons(
+                        (
+                            boyer_difference(boyer_plus(boyer_y(), boyer_x()), boyer_x()),
+                            boyer_y(),
+                        ),
+                        Rc::new(List::Cons(
+                            (
+                                boyer_difference(
+                                    boyer_plus(boyer_x(), boyer_y()),
+                                    boyer_plus(boyer_x(), boyer_z()),
+                                ),
+                                boyer_difference(boyer_y(), boyer_z()),
+                            ),
+                            Rc::new(List::Cons(
+                                (
+                                    boyer_difference(
+                                        boyer_plus(boyer_y(), boyer_plus(boyer_x(), boyer_z())),
+                                        boyer_x(),
+                                    ),
+                                    boyer_plus(boyer_y(), boyer_z()),
+                                ),
+                                Rc::new(List::Cons(
+                                    (
+                                        boyer_difference(
+                                            boyer_add1(boyer_plus(boyer_y(), boyer_z())),
+                                            boyer_z(),
+                                        ),
+                                        boyer_add1(boyer_y()),
+                                    ),
+                                    Rc::new(List::Cons(
+                                        (
+                                            boyer_difference(
+                                                boyer_add1(boyer_add1(boyer_x())),
+                                                boyer_two(),
+                                            ),
+                                            boyer_x(),
+                                        ),
+                                        Rc::new(List::Nil),
+                                    )),
+                                )),
+                            )),
+                        )),
+                    )),
+                )),
+            )
+        },
+    )
+}
+
+fn boyer_implies<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
+    Term::Fun(
+        Id::IMPLIES,
+        Rc::new(List::Cons(a, Rc::new(List::Cons(b, Rc::new(List::Nil))))),
+        &|| {
+            List::Cons(
+                (
+                    boyer_implies(boyer_x(), boyer_y()),
+                    boyer_if(
+                        boyer_x(),
+                        boyer_if(boyer_y(), boyer_true(), boyer_false()),
+                        boyer_true(),
+                    ),
+                ),
                 Rc::new(List::Nil),
             )
         },
     )
 }
 
-fn find<'a>(vid: &Id, ls: List<(Id, Term<'a>)>) -> (bool, Term<'a>) {
-    match ls {
-        List::Nil => (false, Term::ERROR),
-        List::Cons((vid2, val2), bs) => {
-            if *vid == vid2 {
-                (true, val2)
-            } else {
-                find(vid, Rc::unwrap_or_clone(bs))
-            }
-        }
-    }
+fn boyer_length<'a>(a: Term<'a>) -> Term<'a> {
+    Term::Fun(
+        Id::LENGTH,
+        Rc::new(List::Cons(a, Rc::new(List::Nil))),
+        &|| {
+            List::Cons(
+                (
+                    boyer_length(boyer_reverse(boyer_x())),
+                    boyer_length(boyer_x()),
+                ),
+                Rc::new(List::Cons(
+                    (
+                        boyer_length(boyer_cons(
+                            boyer_x(),
+                            boyer_cons(
+                                boyer_y(),
+                                boyer_cons(boyer_z(), boyer_cons(boyer_y(), boyer_w())),
+                            ),
+                        )),
+                        boyer_plus(boyer_four(), boyer_length(boyer_w())),
+                    ),
+                    Rc::new(List::Nil),
+                )),
+            )
+        },
+    )
+}
+
+fn boyer_reverse<'a>(a: Term<'a>) -> Term<'a> {
+    Term::Fun(
+        Id::REVERSE,
+        Rc::new(List::Cons(a, Rc::new(List::Nil))),
+        &|| {
+            List::Cons(
+                (
+                    boyer_reverse(boyer_append(boyer_x(), boyer_y())),
+                    boyer_append(boyer_reverse(boyer_y()), boyer_reverse(boyer_x())),
+                ),
+                Rc::new(List::Nil),
+            )
+        },
+    )
+}
+
+fn boyer_nil<'a>() -> Term<'a> {
+    Term::Fun(Id::NIL, Rc::new(List::Nil), &|| List::Nil)
+}
+
+fn boyer_member<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
+    Term::Fun(
+        Id::MEMBER,
+        Rc::new(List::Cons(a, Rc::new(List::Cons(b, Rc::new(List::Nil))))),
+        &|| {
+            List::Cons(
+                (
+                    boyer_member(boyer_x(), boyer_append(boyer_y(), boyer_z())),
+                    boyer_or(
+                        boyer_member(boyer_x(), boyer_y()),
+                        boyer_member(boyer_x(), boyer_z()),
+                    ),
+                ),
+                Rc::new(List::Cons(
+                    (
+                        boyer_member(boyer_x(), boyer_reverse(boyer_y())),
+                        boyer_member(boyer_x(), boyer_y()),
+                    ),
+                    Rc::new(List::Nil),
+                )),
+            )
+        },
+    )
+}
+
+fn boyer_plus<'a>(a: Term<'a>, b: Term<'a>) -> Term<'a> {
+    Term::Fun(
+        Id::PLUS,
+        Rc::new(List::Cons(a, Rc::new(List::Cons(b, Rc::new(List::Nil))))),
+        &|| {
+            List::Cons(
+                (
+                    boyer_plus(boyer_plus(boyer_x(), boyer_y()), boyer_z()),
+                    boyer_plus(boyer_x(), boyer_plus(boyer_y(), boyer_z())),
+                ),
+                Rc::new(List::Cons(
+                    (
+                        boyer_plus(
+                            boyer_remainder(boyer_x(), boyer_y()),
+                            boyer_times(boyer_y(), boyer_quotient(boyer_x(), boyer_y())),
+                        ),
+                        boyer_x(),
+                    ),
+                    Rc::new(List::Cons(
+                        (
+                            boyer_plus(boyer_x(), boyer_add1(boyer_y())),
+                            boyer_add1(boyer_plus(boyer_x(), boyer_y())),
+                        ),
+                        Rc::new(List::Nil),
+                    )),
+                )),
+            )
+        },
+    )
+}
+
+fn boyer_f<'a>(a: Term<'a>) -> Term<'a> {
+    Term::Fun(Id::F, Rc::new(List::Cons(a, Rc::new(List::Nil))), &|| {
+        List::Nil
+    })
 }
 
 fn one_way_unify1<'a>(
@@ -939,14 +884,14 @@ fn rewrite<'a>(t: Term<'a>) -> Term<'a> {
 fn truep<'a>(x: &Term<'a>, l: &List<Term<'a>>) -> bool {
     match x {
         Term::Fun(Id::TRUE, _, _) => true,
-        _ => l.contains(x),
+        _ => l.term_in_list(x),
     }
 }
 
 fn falsep<'a>(x: &Term<'a>, l: &List<Term<'a>>) -> bool {
     match x {
         Term::Fun(Id::FALSE, _, _) => true,
-        _ => l.contains(x),
+        _ => l.term_in_list(x),
     }
 }
 
@@ -956,9 +901,18 @@ fn tautologyp<'a>(x: Term<'a>, true_lst: List<Term<'a>>, false_lst: List<Term<'a
     } else if falsep(&x, &false_lst) {
         false
     } else if let Term::Fun(Id::IF, args, _) = x {
-        let (cond, t, e) = match Rc::unwrap_or_clone(args).three() {
-            None => return false,
-            Some(cs) => cs,
+        let (cond, t, e) = match Rc::unwrap_or_clone(args) {
+            List::Nil => return false,
+            List::Cons(cond, rst) => match Rc::unwrap_or_clone(rst) {
+                List::Nil => return false,
+                List::Cons(t, ts) => match Rc::unwrap_or_clone(ts) {
+                    List::Nil => return false,
+                    List::Cons(e, es) => match Rc::unwrap_or_clone(es) {
+                        List::Nil => (cond, t, e),
+                        List::Cons(_, _) => return false,
+                    },
+                },
+            },
         };
 
         if truep(&cond, &true_lst) {
@@ -979,15 +933,15 @@ fn tautologyp<'a>(x: Term<'a>, true_lst: List<Term<'a>>, false_lst: List<Term<'a
     }
 }
 
+fn tautp<'a>(x: Term<'a>) -> bool {
+    tautologyp(rewrite(x), List::Nil, List::Nil)
+}
+
 fn apply_subst<'a>(subst: List<(Id, Term<'a>)>, t: Term<'a>) -> Term<'a> {
     match t {
         Term::Var(vid) => {
             let (found, value) = find(&vid, subst);
-            if found {
-                value
-            } else {
-                Term::Var(vid)
-            }
+            if found { value } else { Term::Var(vid) }
         }
         Term::Fun(f, args, ls) => Term::Fun(
             f,
@@ -996,10 +950,6 @@ fn apply_subst<'a>(subst: List<(Id, Term<'a>)>, t: Term<'a>) -> Term<'a> {
         ),
         Term::ERROR => Term::ERROR,
     }
-}
-
-fn tautp<'a>(x: Term<'a>) -> bool {
-    tautologyp(rewrite(x), List::Nil, List::Nil)
 }
 
 fn boyer_subst0<'a>() -> List<(Id, Term<'a>)> {
@@ -1073,17 +1023,13 @@ fn test0<'a>(xxxx: Term<'a>) -> bool {
 
 fn test_boyer_nofib(n: u64) -> bool {
     let ts = replicate_term(n, Term::Var(Id::X));
-    ts.all(|t| test0(t))
+    ts.all_term(&|t| test0(t.clone()))
 }
 
 fn main_loop(iters: u64, n: u64) {
     let res = test_boyer_nofib(n);
     if iters == 1 {
-        if res {
-            println!("1")
-        } else {
-            println!("0")
-        }
+        if res { println!("1") } else { println!("0") }
     } else {
         main_loop(iters - 1, n)
     }

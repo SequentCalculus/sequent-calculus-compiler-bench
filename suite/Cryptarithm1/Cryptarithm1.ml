@@ -1,9 +1,9 @@
+let expand a b c d e f =
+  f + (10*e) + (100*d) + (1000*c) + (10000*b) + (100000*a)
+
 let rec enum_from_to from to_ =
   if to_>=from then from::(enum_from_to (from+1) to_)
   else []
-
-let expand a b c d e f =
-  f + (10*e) + (100*d) + (1000*c) + (10000*b) + (100000*a)
 
 let condition thirywelvn =
   match thirywelvn with

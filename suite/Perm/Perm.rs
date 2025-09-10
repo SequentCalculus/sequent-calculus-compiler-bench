@@ -7,10 +7,13 @@ enum List<A> {
 }
 
 impl<A> List<A> {
-    fn len(&self) -> usize {
+    fn tail(self) -> List<A>
+    where
+        A: Clone,
+    {
         match self {
-            List::Nil => 0,
-            List::Cons(_, as_) => 1 + as_.len(),
+            List::Nil => panic!("Cannot take tail of empty list"),
+            List::Cons(_, as_) => Rc::unwrap_or_clone(as_),
         }
     }
 
@@ -21,13 +24,22 @@ impl<A> List<A> {
         }
     }
 
-    fn tail(self) -> List<A>
+    fn len(&self) -> usize {
+        match self {
+            List::Nil => 0,
+            List::Cons(_, as_) => 1 + as_.len(),
+        }
+    }
+
+    fn rev_loop(self, n: u64, y: List<A>) -> List<A>
     where
         A: Clone,
     {
-        match self {
-            List::Nil => panic!("Cannot take tail of empty list"),
-            List::Cons(_, as_) => Rc::unwrap_or_clone(as_),
+        if n == 0 {
+            y
+        } else {
+            let (hd, tl) = self.split_head();
+            tl.rev_loop(n - 1, List::Cons(hd, Rc::new(y)))
         }
     }
 
@@ -51,38 +63,6 @@ impl<A> List<A> {
             self.tail().tail_n(n - 1)
         }
     }
-
-    fn rev_loop(self, n: u64, y: List<A>) -> List<A>
-    where
-        A: Clone,
-    {
-        if n == 0 {
-            y
-        } else {
-            let (hd, tl) = self.split_head();
-            tl.rev_loop(n - 1, List::Cons(hd, Rc::new(y)))
-        }
-    }
-
-    fn sum(self) -> A
-    where
-        A: Add<Output = A> + Default + Clone,
-    {
-        match self {
-            List::Nil => A::default(),
-            List::Cons(a, as_) => a + Rc::unwrap_or_clone(as_).sum(),
-        }
-    }
-
-    fn map<B>(self, f: &impl Fn(A) -> B) -> List<B>
-    where
-        A: Clone,
-    {
-        match self {
-            List::Nil => List::Nil,
-            List::Cons(a, as_) => List::Cons(f(a), Rc::new(Rc::unwrap_or_clone(as_).map(f))),
-        }
-    }
 }
 
 impl List<u64> {
@@ -97,12 +77,6 @@ impl List<u64> {
             List::loop_one2n(n - 1, List::Cons(n, Rc::new(p)))
         }
     }
-}
-
-fn f(n: u64, perms: List<List<u64>>, x: List<u64>) -> (List<List<u64>>, List<u64>) {
-    let x = x.clone().rev_loop(n, x.tail_n(n));
-    let perms = List::Cons(x.clone(), Rc::new(perms));
-    (perms, x)
 }
 
 fn loop_p(j: u64, perms: List<List<u64>>, x: List<u64>, n: u64) -> (List<List<u64>>, List<u64>) {
@@ -122,6 +96,12 @@ fn p(n: u64, perms: List<List<u64>>, x: List<u64>) -> (List<List<u64>>, List<u64
     }
 }
 
+fn f(n: u64, perms: List<List<u64>>, x: List<u64>) -> (List<List<u64>>, List<u64>) {
+    let x = x.clone().rev_loop(n, x.tail_n(n));
+    let perms = List::Cons(x.clone(), Rc::new(perms));
+    (perms, x)
+}
+
 fn permutations(x0: List<u64>) -> List<List<u64>> {
     let (final_perms, _) = p(
         x0.len() as u64,
@@ -131,11 +111,22 @@ fn permutations(x0: List<u64>) -> List<List<u64>> {
     final_perms
 }
 
-fn run_benchmark(
-    work: &impl Fn() -> List<List<u64>>,
-    result: &impl Fn(List<List<u64>>) -> bool,
-) -> bool {
-    result(work())
+fn loop_sum(y: List<u64>) -> u64 {
+    match y {
+        List::Nil => 0,
+        List::Cons(i, is_) => i + loop_sum(Rc::unwrap_or_clone(is_)),
+    }
+}
+
+fn sumlists(x: List<List<u64>>) -> u64 {
+    match x {
+        List::Nil => 0,
+        List::Cons(is_, iss) => loop_sum(is_) + sumlists(Rc::unwrap_or_clone(iss)),
+    }
+}
+
+fn factorial(n: u64) -> u64 {
+    if n == 1 { 1 } else { n * factorial(n - 1) }
 }
 
 fn loop_work(m: u64, mut perms: List<List<u64>>) -> List<List<u64>> {
@@ -144,32 +135,24 @@ fn loop_work(m: u64, mut perms: List<List<u64>>) -> List<List<u64>> {
     }
     perms
 }
-
-fn factorial(n: u64) -> u64 {
-    if n == 1 {
-        1
-    } else {
-        n * factorial(n - 1)
-    }
+fn run_benchmark(
+    work: &impl Fn() -> List<List<u64>>,
+    result: &impl Fn(List<List<u64>>) -> bool,
+) -> bool {
+    result(work())
 }
 
 fn perm9(m: u64, n: u64) -> bool {
     run_benchmark(
         &|| loop_work(m, permutations(List::one2n(n))),
-        &|result: List<List<u64>>| {
-            result.map(&|is_: List<u64>| is_.sum()).sum() == (((n * (n + 1)) * factorial(n)) / 2)
-        },
+        &|result: List<List<u64>>| sumlists(result) == (n * (n + 1)) * (factorial(n) / 2),
     )
 }
 
 fn main_loop(iters: u64, m: u64, n: u64) {
     let res = perm9(m, n);
     if iters == 1 {
-        if res {
-            println!("1")
-        } else {
-            println!("0")
-        }
+        if res { println!("1") } else { println!("0") }
     } else {
         main_loop(iters - 1, m, n)
     }

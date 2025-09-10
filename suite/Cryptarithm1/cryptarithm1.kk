@@ -3,15 +3,15 @@ module cryptarithm1
 import std/os/env
 import std/num/int64
 
+fun expand(a:int64,b:int64,c:int64,d:int64,e:int64,f:int64) : total int64{
+  f + (10.int64 * e) + (100.int64 * d) + (1000.int64 * c) + (10000.int64 * b) + (100000.int64 * a)
+}
+
 fun enum_from_to(from:int64,to:int64): div list<int64>{
   if to>=from then
     Cons(from,enum_from_to(from + 1.int64,to))
   else 
     Nil
-}
-
-fun expand(a:int64,b:int64,c:int64,d:int64,e:int64,f:int64) : total int64{
-  f + (10.int64 * e) + (100.int64 * d) + (1000.int64 * c) + (10000.int64 * b) + (100000.int64 * a)
 }
 
 fun condition(thirywelvn:list<int64>): total bool {

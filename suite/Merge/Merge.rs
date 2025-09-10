@@ -7,55 +7,55 @@ enum List<A> {
 }
 
 impl List<u64> {
-    fn tabulate(n: u64, f: &impl Fn(u64) -> u64) -> List<u64> {
-        let mut ls = List::Nil;
-        for i in 0..=n {
-            ls = List::Cons(f(i), Rc::new(ls));
-        }
-        ls.rev()
-    }
-}
-
-impl<A> List<A> {
-    fn rev_loop(self, acc: List<A>) -> List<A>
-    where
-        A: Clone,
-    {
+    fn rev_loop(self, acc: List<u64>) -> List<u64> {
         match self {
             List::Nil => acc,
-            List::Cons(a_, as_) => Rc::unwrap_or_clone(as_).rev_loop(List::Cons(a_, Rc::new(acc))),
+            List::Cons(p, ps) => Rc::unwrap_or_clone(ps).rev_loop(List::Cons(p, Rc::new(acc))),
         }
     }
 
-    fn rev(self) -> List<A>
-    where
-        A: Clone,
-    {
+    fn rev(self) -> List<u64> {
         self.rev_loop(List::Nil)
     }
 
-    fn merge(self, other: List<A>) -> List<A>
-    where
-        A: PartialOrd + Clone,
-    {
-        match (self, other) {
-            (List::Nil, other) => other,
-            (s, List::Nil) => s,
-            (List::Cons(x1, xs1), List::Cons(x2, xs2)) if x1 <= x2 => List::Cons(
-                x1,
-                Rc::new(Rc::unwrap_or_clone(xs1).merge(List::Cons(x2, xs2))),
-            ),
-            (List::Cons(x1, xs1), List::Cons(x2, xs2)) => List::Cons(
-                x2,
-                Rc::new(List::Cons(x1, xs1).merge(Rc::unwrap_or_clone(xs2))),
-            ),
+    fn tabulate_loop(n: u64, len: u64, acc: List<u64>, f: &impl Fn(u64) -> u64) -> List<u64> {
+        if n < len {
+            List::tabulate_loop(n + 1, len, List::Cons(f(n), Rc::new(acc)), f)
+        } else {
+            acc.rev()
         }
     }
 
-    fn head(self) -> A {
+    fn tabulate(n: u64, f: &impl Fn(u64) -> u64) -> List<u64> {
+        List::tabulate_loop(0, n, List::Nil, f)
+    }
+
+    fn merge(self, other: List<u64>) -> List<u64> {
+        match self {
+            List::Nil => other,
+            List::Cons(x1, xs1) => match other {
+                List::Nil => List::Cons(x1, xs1),
+                List::Cons(x2, xs2) => {
+                    if x1 <= x2 {
+                        List::Cons(
+                            x1,
+                            Rc::new(Rc::unwrap_or_clone(xs1).merge(List::Cons(x2, xs2))),
+                        )
+                    } else {
+                        List::Cons(
+                            x2,
+                            Rc::new(List::Cons(x1, xs1).merge(Rc::unwrap_or_clone(xs2))),
+                        )
+                    }
+                }
+            },
+        }
+    }
+
+    fn head(self) -> u64 {
         match self {
             List::Nil => panic!("Cannot take head of empty list"),
-            List::Cons(a, _) => a,
+            List::Cons(x, _) => x,
         }
     }
 }

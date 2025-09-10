@@ -7,50 +7,6 @@ let vec_sub (Vec(x1,y1)) (Vec(x2,y2)) = Vec (x1-x2,y1-y2)
 
 let scale_vec (Vec(x,y)) a b = Vec ((x*a) / b, (y*a) / b)
 
-let tup2 (Vec(x1,y1)) (Vec(x2,y2)) = Vec4(x1,y1,x2,y2)
-
-let rec grid m n segments a b c= 
-  match segments with 
-    | [] -> []
-    | Vec4(x0,y0,x1,y1)::t -> 
-        (tup2 
-        (vec_add (vec_add a (scale_vec b x0 m)) (scale_vec c y0 n))
-        (vec_add (vec_add a (scale_vec b x1 m)) (scale_vec c y1 n))) 
-        :: grid m n t a b c
-
-let tile_to_grid arg arg2 arg3 arg4 = 
-  grid 16 16  arg arg2 arg3 arg4 
-
-let rec enum_from_to from to_ = 
-  if from<=to_ then from::(enum_from_to (from+1) to_)
-  else []
-
-let above m n p q a b c = 
-  List.append 
-  (p ((vec_add a (scale_vec c n (n+m)),b,(scale_vec c m (n+m)))))
-  (q (a,b,(scale_vec c n (m+n))))
-
-let beside m n p q a b c = 
-  List.append
-  (p (a, (scale_vec b m (m+n)), c))
-  (q ((vec_add a (scale_vec b m (m+n))),(scale_vec b n (n+m)),c))
-
-let quartet a b c d arg q6 q7 = 
-  above 1 1 
-    (fun (p5,p6,p7) -> beside 1 1 a b p5 p6 p7) 
-    (fun (p5,p6,p7) -> beside 1 1 c d p5 p6 p7)
-    arg q6 q7
-
-let rot p a b c  = 
-  p ((vec_add a b),c,(vec_sub (Vec(0,0)) b))
-
-let cycle_ p1 arg p3 p4 = 
-  quartet p1 
-    (fun (a,b,c) -> (rot (fun (a,b,c) -> rot p1 a b c) a b c))
-    (fun (a,b,c) -> rot p1 a b c) 
-    (fun (a,b,c) -> rot (fun (a,b,c) -> rot p1 a b c) a b c) 
-    arg p3 p4 
-
 let  p_tile = 
   let p5 = 
     Vec4(10, 4, 13, 5)::
@@ -254,10 +210,46 @@ let s_tile =
     in 
     s
 
+let nil_ _ _ _ = []
+
+let tup2 (Vec(x1,y1)) (Vec(x2,y2)) = Vec4(x1,y1,x2,y2)
+
+let rec grid m n segments a b c= 
+  match segments with 
+    | [] -> []
+    | Vec4(x0,y0,x1,y1)::t -> 
+        (tup2 
+        (vec_add (vec_add a (scale_vec b x0 m)) (scale_vec c y0 n))
+        (vec_add (vec_add a (scale_vec b x1 m)) (scale_vec c y1 n))) 
+        :: grid m n t a b c
+
+let rot p a b c  = 
+  p ((vec_add a b),c,(vec_sub (Vec(0,0)) b))
+
+let beside m n p q a b c = 
+  List.append
+  (p (a, (scale_vec b m (m+n)), c))
+  (q ((vec_add a (scale_vec b m (m+n))),(scale_vec b n (n+m)),c))
+
+let above m n p q a b c = 
+  List.append 
+  (p ((vec_add a (scale_vec c n (n+m)),b,(scale_vec c m (n+m)))))
+  (q (a,b,(scale_vec c n (m+n))))
+
+let tile_to_grid arg arg2 arg3 arg4 = 
+  grid 16 16  arg arg2 arg3 arg4 
+
 let p arg q6 q7 = tile_to_grid p_tile arg q6 q7 
 let q arg q6 q7 = tile_to_grid q_tile arg q6 q7 
 let r arg q6 q7 = tile_to_grid r_tile arg q6 q7 
 let s arg q6 q7 = tile_to_grid s_tile arg q6 q7 
+
+
+let quartet a b c d arg q6 q7 = 
+  above 1 1 
+    (fun (p5,p6,p7) -> beside 1 1 a b p5 p6 p7) 
+    (fun (p5,p6,p7) -> beside 1 1 c d p5 p6 p7)
+    arg q6 q7
 
 let t arg q6 q7 = 
   quartet 
@@ -267,12 +259,18 @@ let t arg q6 q7 =
     (fun (a,b,c) -> s a b c) 
     arg q6 q7
 
+let cycle_ p1 arg p3 p4 = 
+  quartet p1 
+    (fun (a,b,c) -> (rot (fun (a,b,c) -> rot p1 a b c) a b c))
+    (fun (a,b,c) -> rot p1 a b c) 
+    (fun (a,b,c) -> rot (fun (a,b,c) -> rot p1 a b c) a b c) 
+    arg p3 p4 
+
+
 let u arg p2 p3 =
   cycle_ 
     (fun (a,b,c) -> rot (fun (a,b,c) -> q a b c) a b c)
     arg p2 p3
-
-let nil_ _ _ _ = []
 
 let side1 arg q6 q7 = 
   quartet 
@@ -308,7 +306,6 @@ let corner2 arg q6 q7 =
     (fun (a,b,c) -> u a b c)
     arg q6 q7
 
-
 let pseudocorner arg q6 q7 = 
   quartet 
     (fun (a,b,c) -> corner2 a b c)
@@ -324,11 +321,16 @@ let pseudolimit arg p2 p3 =
     (fun (a,b,c) -> pseudocorner a b c)
     arg p2 p3 
 
+let rec enum_from_to from to_ = 
+  if from<=to_ then from::(enum_from_to (from+1) to_)
+  else []
+
 let test_fish_nofib n = 
   List.map (fun i -> 
     let n = Int.min 0 i in 
     pseudolimit (Vec(0,0)) (Vec(640+n,0)) (Vec(0,640+n)))
   (enum_from_to 1 n)
+
 
 let main =
   let n = int_of_string Sys.argv.(1) in 

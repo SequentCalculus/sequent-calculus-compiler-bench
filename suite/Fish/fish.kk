@@ -28,18 +28,6 @@ fun scale_vec2(v:vec,a:int64,b:int64): vec{
     Vec(x,y) -> Vec((x * a) / b, (y * a) / b)
 }
 
-fun tup2(a_b:vec,c_d:vec): total vec4{
-  match (a_b,c_d)
-    (Vec(a,b),Vec(c,d)) -> Vec4(a,b,c,d)
-}
-
-fun enum_from_to(from:int64,to:int64): div list<int64>{
-  if from<=to then
-    Cons(from,enum_from_to(from + 1.int64,to))
-  else 
-    Nil 
-}
-
 fun p_tile(): total list<vec4> {
   val p5 = Cons(Vec4(10.int64, 4.int64, 13.int64, 5.int64),
     Cons(Vec4(13.int64, 5.int64, 16.int64, 4.int64),
@@ -203,6 +191,26 @@ fun s_tile(): total list<vec4> {
 
 fun nil(_:vec,_:vec,_:vec): total list<vec4>{ Nil }
 
+fun tup2(a_b:vec,c_d:vec): total vec4{
+  match (a_b,c_d)
+    (Vec(a,b),Vec(c,d)) -> Vec4(a,b,c,d)
+}
+
+fun grid(m:int64, n:int64, segments:list<vec4>, a:vec,b:vec,c:vec): total list<vec4>{
+  match segments
+    Nil -> Nil
+    Cons(Vec4(x0,y0,x1,y1),t) -> 
+      Cons(tup2(
+        vec_add(vec_add(a,scale_vec2(b,x0,m)),scale_vec2(c,y0,n)),
+        vec_add(vec_add(a,scale_vec2(b,x1,m)),scale_vec2(c, y1,n))),
+        grid(m,n,t,a,b,c)
+      )
+}
+
+fun rot(p:(vec,vec,vec) -> div list<vec4>,a:vec,b:vec,c:vec): div list<vec4>{
+  p(vec_add(a,b),c,vec_sub(Vec(0.int64,0.int64),b))
+}
+
 fun beside(m:int64,n:int64,p:(vec,vec,vec) -> div list<vec4>,q:(vec,vec,vec) -> div list<vec4>, a:vec,b:vec,c:vec): div list<vec4>{
   append(
     p(a,scale_vec2(b,m,m + n),c),
@@ -215,38 +223,6 @@ fun above(m:int64,n:int64,p:(vec,vec,vec) -> div list<vec4>,q:(vec,vec,vec) -> d
     p(vec_add(a,scale_vec2(c,n,m + n)),b,scale_vec2(c,m,n + m)),
     q(a,b,scale_vec2(c,n,m + n))
   )
-}
-
-fun quartet(
-  a:(vec,vec,vec) -> div list<vec4>, 
-  b:(vec,vec,vec) -> div list<vec4>,
-  c:(vec,vec,vec) -> div list<vec4>,
-  d:(vec,vec,vec) -> div list<vec4>,
-  arg:vec,q6:vec,q7:vec): div list<vec4>{
-  above(1.int64,1.int64,
-    fn(p5,p6,p7) beside(1.int64,1.int64,a,b,p5,p6,p7),
-    fn(p5,p6,p7) beside(1.int64,1.int64,c,d,p5,p6,p7),
-    arg,q6,q7)
-}
-
-fun cycle_(p1:(vec,vec,vec) -> div list<vec4>,arg:vec,p3:vec,p4:vec): div list<vec4>{
-  quartet(p1,
-    fn(a3,b3,c3) rot(fn(a2,b2,c2) rot(fn(a1,b1,c1) rot(p1,a1,b1,c1),a2,b2,c2),a3,b3,c3),
-    fn(a,b,c) rot(p1,a,b,c),
-    fn(a2,b2,c2) rot(fn(a1,b1,c1) rot(p1,a1,b1,c1),a2,b2,c2),
-    arg,p3,p4)
-}
-
-
-fun grid(m:int64, n:int64, segments:list<vec4>, a:vec,b:vec,c:vec): total list<vec4>{
-  match segments
-    Nil -> Nil
-    Cons(Vec4(x0,y0,x1,y1),t) -> 
-      Cons(tup2(
-        vec_add(vec_add(a,scale_vec2(b,x0,m)),scale_vec2(c,y0,n)),
-        vec_add(vec_add(a,scale_vec2(b,x1,m)),scale_vec2(c, y1,n))),
-        grid(m,n,t,a,b,c)
-      )
 }
 
 fun tile_to_grid(arg:list<vec4>, arg2:vec,arg3:vec,arg4:vec) : total list<vec4>{
@@ -269,25 +245,32 @@ fun s(arg:vec,q6:vec,q7:vec): total list<vec4>{
   tile_to_grid(s_tile(),arg,q6,q7)
 }
 
-fun u(arg:vec,p2:vec,p3:vec): div list<vec4>{
-  cycle_(fn(a,b,c) rot(q,a,b,c),arg,p2,p3)
+fun quartet(
+  a:(vec,vec,vec) -> div list<vec4>, 
+  b:(vec,vec,vec) -> div list<vec4>,
+  c:(vec,vec,vec) -> div list<vec4>,
+  d:(vec,vec,vec) -> div list<vec4>,
+  arg:vec,q6:vec,q7:vec): div list<vec4>{
+  above(1.int64,1.int64,
+    fn(p5,p6,p7) beside(1.int64,1.int64,a,b,p5,p6,p7),
+    fn(p5,p6,p7) beside(1.int64,1.int64,c,d,p5,p6,p7),
+    arg,q6,q7)
 }
 
 fun t(arg:vec,q6:vec,q7:vec): div list<vec4>{
   quartet(p,q,r,s,arg,q6,q7)
 }
 
-
-fun rot(p:(vec,vec,vec) -> div list<vec4>,a:vec,b:vec,c:vec): div list<vec4>{
-  p(vec_add(a,b),c,vec_sub(Vec(0.int64,0.int64),b))
+fun cycle_(p1:(vec,vec,vec) -> div list<vec4>,arg:vec,p3:vec,p4:vec): div list<vec4>{
+  quartet(p1,
+    fn(a3,b3,c3) rot(fn(a2,b2,c2) rot(fn(a1,b1,c1) rot(p1,a1,b1,c1),a2,b2,c2),a3,b3,c3),
+    fn(a,b,c) rot(p1,a,b,c),
+    fn(a2,b2,c2) rot(fn(a1,b1,c1) rot(p1,a1,b1,c1),a2,b2,c2),
+    arg,p3,p4)
 }
 
-fun corner1(arg:vec,q6:vec,q7:vec): div list<vec4>{
-  quartet(nil,nil,nil,u,arg,q6,q7)
-}
-
-fun corner2(arg:vec,q6:vec,q7:vec): div list<vec4>{
-  quartet(corner1,side1,fn(a,b,c) rot(side1,a,b,c),u,arg,q6,q7)
+fun u(arg:vec,p2:vec,p3:vec): div list<vec4>{
+  cycle_(fn(a,b,c) rot(q,a,b,c),arg,p2,p3)
 }
 
 fun side1(arg:vec,q6:vec,q7:vec): div list<vec4>{
@@ -298,6 +281,14 @@ fun side2(arg:vec,q6:vec,q7:vec): div list<vec4>{
   quartet(side1,side1,fn(a,b,c) rot(t,a,b,c),t,arg,q6,q7)
 }
 
+fun corner1(arg:vec,q6:vec,q7:vec): div list<vec4>{
+  quartet(nil,nil,nil,u,arg,q6,q7)
+}
+
+fun corner2(arg:vec,q6:vec,q7:vec): div list<vec4>{
+  quartet(corner1,side1,fn(a,b,c) rot(side1,a,b,c),u,arg,q6,q7)
+}
+
 fun pseudocorner(arg:vec,q6:vec,q7:vec): div list<vec4> {
   quartet(
     corner2,side2,fn(a,b,c) rot(side2,a,b,c),fn(a,b,c) rot(t,a,b,c),
@@ -306,6 +297,13 @@ fun pseudocorner(arg:vec,q6:vec,q7:vec): div list<vec4> {
 
 fun pseudolimit(arg:vec,p2:vec,p3:vec): div list<vec4>{
   cycle_(pseudocorner,arg,p2,p3)
+}
+
+fun enum_from_to(from:int64,to:int64): div list<int64>{
+  if from<=to then
+    Cons(from,enum_from_to(from + 1.int64,to))
+  else 
+    Nil 
 }
 
 fun test_fish_nofib(m:int64): div list<list<vec4>>{

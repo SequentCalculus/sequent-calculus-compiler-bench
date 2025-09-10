@@ -1,10 +1,10 @@
 structure Constraints = struct 
-  datatype ConflictSet = Known of int list 
-                       | Unknown
-
   datatype assign = Assign of int * int
 
   datatype csp = CSP of int * int * ((assign * assign) -> bool)
+
+  datatype ConflictSet = Known of int list 
+                       | Unknown
 
   datatype 'a tree  = Node of 'a * 'a tree list 
 
@@ -16,6 +16,15 @@ structure Constraints = struct
 
   fun label t = 
     case t of Node (a,_) => a
+
+  fun enum_from_to from to = 
+    if from<=to then from::(enum_from_to (from+1) to) else nil
+
+  fun zip_with f x y = 
+    case (x,y) of 
+         (nil,_) => nil
+       | (_,nil) => nil
+       | (c::cs,p::ps) => (f (c,p))::(zip_with f cs ps)
 
   fun map_tree f n = 
     case n of Node (l,ls) => 
@@ -32,20 +41,19 @@ structure Constraints = struct
     fold_tree f n
   end
 
-  fun prune f n = filter_tree (fn x => not (f x)) n
-
   fun leaves n = 
     case n of 
          Node(leaf,nil) => leaf::nil
        | Node(leaf,cs) => List.concat (map (fn x => leaves(x)) cs) 
 
-  fun enum_from_to from to = 
-    if from<=to then from::(enum_from_to (from+1) to) else nil
+  fun prune f n = filter_tree (fn x => not (f x)) n
 
   fun max_level ls = 
     case ls of 
          nil => 0
        | Assign(v,_)::t => v
+
+  fun complete (CSP (v,vals,rel)) s = max_level(s)=v
 
   fun nub_by f ls = 
     case ls of 
@@ -62,23 +70,19 @@ structure Constraints = struct
 
   fun union l1 l2 = union_by (fn (x,y) => x=y) l1 l2
 
-  fun zip_with f x y = 
-    case (x,y) of 
-         (nil,_) => nil
-       | (_,nil) => nil
-       | (c::cs,p::ps) => (f (c,p))::(zip_with f cs ps)
 
   fun combine ls acc = 
     case ls of 
          nil => acc
        | ((s,Known(cs))::css) => 
            let val maxl = max_level(s)
-  in 
-    if not (Option.isSome (List.find (fn x => x=maxl) cs))
-    then cs
-    else combine css (union cs acc)
-  end
+           in 
+             if not (Option.isSome (List.find (fn x => x=maxl) cs))
+             then cs
+             else combine css (union cs acc)
+            end
        | ((s,Unknown)::_) => acc
+
 
   fun init_tree f x = 
     Node(x,map (fn y => init_tree f y) (f x))
@@ -104,25 +108,18 @@ structure Constraints = struct
        | Known(cs)::css => union cs (collect css)
        | Unknown::_ => nil
 
-  fun known_conflict c = 
-    case c of 
-         Known nil => false 
-       | Known (_::_) => true
-       | Unknown => false
-
   fun known_solution c = 
     case c of 
          Known nil => true
        | Known (v::vs) => false
        | Unknown => false
 
-  fun earliest_inconsistency (CSP (vars,vals,rel)) aas = 
-    case aas of 
-         nil => NONE
-       | a::as_ => 
-           (case List.filter (fn x => not (rel(a,x))) (rev as_) of
-                 nil => NONE
-               | b::bs_ => SOME (level a, level b))
+  fun known_conflict c = 
+    case c of 
+         Known nil => false 
+       | Known (_::_) => true
+       | Unknown => false
+
 
   fun domain_wipeout (CSP (vars,vals,rel)) t = 
   let val f8 = fn ((as_,cs),tbl) => 
@@ -138,11 +135,16 @@ structure Constraints = struct
     map_tree f8 t
   end 
 
-  fun complete (CSP (v,vals,rel)) s = max_level(s)=v
-
   fun check_complete csp s = 
     if complete csp s then Known(nil) else Unknown
 
+  fun earliest_inconsistency (CSP (vars,vals,rel)) aas = 
+    case aas of 
+         nil => NONE
+       | a::as_ => 
+           (case List.filter (fn x => not (rel(a,x))) (rev as_) of
+                 nil => NONE
+               | b::bs_ => SOME (level a, level b))
 
   fun lookup_cache csp t = 
   let val f5  = fn (csp,(ls,tbl)) => 
@@ -161,19 +163,6 @@ structure Constraints = struct
            map_tree (fn x => f5 (csp,x)) t
          end
 
-  fun n_unknown ls vals = 
-    case ls of 
-         nil => nil
-       | (n::t1) => 
-           (to_unknown (enum_from_to 1 vals)) 
-           :: (n_unknown t1 vals)
-  and to_unknown ls = 
-  case ls of 
-       nil => nil
-     | (_::t2) => Unknown::(to_unknown t2)
-  fun empty_table (CSP (vars,vals,rel)) = 
-    nil::(n_unknown (enum_from_to 1 vars) vals)
-
   fun to_pairs ls varrr = 
     case ls of 
          nil => nil
@@ -185,6 +174,7 @@ structure Constraints = struct
        | varrr::t1 => 
            (to_pairs (enum_from_to 1 n) varrr) 
            :: (n_pairs t1 n)
+
 
   fun fill_table s (CSP (vars,vals,rel)) tbl = 
     case s of 
@@ -210,6 +200,20 @@ structure Constraints = struct
          Node((s,tbl), 
          map (fn x => cache_checks csp (fill_table s csp (tl tbl)) x) cs)
 
+
+  fun n_unknown ls vals = 
+    case ls of 
+         nil => nil
+       | (n::t1) => 
+           (to_unknown (enum_from_to 1 vals)) 
+           :: (n_unknown t1 vals)
+  and to_unknown ls = 
+  case ls of 
+       nil => nil
+     | (_::t2) => Unknown::(to_unknown t2)
+
+  fun empty_table (CSP (vars,vals,rel)) = 
+    nil::(n_unknown (enum_from_to 1 vars) vals)
 
   fun search labeler csp = 
     map (fn (x,_) => x)

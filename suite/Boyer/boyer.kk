@@ -99,13 +99,6 @@ fun term_eq(t1:term,t2:term) : div bool {
     _ -> False
 }
 
-fun replicate_term(n:int64, t:term) : div list<term> {
-  if n == 0.int64 then
-    Nil
-  else
-    Cons(t,replicate_term(n - 1.int64, t))
-}
-
 fun term_in_list(a:term,ls:list<term>) : div bool {
   match ls
     Nil -> False
@@ -114,6 +107,13 @@ fun term_in_list(a:term,ls:list<term>) : div bool {
         True
       else
         term_in_list(a,as_)
+}
+
+fun replicate_term(n:int64, t:term) : div list<term> {
+  if n == 0.int64 then
+    Nil
+  else
+    Cons(t,replicate_term(n - 1.int64, t))
 }
 
 fun find(vid:id,ls:list<(id,term)>) : div (bool,term) {
@@ -126,16 +126,16 @@ fun find(vid:id,ls:list<(id,term)>) : div (bool,term) {
         find(vid,bs)
 }
 
-fun boyer_a(): total term { Var(ID_A) }
-fun boyer_b(): total term { Var(ID_B) }
-fun boyer_c(): total term { Var(ID_C) }
-fun boyer_d(): total term { Var(ID_D) }
-fun boyer_x(): total term { Var(ID_X) }
-fun boyer_y(): total term { Var(ID_Y) }
-fun boyer_z(): total term { Var(ID_Z) }
-fun boyer_u(): total term { Var(ID_U) }
-fun boyer_w(): total term { Var(ID_W) }
+fun boyer_add1(a:term): total term { Func(ID_ADD1,Cons(a,Nil),fn () Nil) }
 fun boyer_zero(): total term { Func(ID_ZERO,Nil,fn () Nil) }
+fun boyer_zerop(a:term): div term {
+  Func(ID_ZEROP,Cons(a,Nil),fn()
+    Cons((
+      boyer_zerop(boyer_x()),
+      boyer_equal(boyer_x(), boyer_zero())
+    ), Nil)
+  )
+}
 fun boyer_one(): div term {
   Func(ID_ONE,Nil,fn ()
     Cons((
@@ -160,135 +160,28 @@ fun boyer_four(): div term {
     ), Nil)
   )
 }
-fun boyer_add1(a:term): total term { Func(ID_ADD1,Cons(a,Nil),fn () Nil) }
-fun boyer_plus(a:term,b:term): div term {
-  Func(ID_PLUS,Cons(a,Cons(b,Nil)),fn ()
+fun boyer_if_(a:term,b:term,c:term): div term {
+  Func(ID_IF,Cons(a,Cons(b,Cons(c,Nil))),fn ()
     Cons((
-      boyer_plus(boyer_plus(boyer_x(), boyer_y()), boyer_z()),
-      boyer_plus(boyer_x(), boyer_plus(boyer_y(), boyer_z()))
-    ),
-    Cons((
-      boyer_plus(boyer_remainder(boyer_x(), boyer_y()), boyer_times(boyer_y(), boyer_quotient(boyer_x(), boyer_y()))),
-      boyer_x()
-    ),
-    Cons((
-      boyer_plus(boyer_x(), boyer_add1(boyer_y())),
-      boyer_add1(boyer_plus(boyer_x(), boyer_y()))
-    ),
-    Nil)))
+      boyer_if_(boyer_if_(boyer_x(), boyer_y(), boyer_z()), boyer_u(), boyer_w()),
+      boyer_if_(boyer_x(), boyer_if_(boyer_y(), boyer_u(), boyer_w()), boyer_if_(boyer_z(), boyer_u(), boyer_w()))
+    ), Nil)
   )
 }
-fun boyer_difference(a:term,b:term) : div term {
-  Func(ID_DIFFERENCE,Cons(a,Cons(b,Nil)), fn()
+fun boyer_not_(a:term): div term {
+  Func(ID_NOT,Cons(a,Nil),fn()
     Cons((
-      boyer_difference(boyer_x(), boyer_x()),
-      boyer_zero()
-    ),
-    Cons((
-      boyer_difference(boyer_plus(boyer_x(), boyer_y()), boyer_x()),
-      boyer_y()
-    ),
-    Cons((
-      boyer_difference(boyer_plus(boyer_y(), boyer_x()), boyer_x()),
-      boyer_y()
-    ),
-    Cons((
-      boyer_difference(boyer_plus(boyer_x(), boyer_y()), boyer_plus(boyer_x(), boyer_z())),
-      boyer_difference(boyer_y(), boyer_z())
-    ),
-    Cons((
-      boyer_difference(boyer_plus(boyer_y(), boyer_plus(boyer_x(), boyer_z())), boyer_x()),
-      boyer_plus(boyer_y(), boyer_z())
-    ),
-    Cons((
-      boyer_difference(boyer_add1(boyer_plus(boyer_y(), boyer_z())), boyer_z()),
-      boyer_add1(boyer_y())
-    ),
-    Cons((
-      boyer_difference(boyer_add1(boyer_add1(boyer_x())), boyer_two()),
-      boyer_x()
-    ),
-    Nil)))))))
+      boyer_not_(boyer_x()),
+      boyer_if_(boyer_x(), boyer_false(), boyer_true())
+    ), Nil)
   )
 }
-fun boyer_times(a:term,b:term): div term {
-  Func(ID_TIMES,Cons(a,Cons(b,Nil)),fn ()
+fun boyer_and_(a:term,b:term): div term {
+  Func(ID_AND,Cons(a,Cons(b,Nil)),fn()
     Cons((
-      boyer_times(boyer_x(), boyer_plus(boyer_y(), boyer_z())),
-      boyer_plus(boyer_times(boyer_x(), boyer_y()), boyer_times(boyer_x(), boyer_z()))
-    ),
-    Cons((
-      boyer_times(boyer_times(boyer_x(), boyer_y()), boyer_z()),
-      boyer_times(boyer_x(), boyer_times(boyer_y(), boyer_z()))
-    ),
-    Cons((
-      boyer_times(boyer_x(), boyer_difference(boyer_y(), boyer_z())),
-      boyer_difference(boyer_times(boyer_y(), boyer_x()), boyer_times(boyer_z(), boyer_x()))
-    ),
-    Cons((
-      boyer_times(boyer_x(), boyer_add1(boyer_y())),
-      boyer_plus(boyer_x(), boyer_times(boyer_x(), boyer_y()))
-    ),
-    Nil))))
-  )
-}
-fun boyer_quotient(a:term,b:term): div term {
-  Func(ID_QUOTIENT,Cons(a,Cons(b,Nil)),fn()
-    Cons((
-      boyer_quotient(boyer_plus(boyer_x(), boyer_plus(boyer_x(), boyer_y())), boyer_two()),
-      boyer_plus(boyer_x(), boyer_quotient(boyer_y(), boyer_two()))
-    ),
-    Cons((
-      boyer_quotient(boyer_times(boyer_y(), boyer_x()), boyer_y()),
-      boyer_if_(boyer_zerop(boyer_y()), boyer_zero(), boyer_x())
-    ),
-    Nil))
-  )
-}
-fun boyer_remainder(a:term,b:term): div term {
-  Func(ID_REMAINDER,Cons(a,Cons(b,Nil)),fn()
-    Cons((
-      boyer_remainder(boyer_x(), boyer_one()),
-      boyer_zero()
-    ),
-    Cons((
-      boyer_remainder(boyer_x(), boyer_x()),
-      boyer_zero()
-    ),
-    Cons((
-      boyer_remainder(boyer_times(boyer_x(), boyer_y()), boyer_x()),
-      boyer_zero()
-    ),
-    Cons((
-      boyer_remainder(boyer_times(boyer_x(), boyer_y()), boyer_y()),
-      boyer_zero()
-    ),
-    Nil))))
-  )
-}
-fun boyer_lessp(a:term,b:term): div term {
-  Func(ID_LESSP,Cons(a,Cons(b,Nil)),fn()
-    Cons((
-      boyer_lessp(boyer_remainder(boyer_x(), boyer_y()), boyer_y()),
-      boyer_not_(boyer_zerop(boyer_y()))
-    ),
-    Cons((
-      boyer_lessp(boyer_quotient(boyer_x(), boyer_y()), boyer_x()),
-      boyer_and_(boyer_not_(boyer_zerop(boyer_x())), boyer_lessp(boyer_one(), boyer_y()))
-    ),
-    Cons((
-      boyer_lessp(boyer_plus(boyer_x(), boyer_y()), boyer_plus(boyer_x(), boyer_z())),
-      boyer_lessp(boyer_y(), boyer_z())
-    ),
-    Cons((
-      boyer_lessp(boyer_times(boyer_x(), boyer_z()), boyer_times(boyer_y(), boyer_z())),
-      boyer_and_(boyer_not_(boyer_zerop(boyer_z())), boyer_lessp(boyer_x(), boyer_y()))
-    ),
-    Cons((
-      boyer_lessp(boyer_y(), boyer_plus(boyer_x(), boyer_y())),
-      boyer_not_(boyer_zerop(boyer_x()))
-    ),
-    Nil)))))
+      boyer_and_(boyer_x(), boyer_y()),
+      boyer_if_(boyer_x(), boyer_if_(boyer_y(), boyer_true(), boyer_false()), boyer_false())
+    ), Nil)
   )
 }
 fun boyer_equal(a:term,b:term): div term {
@@ -345,35 +238,28 @@ fun boyer_equal(a:term,b:term): div term {
     Nil)))))))))))
   )
 }
-fun boyer_true(): total term {
-  Func(ID_TRUE,Nil,fn() Nil)
+fun boyer_append_(a:term,b:term): div term {
+  Func(ID_APPEND,Cons(a,Cons(b,Nil)),fn()
+    Cons((
+      boyer_append_(boyer_append_(boyer_x(), boyer_y()), boyer_z()),
+      boyer_append_(boyer_x(), boyer_append_(boyer_y(), boyer_z()))
+    ), Nil)
+  )
 }
+fun boyer_x(): total term { Var(ID_X) }
+fun boyer_y(): total term { Var(ID_Y) }
+fun boyer_z(): total term { Var(ID_Z) }
+fun boyer_u(): total term { Var(ID_U) }
+fun boyer_w(): total term { Var(ID_W) }
+fun boyer_a(): total term { Var(ID_A) }
+fun boyer_b(): total term { Var(ID_B) }
+fun boyer_c(): total term { Var(ID_C) }
+fun boyer_d(): total term { Var(ID_D) }
 fun boyer_false(): total term {
   Func(ID_FALSE,Nil,fn() Nil)
 }
-fun boyer_if_(a:term,b:term,c:term): div term {
-  Func(ID_IF,Cons(a,Cons(b,Cons(c,Nil))),fn ()
-    Cons((
-      boyer_if_(boyer_if_(boyer_x(), boyer_y(), boyer_z()), boyer_u(), boyer_w()),
-      boyer_if_(boyer_x(), boyer_if_(boyer_y(), boyer_u(), boyer_w()), boyer_if_(boyer_z(), boyer_u(), boyer_w()))
-    ), Nil)
-  )
-}
-fun boyer_not_(a:term): div term {
-  Func(ID_NOT,Cons(a,Nil),fn()
-    Cons((
-      boyer_not_(boyer_x()),
-      boyer_if_(boyer_x(), boyer_false(), boyer_true())
-    ), Nil)
-  )
-}
-fun boyer_and_(a:term,b:term): div term {
-  Func(ID_AND,Cons(a,Cons(b,Nil)),fn()
-    Cons((
-      boyer_and_(boyer_x(), boyer_y()),
-      boyer_if_(boyer_x(), boyer_if_(boyer_y(), boyer_true(), boyer_false()), boyer_false())
-    ), Nil)
-  )
+fun boyer_true(): total term {
+  Func(ID_TRUE,Nil,fn() Nil)
 }
 fun boyer_or_(a:term,b:term): div term {
   Func(ID_OR,Cons(a,Cons(b,Nil)),fn()
@@ -383,6 +269,122 @@ fun boyer_or_(a:term,b:term): div term {
     ), Nil)
   )
 }
+fun boyer_lessp(a:term,b:term): div term {
+  Func(ID_LESSP,Cons(a,Cons(b,Nil)),fn()
+    Cons((
+      boyer_lessp(boyer_remainder(boyer_x(), boyer_y()), boyer_y()),
+      boyer_not_(boyer_zerop(boyer_y()))
+    ),
+    Cons((
+      boyer_lessp(boyer_quotient(boyer_x(), boyer_y()), boyer_x()),
+      boyer_and_(boyer_not_(boyer_zerop(boyer_x())), boyer_lessp(boyer_one(), boyer_y()))
+    ),
+    Cons((
+      boyer_lessp(boyer_plus(boyer_x(), boyer_y()), boyer_plus(boyer_x(), boyer_z())),
+      boyer_lessp(boyer_y(), boyer_z())
+    ),
+    Cons((
+      boyer_lessp(boyer_times(boyer_x(), boyer_z()), boyer_times(boyer_y(), boyer_z())),
+      boyer_and_(boyer_not_(boyer_zerop(boyer_z())), boyer_lessp(boyer_x(), boyer_y()))
+    ),
+    Cons((
+      boyer_lessp(boyer_y(), boyer_plus(boyer_x(), boyer_y())),
+      boyer_not_(boyer_zerop(boyer_x()))
+    ),
+    Nil)))))
+  )
+}
+fun boyer_cons(a:term,b:term): total term{
+  Func(ID_CONS,Cons(a,Cons(b,Nil)),fn () Nil)
+}
+fun boyer_remainder(a:term,b:term): div term {
+  Func(ID_REMAINDER,Cons(a,Cons(b,Nil)),fn()
+    Cons((
+      boyer_remainder(boyer_x(), boyer_one()),
+      boyer_zero()
+    ),
+    Cons((
+      boyer_remainder(boyer_x(), boyer_x()),
+      boyer_zero()
+    ),
+    Cons((
+      boyer_remainder(boyer_times(boyer_x(), boyer_y()), boyer_x()),
+      boyer_zero()
+    ),
+    Cons((
+      boyer_remainder(boyer_times(boyer_x(), boyer_y()), boyer_y()),
+      boyer_zero()
+    ),
+    Nil))))
+  )
+}
+fun boyer_quotient(a:term,b:term): div term {
+  Func(ID_QUOTIENT,Cons(a,Cons(b,Nil)),fn()
+    Cons((
+      boyer_quotient(boyer_plus(boyer_x(), boyer_plus(boyer_x(), boyer_y())), boyer_two()),
+      boyer_plus(boyer_x(), boyer_quotient(boyer_y(), boyer_two()))
+    ),
+    Cons((
+      boyer_quotient(boyer_times(boyer_y(), boyer_x()), boyer_y()),
+      boyer_if_(boyer_zerop(boyer_y()), boyer_zero(), boyer_x())
+    ),
+    Nil))
+  )
+}
+fun boyer_times(a:term,b:term): div term {
+  Func(ID_TIMES,Cons(a,Cons(b,Nil)),fn ()
+    Cons((
+      boyer_times(boyer_x(), boyer_plus(boyer_y(), boyer_z())),
+      boyer_plus(boyer_times(boyer_x(), boyer_y()), boyer_times(boyer_x(), boyer_z()))
+    ),
+    Cons((
+      boyer_times(boyer_times(boyer_x(), boyer_y()), boyer_z()),
+      boyer_times(boyer_x(), boyer_times(boyer_y(), boyer_z()))
+    ),
+    Cons((
+      boyer_times(boyer_x(), boyer_difference(boyer_y(), boyer_z())),
+      boyer_difference(boyer_times(boyer_y(), boyer_x()), boyer_times(boyer_z(), boyer_x()))
+    ),
+    Cons((
+      boyer_times(boyer_x(), boyer_add1(boyer_y())),
+      boyer_plus(boyer_x(), boyer_times(boyer_x(), boyer_y()))
+    ),
+    Nil))))
+  )
+}
+fun boyer_difference(a:term,b:term) : div term {
+  Func(ID_DIFFERENCE,Cons(a,Cons(b,Nil)), fn()
+    Cons((
+      boyer_difference(boyer_x(), boyer_x()),
+      boyer_zero()
+    ),
+    Cons((
+      boyer_difference(boyer_plus(boyer_x(), boyer_y()), boyer_x()),
+      boyer_y()
+    ),
+    Cons((
+      boyer_difference(boyer_plus(boyer_y(), boyer_x()), boyer_x()),
+      boyer_y()
+    ),
+    Cons((
+      boyer_difference(boyer_plus(boyer_x(), boyer_y()), boyer_plus(boyer_x(), boyer_z())),
+      boyer_difference(boyer_y(), boyer_z())
+    ),
+    Cons((
+      boyer_difference(boyer_plus(boyer_y(), boyer_plus(boyer_x(), boyer_z())), boyer_x()),
+      boyer_plus(boyer_y(), boyer_z())
+    ),
+    Cons((
+      boyer_difference(boyer_add1(boyer_plus(boyer_y(), boyer_z())), boyer_z()),
+      boyer_add1(boyer_y())
+    ),
+    Cons((
+      boyer_difference(boyer_add1(boyer_add1(boyer_x())), boyer_two()),
+      boyer_x()
+    ),
+    Nil)))))))
+  )
+}
 fun boyer_implies(a:term,b:term): div term {
   Func(ID_IMPLIES,Cons(a,Cons(b,Nil)),fn()
     Cons((
@@ -390,35 +392,6 @@ fun boyer_implies(a:term,b:term): div term {
       boyer_if_(boyer_x(), boyer_if_(boyer_y(), boyer_true(), boyer_false()), boyer_true())
     ),
     Nil)
-  )
-}
-fun boyer_zerop(a:term): div term {
-  Func(ID_ZEROP,Cons(a,Nil),fn()
-    Cons((
-      boyer_zerop(boyer_x()),
-      boyer_equal(boyer_x(), boyer_zero())
-    ), Nil)
-  )
-}
-fun boyer_f(a:term): total term {
-  Func(ID_F,Cons(a,Nil),fn() Nil)
-}
-fun boyer_nil(): total term {
-  Func(ID_NIL,Nil,fn() Nil)
-}
-fun boyer_cons(a:term,b:term): total term{
-  Func(ID_CONS,Cons(a,Cons(b,Nil)),fn () Nil)
-}
-fun boyer_member(a:term,b:term): div term {
-  Func(ID_MEMBER,Cons(a,Cons(b,Nil)),fn()
-    Cons((
-      boyer_member(boyer_x(), boyer_append_(boyer_y(), boyer_z())),
-      boyer_or_(boyer_member(boyer_x(), boyer_y()), boyer_member(boyer_x(), boyer_z()))
-    ),
-    Cons((
-      boyer_member(boyer_x(), boyer_reverse_(boyer_y())),
-      boyer_member(boyer_x(), boyer_y())
-    ), Nil))
   )
 }
 fun boyer_length_(a:term): div term {
@@ -442,24 +415,40 @@ fun boyer_reverse_(a:term): div term {
     Nil)
   )
 }
-fun boyer_append_(a:term,b:term): div term {
-  Func(ID_APPEND,Cons(a,Cons(b,Nil)),fn()
+fun boyer_nil(): total term {
+  Func(ID_NIL,Nil,fn() Nil)
+}
+fun boyer_member(a:term,b:term): div term {
+  Func(ID_MEMBER,Cons(a,Cons(b,Nil)),fn()
     Cons((
-      boyer_append_(boyer_append_(boyer_x(), boyer_y()), boyer_z()),
-      boyer_append_(boyer_x(), boyer_append_(boyer_y(), boyer_z()))
-    ), Nil)
+      boyer_member(boyer_x(), boyer_append_(boyer_y(), boyer_z())),
+      boyer_or_(boyer_member(boyer_x(), boyer_y()), boyer_member(boyer_x(), boyer_z()))
+    ),
+    Cons((
+      boyer_member(boyer_x(), boyer_reverse_(boyer_y())),
+      boyer_member(boyer_x(), boyer_y())
+    ), Nil))
   )
 }
-
-fun one_way_unify1_lst(tts1:list<term>,tts2:list<term>,subst:list<(id,term)>) : div (bool,list<(id,term)>){
-  match (tts1,tts2)
-    (Nil,Nil) -> (True,subst)
-    (Nil,_) -> (False,Nil)
-    (_,Nil) -> (False,Nil)
-    (Cons(t1,ts1),Cons(t2,ts2)) ->
-      val (hd_ok,subst_) = one_way_unify1(t1,t2,subst)
-      val (tl_ok,subst__) = one_way_unify1_lst(ts1,ts2,subst_)
-      (hd_ok && tl_ok,subst__)
+fun boyer_plus(a:term,b:term): div term {
+  Func(ID_PLUS,Cons(a,Cons(b,Nil)),fn ()
+    Cons((
+      boyer_plus(boyer_plus(boyer_x(), boyer_y()), boyer_z()),
+      boyer_plus(boyer_x(), boyer_plus(boyer_y(), boyer_z()))
+    ),
+    Cons((
+      boyer_plus(boyer_remainder(boyer_x(), boyer_y()), boyer_times(boyer_y(), boyer_quotient(boyer_x(), boyer_y()))),
+      boyer_x()
+    ),
+    Cons((
+      boyer_plus(boyer_x(), boyer_add1(boyer_y())),
+      boyer_add1(boyer_plus(boyer_x(), boyer_y()))
+    ),
+    Nil)))
+  )
+}
+fun boyer_f(a:term): total term {
+  Func(ID_F,Cons(a,Nil),fn() Nil)
 }
 
 fun one_way_unify1(term1:term,term2:term,subst:list<(id,term)>) : div (bool,list<(id,term)>){
@@ -479,6 +468,17 @@ fun one_way_unify1(term1:term,term2:term,subst:list<(id,term)>) : div (bool,list
       _ -> (False,Nil)
     ERR -> (False,Nil)
 
+}
+
+fun one_way_unify1_lst(tts1:list<term>,tts2:list<term>,subst:list<(id,term)>) : div (bool,list<(id,term)>){
+  match (tts1,tts2)
+    (Nil,Nil) -> (True,subst)
+    (Nil,_) -> (False,Nil)
+    (_,Nil) -> (False,Nil)
+    (Cons(t1,ts1),Cons(t2,ts2)) ->
+      val (hd_ok,subst_) = one_way_unify1(t1,t2,subst)
+      val (tl_ok,subst__) = one_way_unify1_lst(ts1,ts2,subst_)
+      (hd_ok && tl_ok,subst__)
 }
 
 fun one_way_unify(term1:term,term2:term) : div (bool,list<(id,term)>)  {
@@ -503,24 +503,27 @@ fun rewrite(t:term) : div term {
     _ -> t
 }
 
-fun truep(x:term,l:list<term>) : div bool {
+fun truep(x:term,l:list<term>) : <div,exn> bool {
   match x
-    Func(ID_TRUE,_,_) -> True
-    _ -> term_in_list(x,l)
+    Var(_) -> term_in_list(x,l)
+    Func(t,_,_) -> id_eq(t,ID_TRUE) || term_in_list(x,l)
+    ERR -> term_in_list(x,l)
 }
 
-fun falsep(x:term,l:list<term>) : div bool {
+fun falsep(x:term,l:list<term>) : <div,exn> bool {
   match x
-    Func(ID_FALSE,_,_) -> True
-    _ -> term_in_list(x,l)
+    Var(_) -> term_in_list(x,l)
+    Func(t,_,_) -> id_eq(t,ID_FALSE) || term_in_list(x,l)
+    ERR -> term_in_list(x,l)
 }
 
-fun tautologyp(x:term,true_lst:list<term>,false_lst:list<term>) : div bool {
+fun tautologyp(x:term,true_lst:list<term>,false_lst:list<term>) : <div,exn> bool {
   if truep(x,true_lst) then
     True
   else if falsep(x,false_lst) then
     False
   else match x
+    Var(_) -> False
     Func(ID_IF,Cons(cond,Cons(t,Cons(e,Nil))),_) ->
       if truep(cond,true_lst) then
         tautologyp(t,true_lst,false_lst)
@@ -530,10 +533,10 @@ fun tautologyp(x:term,true_lst:list<term>,false_lst:list<term>) : div bool {
         (tautologyp(t,Cons(cond,true_lst),false_lst))
         &&
         (tautologyp(e,true_lst,Cons(cond,false_lst)))
-    _ -> False
+    ERR -> False
 }
 
-fun tautp(x:term) : div bool {
+fun tautp(x:term) : <div,exn> bool {
   tautologyp(rewrite(x),Nil,Nil)
 }
 
@@ -574,15 +577,15 @@ fun boyer_theorem(xxxx:term) : div term {
   )
 }
 
-fun test0(xxxx:term) : div bool {
+fun test0(xxxx:term) : <div,exn> bool {
   tautp(apply_subst(boyer_subst0(),boyer_theorem(xxxx)))
 }
 
-fun test_boyer_nofib(n:int64) : div bool {
+fun test_boyer_nofib(n:int64) : <div,exn> bool {
   all(replicate_term(n,Var(ID_X)),fn (t) test0(t))
 }
 
-fun main_loop(iters:int64, n:int64) : <div,console> () {
+fun main_loop(iters:int64, n:int64) : <div,console,exn> () {
   val res = test_boyer_nofib(n)
   if iters == 1.int64 then
     if res then

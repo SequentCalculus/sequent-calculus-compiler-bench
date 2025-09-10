@@ -3,24 +3,6 @@ module gcd
 import std/os/env
 import std/num/int64
 
-fun enum_from_to(from:int64,to:int64): div list<int64>{
-  if from<=to then 
-    Cons(from,enum_from_to(from + 1.int64, to))
-  else 
-    Nil
-}
-
-fun max_(ls:list<int64>): <div,exn> int64{
-  match ls 
-    Nil -> throw("Empty List")
-    Cons(x,Nil) -> x
-    Cons(x,Cons(y,ys)) -> 
-      if x<y then
-        max_(Cons(y,ys))
-      else 
-        max_(Cons(x,ys))
-}
-
 fun quot_rem(a:int64,b:int64): total (int64,int64){
   (a / b, a % b)
 }
@@ -42,11 +24,24 @@ fun gcd_e(x:int64,y:int64): div (int64,int64,int64){
     g((1.int64, 0.int64, x),(0.int64, 1.int64, y))
 }
 
-fun to_pair(i:int64,l:list<int64>) : total list<(int64,int64)>{
-  match l
-    Nil -> Nil
-    Cons(j,js) -> Cons((i,j),to_pair(i,js))
+fun max_(ls:list<int64>): <div,exn> int64{
+  match ls 
+    Nil -> throw("Empty List")
+    Cons(x,Nil) -> x
+    Cons(x,Cons(y,ys)) -> 
+      if x<y then
+        max_(Cons(y,ys))
+      else 
+        max_(Cons(x,ys))
 }
+
+fun enum_from_to(from:int64,to:int64): div list<int64>{
+  if from<=to then 
+    Cons(from,enum_from_to(from + 1.int64, to))
+  else 
+    Nil
+}
+
 
 fun cartesian_product(p1:list<int64>,m1:list<int64>): list<(int64,int64)> {
   match p1
@@ -54,6 +49,11 @@ fun cartesian_product(p1:list<int64>,m1:list<int64>): list<(int64,int64)> {
     Cons(h1,t1) -> append(to_pair(h1,m1),cartesian_product(t1,m1))
 }
 
+fun to_pair(i:int64,l:list<int64>) : total list<(int64,int64)>{
+  match l
+    Nil -> Nil
+    Cons(j,js) -> Cons((i,j),to_pair(i,js))
+}
 
 fun test(d:int64): <div,exn> int64{
   val ns = enum_from_to(5000.int64, 5000.int64 + d)

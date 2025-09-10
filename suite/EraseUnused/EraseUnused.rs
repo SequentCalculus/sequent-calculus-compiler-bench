@@ -5,14 +5,6 @@ enum List<A> {
     Cons(A, Rc<List<A>>),
 }
 
-fn replicate(value: i64, n: i64) -> List<i64> {
-    let mut list = List::Nil;
-    for _ in 0..n {
-        list = List::Cons(value, Rc::new(list));
-    }
-    list
-}
-
 fn useless(n: i64) -> i64 {
     let mut i = 0;
     for j in 0..n {
@@ -20,6 +12,14 @@ fn useless(n: i64) -> i64 {
         i += 1;
     }
     i
+}
+
+fn replicate(value: i64, n: i64) -> List<i64> {
+    let mut list = List::Nil;
+    for _ in 0..n {
+        list = List::Cons(value, Rc::new(list));
+    }
+    list
 }
 
 fn main_loop(iters: u64, n: i64) {
