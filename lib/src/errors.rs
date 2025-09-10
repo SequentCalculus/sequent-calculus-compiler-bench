@@ -53,7 +53,6 @@ pub enum Error {
     },
     Hyperfine {
         bench: String,
-        lang: String,
         msg: String,
     },
     ReadCSV {
@@ -65,6 +64,9 @@ pub enum Error {
         bench: String,
         tried: String,
         msg: String,
+    },
+    WrongFormatCommand {
+        command: String,
     },
 }
 
@@ -132,10 +134,9 @@ impl Error {
         }
     }
 
-    pub fn hyperfine<T: std::error::Error>(name: &str, lang: &BenchmarkLanguage, err: T) -> Error {
+    pub fn hyperfine<T: std::error::Error>(name: &str, err: T) -> Error {
         Error::Hyperfine {
             bench: name.to_owned(),
-            lang: lang.to_string(),
             msg: err.to_string(),
         }
     }
@@ -163,6 +164,12 @@ impl Error {
 
     pub fn missing_lang(lang: BenchmarkLanguage) -> Error {
         Error::MissingData { lang }
+    }
+
+    pub fn wrong_format_command(command: &str) -> Error {
+        Error::WrongFormatCommand {
+            command: command.to_owned(),
+        }
     }
 }
 
@@ -199,8 +206,8 @@ impl fmt::Display for Error {
                 )
             }
             Error::Run { bench, lang, msg } => write!(f, "Could not run {bench} ({lang}): {msg}"),
-            Error::Hyperfine { bench, lang, msg } => {
-                write!(f, "Could not run hyperfine for {bench} ({lang}): {msg}")
+            Error::Hyperfine { bench, msg } => {
+                write!(f, "Could not run hyperfine for {bench}: {msg}")
             }
             Error::ReadCSV { path, msg } => write!(f, "Could not read csv from {path:?}:\n\t{msg}"),
             Error::ParseFloat(s) => write!(f, "Could not parse float {s}"),
@@ -208,6 +215,9 @@ impl fmt::Display for Error {
                 write!(f, "Error in Plotters for {bench} during {tried}:\n\t{msg}")
             }
             Error::MissingData { lang } => write!(f, "Missing Data for language {lang}"),
+            Error::WrongFormatCommand { command } => {
+                write!(f, "Could not parse command: {command}")
+            }
         }
     }
 }

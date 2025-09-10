@@ -66,38 +66,32 @@ impl Benchmark {
         create_dir_all(&bin_path)
             .map_err(|_| Error::path_access(&PathBuf::from(&bin_path), "create bin path"))?;
         let mut bin_name = self.name.clone();
+
         if *lang != BenchmarkLanguage::Scc {
             bin_name += "_";
             bin_name += lang.suffix();
         }
+        let bin_path = if *lang == BenchmarkLanguage::Effekt {
+            bin_path.join(bin_name).join(&self.name)
+        } else {
+            bin_path.join(bin_name)
+        };
 
-        Ok(bin_path.join(bin_name))
+        Ok(bin_path)
     }
 
-    pub fn result_path(&self, lang: &BenchmarkLanguage) -> Result<PathBuf, Error> {
+    pub fn result_path(&self) -> Result<PathBuf, Error> {
         create_dir_all(RAW_PATH)
             .map_err(|_| Error::path_access(&PathBuf::from(RAW_PATH), "create hyperfine path"))?;
         let mut path = PathBuf::from(RAW_PATH).join(self.name.clone());
-        create_dir_all(&path).map_err(|_| Error::path_access(&path, "crate results dir"))?;
-        path = path.join(self.name.clone() + "_" + lang.suffix());
         path.set_extension("csv");
         Ok(path)
     }
 
-    pub fn report_path(&self, lang: &BenchmarkLanguage) -> Result<PathBuf, Error> {
-        create_dir_all(PLOTS_PATH)
-            .map_err(|_| Error::path_access(&PathBuf::from(PLOTS_PATH), "create report path"))?;
-        let mut path = PathBuf::from(PLOTS_PATH).join(self.name.clone() + "_" + lang.suffix());
-        path.set_extension("png");
-        Ok(path)
-    }
-
     pub fn results_exist(&self) -> Result<bool, Error> {
-        for lang in self.languages.iter() {
-            let out_path = self.result_path(lang)?;
-            if !out_path.exists() {
-                return Ok(false);
-            }
+        let out_path = self.result_path()?;
+        if !out_path.exists() {
+            return Ok(false);
         }
         Ok(true)
     }
@@ -161,8 +155,6 @@ impl Benchmark {
             cmd.arg("@SMLload");
             cmd.arg(bin_path);
             Ok(cmd)
-        } else if *lang == BenchmarkLanguage::Effekt {
-            Ok(Command::new(bin_path.join(&self.name)))
         } else {
             Ok(Command::new(bin_path))
         }
@@ -192,42 +184,33 @@ impl Benchmark {
     }
 
     pub fn run_hyperfine_all(&self) -> Result<(), Error> {
+        let mut commands: Vec<String> = Vec::with_capacity(self.languages.len());
         for lang in self.languages.iter() {
-            self.run_hyperfine(lang)?;
-        }
-        Ok(())
-    }
+            if !self.languages.contains(lang) {
+                return Err(Error::unknown_lang("Run Hyperfine", lang));
+            }
 
-    pub fn run_hyperfine(&self, lang: &BenchmarkLanguage) -> Result<(), Error> {
-        if !self.languages.contains(lang) {
-            return Err(Error::unknown_lang("Run Hyperfine", lang));
+            let bin_path = self.bin_path(lang)?;
+            let path_err = Error::path_access(&bin_path, "Path as String");
+
+            let bin_str = bin_path.to_str().ok_or(path_err)?.to_owned();
+            let mut call_str = if *lang == BenchmarkLanguage::SmlNj {
+                format!("sml @SMLload {bin_str}")
+            } else {
+                bin_str
+            };
+            for arg in &self.config.args {
+                call_str.push(' ');
+                call_str.push_str(arg);
+            }
+
+            commands.push(call_str)
         }
 
-        let bin_path = self.bin_path(lang)?;
-        let out_path = self.result_path(lang)?;
+        let out_path = self.result_path()?;
 
         let mut command = Command::new("hyperfine");
-        let path_err = Error::path_access(&bin_path, "Path as String");
-        let bin_str = if *lang == BenchmarkLanguage::Effekt {
-            bin_path.join(&self.name)
-        } else {
-            bin_path
-        }
-        .to_str()
-        .ok_or(path_err)?
-        .to_owned();
-
-        let mut call_str = if *lang == BenchmarkLanguage::SmlNj {
-            format!("sml @SMLload {bin_str}")
-        } else {
-            bin_str
-        };
-
-        for arg in &self.config.args {
-            call_str.push(' ');
-            call_str.push_str(arg);
-        }
-        command.arg(call_str);
+        command.args(commands);
         command.arg("--runs");
         command.arg(self.config.runs.to_string());
         command.args(["--warmup", "3"]);
@@ -236,7 +219,8 @@ impl Benchmark {
         println!("hyperfine command: {command:?}");
         command
             .status()
-            .map_err(|err| Error::hyperfine(&self.name, lang, err))?;
+            .map_err(|err| Error::hyperfine(&self.name, err))?;
+
         Ok(())
     }
 

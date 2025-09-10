@@ -8,7 +8,7 @@
     effekt.url = "github:MarcoTz/effekt-nix";
     scc = {
       url =
-        "git+ssh://git@github.com/ps-tuebingen/sequent-calculus-compiler";
+        "git+ssh://git@github.com/SequentCalculus/sequent-calculus-compiler";
     };
   };
 
@@ -32,6 +32,8 @@
 
           #required by rustc
           pkgs.gcc
+          #required by ocaml (on MacOS)
+          pkgs.clang
           #required by smlnj
           pkgs.gnugrep
           pkgs.gnused
