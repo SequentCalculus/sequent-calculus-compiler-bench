@@ -98,17 +98,17 @@ impl<A> List<A> {
         }
     }
 
-    fn at_index(self, n: usize) -> A
+    fn at_index(self, ind: usize) -> A
     where
         A: Clone,
     {
         match self {
-            List::Nil => panic!("Cannot take {}th element of empty list", n),
+            List::Nil => panic!("Cannot take {}th element of empty list", ind),
             List::Cons(a, as_) => {
-                if n == 0 {
+                if ind == 0 {
                     a
                 } else {
-                    Rc::unwrap_or_clone(as_).at_index(n - 1)
+                    Rc::unwrap_or_clone(as_).at_index(ind - 1)
                 }
             }
         }
@@ -225,27 +225,21 @@ impl<A> List<A> {
         self.union_by(other, &|(x, y)| x == y)
     }
 
-    fn zip<B>(self, other: List<B>) -> List<(A, B)>
-    where
-        A: Clone,
-        B: Clone,
-    {
-        match (self, other) {
-            (List::Nil, _) => List::Nil,
-            (_, List::Nil) => List::Nil,
-            (List::Cons(a, as_), List::Cons(b, bs_)) => List::Cons(
-                (a, b),
-                Rc::new(Rc::unwrap_or_clone(as_).zip(Rc::unwrap_or_clone(bs_))),
-            ),
-        }
-    }
-
     fn zip_with<B, C>(self, other: List<B>, f: &impl Fn(A, B) -> C) -> List<C>
     where
         A: Clone,
         B: Clone,
     {
-        self.zip(other).map(&|(x, y)| f(x, y))
+        match self {
+            List::Nil => List::Nil,
+            List::Cons(a, as_) => match other {
+                List::Nil => List::Nil,
+                List::Cons(b, bs_) => List::Cons(
+                    f(a, b),
+                    Rc::new(Rc::unwrap_or_clone(as_).zip_with(Rc::unwrap_or_clone(bs_), f)),
+                ),
+            },
+        }
     }
 }
 
@@ -413,29 +407,12 @@ fn collect_conflict(ls: List<ConflictSet>) -> List<i64> {
     }
 }
 
-fn filter_known(
-    ls: List<List<ConflictSet>>,
-    f: impl Fn(List<ConflictSet>) -> bool,
-) -> List<List<ConflictSet>> {
-    match ls {
-        List::Nil => List::Nil,
-        List::Cons(vs, t1) => {
-            if vs.all(&known_conflict) {
-                List::Cons(vs, Rc::new(filter_known(Rc::unwrap_or_clone(t1), f)))
-            } else {
-                filter_known(Rc::unwrap_or_clone(t1), f)
-            }
-        }
-    }
-}
-
 fn domain_wipeout(
     _: &CSP,
     t: Node<((List<Assign>, ConflictSet), List<List<ConflictSet>>)>,
 ) -> Node<(List<Assign>, ConflictSet)> {
-    let f8 = |((as_, cs), tbl)| {
-        let wiped_domains =
-            filter_known(tbl, |vs: List<ConflictSet>| vs.all(&|x| known_conflict(x)));
+    let f8 = |((as_, cs), tbl): ((_, _), List<_>)| {
+        let wiped_domains = tbl.filter(&|vs: &List<ConflictSet>| vs.all(&|x| known_conflict(x)));
         let cs_ = if wiped_domains.is_empty() {
             cs
         } else {
@@ -506,14 +483,16 @@ fn cache_checks(
 
 fn known_solution(c: &ConflictSet) -> bool {
     match c {
-        ConflictSet::Known(cs) => cs.is_empty(),
+        ConflictSet::Known(List::Nil) => true,
+        ConflictSet::Known(List::Cons(_, _)) => false,
         ConflictSet::Unknown => false,
     }
 }
 
 fn known_conflict(c: &ConflictSet) -> bool {
     match c {
-        ConflictSet::Known(cs) => !cs.is_empty(),
+        ConflictSet::Known(List::Nil) => false,
+        ConflictSet::Known(List::Cons(_, _)) => true,
         ConflictSet::Unknown => false,
     }
 }
@@ -599,9 +578,8 @@ fn search(
     csp: &CSP,
 ) -> List<List<Assign>> {
     let tree = mk_tree(csp);
-    let labeled = labeler(csp, tree);
-    let pruned = labeled.prune(&|(_, x)| known_conflict(&x));
-    pruned
+    labeler(csp, tree)
+        .prune(&|(_, x)| known_conflict(&x))
         .leaves()
         .filter(&|(_, x)| known_solution(x))
         .map(&|(x, _)| x)
