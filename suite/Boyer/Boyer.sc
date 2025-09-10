@@ -5,10 +5,42 @@ data Unit { Unit }
 codata Fun[A, B] { apply(a: A): B }
 
 data Id {
-  A, B, C, D, X, Y, Z, U, W, ADD1, AND, APPEND, CONS,  DIFFERENCE,
-  EQUAL, EVEN, EXP, F, FALSE, FOUR, IF, IMPLIES,
-  LENGTH, LESSP, MEMBER, NIL, NOT, ONE, OR,
-  PLUS, QUOTIENT, REMAINDER, REVERSE, TIMES, TRUE, TWO, ZERO, ZEROP
+  A,
+  B,
+  C,
+  D,
+  X,
+  Y,
+  Z,
+  U,
+  W,
+  ADD1,
+  AND,
+  APPEND,
+  CONS,
+  DIFFERENCE,
+  EQUAL,
+  F,
+  FALSE,
+  FOUR,
+  IF,
+  IMPLIES,
+  LENGTH,
+  LESSP,
+  MEMBER,
+  NIL,
+  NOT,
+  ONE,
+  OR,
+  PLUS,
+  QUOTIENT,
+  REMAINDER,
+  REVERSE,
+  TIMES,
+  TRUE,
+  TWO,
+  ZERO,
+  ZEROP
 }
 
 data Term {
@@ -35,8 +67,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => False,
       FOUR => False,
@@ -75,8 +105,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => False,
       FOUR => False,
@@ -115,8 +143,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => False,
       FOUR => False,
@@ -155,8 +181,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => False,
       FOUR => False,
@@ -195,8 +219,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => False,
       FOUR => False,
@@ -235,8 +257,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => False,
       FOUR => False,
@@ -275,8 +295,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => False,
       FOUR => False,
@@ -315,8 +333,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => False,
       FOUR => False,
@@ -355,8 +371,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => False,
       FOUR => False,
@@ -395,8 +409,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => False,
       FOUR => False,
@@ -435,8 +447,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => False,
       FOUR => False,
@@ -475,8 +485,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => False,
       FOUR => False,
@@ -515,8 +523,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => True,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => False,
       FOUR => False,
@@ -555,8 +561,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => True,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => False,
       FOUR => False,
@@ -595,88 +599,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => True,
-      EVEN => False,
-      EXP => False,
-      F => False,
-      FALSE => False,
-      FOUR => False,
-      IF => False,
-      IMPLIES => False,
-      LENGTH => False,
-      LESSP => False,
-      MEMBER => False,
-      NIL => False,
-      NOT => False,
-      ONE => False,
-      OR => False,
-      PLUS => False,
-      QUOTIENT => False,
-      REMAINDER => False,
-      REVERSE => False,
-      TIMES => False,
-      TRUE => False,
-      TWO => False,
-      ZERO => False,
-      ZEROP => False
-    },
-    EVEN => i2.case {
-      A => False,
-      B => False,
-      C => False,
-      D => False,
-      X => False,
-      Y => False,
-      Z => False,
-      U => False,
-      W => False,
-      ADD1 => False,
-      AND => False,
-      APPEND => False,
-      CONS => False,
-      DIFFERENCE => False,
-      EQUAL => False,
-      EVEN => True,
-      EXP => False,
-      F => False,
-      FALSE => False,
-      FOUR => False,
-      IF => False,
-      IMPLIES => False,
-      LENGTH => False,
-      LESSP => False,
-      MEMBER => False,
-      NIL => False,
-      NOT => False,
-      ONE => False,
-      OR => False,
-      PLUS => False,
-      QUOTIENT => False,
-      REMAINDER => False,
-      REVERSE => False,
-      TIMES => False,
-      TRUE => False,
-      TWO => False,
-      ZERO => False,
-      ZEROP => False
-    },
-    EXP => i2.case {
-      A => False,
-      B => False,
-      C => False,
-      D => False,
-      X => False,
-      Y => False,
-      Z => False,
-      U => False,
-      W => False,
-      ADD1 => False,
-      AND => False,
-      APPEND => False,
-      CONS => False,
-      DIFFERENCE => False,
-      EQUAL => False,
-      EVEN => False,
-      EXP => True,
       F => False,
       FALSE => False,
       FOUR => False,
@@ -715,8 +637,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => True,
       FALSE => False,
       FOUR => False,
@@ -755,8 +675,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => True,
       FOUR => False,
@@ -795,8 +713,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => False,
       FOUR => True,
@@ -835,8 +751,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => False,
       FOUR => False,
@@ -875,8 +789,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => False,
       FOUR => False,
@@ -915,8 +827,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => False,
       FOUR => False,
@@ -955,8 +865,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => False,
       FOUR => False,
@@ -995,8 +903,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => False,
       FOUR => False,
@@ -1035,8 +941,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => False,
       FOUR => False,
@@ -1075,8 +979,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => False,
       FOUR => False,
@@ -1115,8 +1017,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => False,
       FOUR => False,
@@ -1155,8 +1055,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => False,
       FOUR => False,
@@ -1195,8 +1093,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => False,
       FOUR => False,
@@ -1235,8 +1131,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => False,
       FOUR => False,
@@ -1275,8 +1169,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => False,
       FOUR => False,
@@ -1315,8 +1207,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => False,
       FOUR => False,
@@ -1355,8 +1245,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => False,
       FOUR => False,
@@ -1395,8 +1283,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => False,
       FOUR => False,
@@ -1435,8 +1321,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => False,
       FOUR => False,
@@ -1475,8 +1359,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => False,
       FOUR => False,
@@ -1515,8 +1397,6 @@ def id_eq(i1: Id, i2: Id): Bool {
       CONS => False,
       DIFFERENCE => False,
       EQUAL => False,
-      EVEN => False,
-      EXP => False,
       F => False,
       FALSE => False,
       FOUR => False,
@@ -1624,21 +1504,27 @@ def map(f: Fun[Term, Term], l: List[Term]): List[Term] {
 def boyer_add1(t: Term): Term {
   Func(ADD1, Cons(t, Nil), new { apply(u) => Nil })
 }
+
 def boyer_zero: Term {
   Func(ZERO, Nil, new { apply(u) => Nil })
 }
+
 def boyer_zerop(a: Term): Term {
   Func(ZEROP, Cons(a, Nil), new { apply(u) => Cons(Tup(boyer_zerop(boyer_x()), boyer_equal(boyer_x(), boyer_zero())), Nil) })
 }
+
 def boyer_one(): Term {
   Func(ONE, Nil, new { apply(u) => Cons(Tup(boyer_one(), boyer_add1(boyer_zero())), Nil) })
 }
+
 def boyer_two(): Term {
   Func(TWO, Nil, new { apply(u) => Cons(Tup(boyer_two(), boyer_add1(boyer_one())), Nil) })
 }
+
 def boyer_four(): Term {
   Func(FOUR, Nil, new { apply(u) => Cons(Tup(boyer_four(), boyer_add1(boyer_add1(boyer_two()))), Nil) })
 }
+
 def boyer_if_(a: Term, b: Term, c: Term): Term {
   Func(IF, Cons(a, Cons(b, Cons(c, Nil))),
     new { apply(u) =>
@@ -1650,12 +1536,14 @@ def boyer_if_(a: Term, b: Term, c: Term): Term {
           boyer_if_(boyer_z(), boyer_u(), boyer_w()))), Nil)
     })
 }
+
 def boyer_not_(a: Term): Term {
   Func(NOT, Cons(a, Nil),
     new { apply(u) =>
       Cons(Tup(boyer_not_(boyer_x()), boyer_if_(boyer_x(), boyer_false(), boyer_true())), Nil)
     })
 }
+
 def boyer_and_(a: Term, b: Term): Term {
   Func(AND, Cons(a, Cons(b, Nil)),
     new { apply(u) =>
@@ -1664,6 +1552,7 @@ def boyer_and_(a: Term, b: Term): Term {
           boyer_false())), Nil)
     })
 }
+
 def boyer_equal(a: Term, b: Term): Term {
   Func(EQUAL,
     Cons(a, Cons(b, Nil)),
@@ -1709,6 +1598,7 @@ def boyer_equal(a: Term, b: Term): Term {
     Nil)))))))))))
     })
 }
+
 def boyer_append_(a: Term, b: Term): Term {
   Func(APPEND, Cons(a, Cons(b, Nil)),
     new { apply(u) =>
@@ -1717,18 +1607,29 @@ def boyer_append_(a: Term, b: Term): Term {
         boyer_append_(boyer_x(), boyer_append_(boyer_y(), boyer_z()))), Nil)
     })
 }
+
 def boyer_x(): Term { Var(X) }
+
 def boyer_y(): Term { Var(Y) }
+
 def boyer_z(): Term { Var(Z) }
+
 def boyer_u(): Term { Var(U) }
+
 def boyer_w(): Term { Var(W) }
+
 def boyer_a(): Term { Var(A) }
+
 def boyer_b(): Term { Var(B) }
+
 def boyer_c(): Term { Var(C) }
+
 def boyer_d(): Term { Var(D) }
 
 def boyer_false(): Term { Func(FALSE, Nil, new { apply(u) => Nil }) }
+
 def boyer_true(): Term { Func(TRUE, Nil, new { apply(u) => Nil }) }
+
 def boyer_or_(a: Term, b: Term): Term {
   Func(OR, Cons(a, Cons(b, Nil)),
     new { apply(u) =>
@@ -1737,6 +1638,7 @@ def boyer_or_(a: Term, b: Term): Term {
         boyer_if_(boyer_x(), boyer_true(), boyer_if_(boyer_y(), boyer_true(), boyer_false()))), Nil)
     })
 }
+
 def boyer_lessp(a: Term, b: Term): Term {
   Func(LESSP,
     Cons(a, Cons(b, Nil)),
@@ -1759,9 +1661,11 @@ def boyer_lessp(a: Term, b: Term): Term {
       Nil)))))
     })
 }
+
 def boyer_cons(a: Term, b: Term): Term {
   Func(CONS, Cons(a, Cons(b, Nil)), new { apply(u) => Nil })
 }
+
 def boyer_remainder(a: Term, b: Term): Term {
   Func(REMAINDER, Cons(a, Cons(b, Nil)),
     new { apply(u) =>
@@ -1772,6 +1676,7 @@ def boyer_remainder(a: Term, b: Term): Term {
               Nil))))
     })
 }
+
 def boyer_quotient(a: Term, b: Term): Term {
   Func(QUOTIENT, Cons(a, Cons(b, Nil)),
     new { apply(u) =>
@@ -1784,6 +1689,7 @@ def boyer_quotient(a: Term, b: Term): Term {
       Nil))
     })
 }
+
 def boyer_times(a: Term, b: Term): Term {
   Func(TIMES, Cons(a, Cons(b, Nil)),
     new { apply(u) =>
@@ -1802,6 +1708,7 @@ def boyer_times(a: Term, b: Term): Term {
       Nil))))
     })
 }
+
 def boyer_difference(a: Term, b: Term): Term {
   Func(DIFFERENCE,
     Cons(a, Cons(b, Nil)),
@@ -1820,18 +1727,7 @@ def boyer_difference(a: Term, b: Term): Term {
                 Nil)))))))
     })
 }
-def boyer_exp_(a: Term, b: Term): Term {
-  Func(EXP,
-    Cons(a, Cons(b, Nil)),
-    new { apply(u) =>
-      Cons(Tup(
-        boyer_exp_(boyer_x(), boyer_plus(boyer_y(), boyer_z())),
-        boyer_times(boyer_exp_(boyer_x(), boyer_y()), boyer_exp_(boyer_x(), boyer_z()))),
-      Cons(Tup(
-        boyer_exp_(boyer_x(), boyer_times(boyer_y(), boyer_z())),
-        boyer_exp_(boyer_exp_(boyer_x(), boyer_y()), boyer_z())), Nil))
-    })
-}
+
 def boyer_implies(a: Term, b: Term): Term {
   Func(IMPLIES, Cons(a, Cons(b, Nil)),
     new { apply(u) =>
@@ -1840,6 +1736,7 @@ def boyer_implies(a: Term, b: Term): Term {
         boyer_if_(boyer_x(), boyer_if_(boyer_y(), boyer_true(), boyer_false()), boyer_true())), Nil)
     })
 }
+
 def boyer_length_(a: Term): Term {
   Func(LENGTH, Cons(a, Nil),
     new { apply(u) =>
@@ -1852,6 +1749,7 @@ def boyer_length_(a: Term): Term {
       Nil))
     })
 }
+
 def boyer_reverse_(a: Term): Term {
   Func(REVERSE, Cons(a, Nil),
     new { apply(u) =>
@@ -1860,9 +1758,11 @@ def boyer_reverse_(a: Term): Term {
         boyer_append_(boyer_reverse_(boyer_y()), boyer_reverse_(boyer_x()))), Nil)
     })
 }
+
 def boyer_nil(): Term {
   Func(NIL, Nil, new { apply(u) => Nil})
 }
+
 def boyer_member(a: Term, b: Term): Term {
   Func(MEMBER, Cons(a, Cons(b, Nil)),
     new { apply(u) =>
@@ -1874,6 +1774,7 @@ def boyer_member(a: Term, b: Term): Term {
         boyer_member(boyer_x(), boyer_y())), Nil))
     })
 }
+
 def boyer_plus(a: Term, b: Term): Term {
   Func(PLUS, Cons(a, Cons(b, Nil)),
     new { apply(u) =>
@@ -1889,6 +1790,7 @@ def boyer_plus(a: Term, b: Term): Term {
       Nil)))
     })
 }
+
 def boyer_f(a: Term): Term {
   Func(F, Cons(a, Nil), new { apply(u) => Nil })
 }

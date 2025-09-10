@@ -14,17 +14,17 @@ impl<'a> List<Term<'a>> {
         }
     }
 
-    fn all_term(&self, pred: &impl Fn(&Term<'a>) -> bool) -> bool {
+    fn all_term(&self, f: &impl Fn(&Term<'a>) -> bool) -> bool {
         match self {
             List::Nil => true,
-            List::Cons(t, ts) => pred(t) && ts.all_term(pred),
+            List::Cons(t, ts) => f(t) && ts.all_term(f),
         }
     }
 
     fn map(self, f: impl Fn(Term<'a>) -> Term<'a>) -> List<Term<'a>> {
         match self {
             List::Nil => List::Nil,
-            List::Cons(t, ts) => List::Cons(f(t), Rc::new(Rc::unwrap_or_clone(ts).map(f))),
+            List::Cons(x, xs) => List::Cons(f(x), Rc::new(Rc::unwrap_or_clone(xs).map(f))),
         }
     }
 }
@@ -806,31 +806,31 @@ fn boyer_f<'a>(a: Term<'a>) -> Term<'a> {
 }
 
 fn one_way_unify1<'a>(
-    t1: Term<'a>,
-    t2: Term<'a>,
+    term1: Term<'a>,
+    term2: Term<'a>,
     subst: List<(Id, Term<'a>)>,
 ) -> (bool, List<(Id, Term<'a>)>) {
-    match t2 {
+    match term2 {
         Term::Var(vid2) => {
             let (found, v2) = find(&vid2, subst.clone());
             if found {
-                (t1 == v2, subst)
+                (term1 == v2, subst)
             } else {
-                (true, List::Cons((vid2, t1), Rc::new(subst)))
+                (true, List::Cons((vid2, term1), Rc::new(subst)))
             }
         }
-        Term::Fun(f2, as2, _) => {
-            if let Term::Fun(f1, as1, _) = t1 {
+        Term::Fun(f2, as2, _) => match term1 {
+            Term::Var(_) => (false, List::Nil),
+            Term::Fun(f1, as1, _) => {
                 if f1 == f2 {
                     one_way_unify1_lst(Rc::unwrap_or_clone(as1), Rc::unwrap_or_clone(as2), subst)
                 } else {
                     (false, List::Nil)
                 }
-            } else {
-                (false, List::Nil)
             }
-        }
-        _ => (false, List::Nil),
+            Term::ERROR => (false, List::Nil),
+        },
+        Term::ERROR => (false, List::Nil),
     }
 }
 
@@ -852,19 +852,19 @@ fn one_way_unify1_lst<'a>(
     }
 }
 
-fn one_way_unify<'a>(t1: Term<'a>, t2: Term<'a>) -> (bool, List<(Id, Term<'a>)>) {
-    one_way_unify1(t1, t2, List::Nil)
+fn one_way_unify<'a>(term1: Term<'a>, term2: Term<'a>) -> (bool, List<(Id, Term<'a>)>) {
+    one_way_unify1(term1, term2, List::Nil)
 }
 
-fn rewrite_with_lemmas<'a>(t: Term<'a>, lss: List<(Term<'a>, Term<'a>)>) -> Term<'a> {
+fn rewrite_with_lemmas<'a>(term: Term<'a>, lss: List<(Term<'a>, Term<'a>)>) -> Term<'a> {
     match lss {
-        List::Nil => t,
+        List::Nil => term,
         List::Cons((lhs, rhs), lss) => {
-            let (unified, subst) = one_way_unify(t.clone(), lhs);
+            let (unified, subst) = one_way_unify(term.clone(), lhs);
             if unified {
                 rewrite(apply_subst(subst, rhs))
             } else {
-                rewrite_with_lemmas(t, Rc::unwrap_or_clone(lss))
+                rewrite_with_lemmas(term, Rc::unwrap_or_clone(lss))
             }
         }
     }
@@ -883,15 +883,17 @@ fn rewrite<'a>(t: Term<'a>) -> Term<'a> {
 
 fn truep<'a>(x: &Term<'a>, l: &List<Term<'a>>) -> bool {
     match x {
-        Term::Fun(Id::TRUE, _, _) => true,
-        _ => l.term_in_list(x),
+        Term::Var(_) => l.term_in_list(x),
+        Term::Fun(t, _, _) => *t == Id::TRUE || l.term_in_list(x),
+        Term::ERROR => l.term_in_list(x),
     }
 }
 
 fn falsep<'a>(x: &Term<'a>, l: &List<Term<'a>>) -> bool {
     match x {
-        Term::Fun(Id::FALSE, _, _) => true,
-        _ => l.term_in_list(x),
+        Term::Var(_) => l.term_in_list(x),
+        Term::Fun(t, _, _) => *t == Id::FALSE || l.term_in_list(x),
+        Term::ERROR => l.term_in_list(x),
     }
 }
 
@@ -916,18 +918,14 @@ fn tautologyp<'a>(x: Term<'a>, true_lst: List<Term<'a>>, false_lst: List<Term<'a
         };
 
         if truep(&cond, &true_lst) {
-            return tautologyp(t, true_lst, false_lst);
+            tautologyp(t, true_lst, false_lst)
+        } else if falsep(&cond, &false_lst) {
+            tautologyp(t, true_lst, false_lst)
+        } else {
+            let new_tru = List::Cons(cond.clone(), Rc::new(true_lst.clone()));
+            let new_fls = List::Cons(cond, Rc::new(false_lst.clone()));
+            tautologyp(t, new_tru, false_lst) && tautologyp(e, true_lst, new_fls)
         }
-
-        if falsep(&cond, &false_lst) {
-            return tautologyp(t, true_lst, false_lst);
-        }
-
-        let new_tru = List::Cons(cond.clone(), Rc::new(true_lst.clone()));
-
-        let new_fls = List::Cons(cond, Rc::new(false_lst.clone()));
-
-        tautologyp(t, new_tru, false_lst) && tautologyp(e, true_lst, new_fls)
     } else {
         false
     }
@@ -1026,8 +1024,7 @@ fn test0<'a>(xxxx: Term<'a>) -> bool {
 }
 
 fn test_boyer_nofib(n: u64) -> bool {
-    let ts = replicate_term(n, Term::Var(Id::X));
-    ts.all_term(&|t| test0(t.clone()))
+    replicate_term(n, Term::Var(Id::X)).all_term(&|t| test0(t.clone()))
 }
 
 fn main_loop(iters: u64, n: u64) {

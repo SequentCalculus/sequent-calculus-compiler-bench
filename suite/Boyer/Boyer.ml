@@ -1,9 +1,40 @@
-type id = A | B | C | D | X | Y | Z | U | W
-  | ADD1 | AND | APPEND | CONS |  DIFFERENCE | EQUAL
-  | F | FALSE | FOUR | IF | IMPLIES | LENGTH | LESSP
-  | MEMBER | NIL | NOT
-  | ONE | OR | PLUS | QUOTIENT | REMAINDER
-  | REVERSE | TIMES | TRUE | TWO | ZERO | ZEROP
+type id =
+  A
+  | B
+  | C
+  | D
+  | X
+  | Y
+  | Z
+  | U
+  | W
+  | ADD1
+  | AND
+  | APPEND
+  | CONS
+  | DIFFERENCE
+  | EQUAL
+  | F
+  | FALSE
+  | FOUR
+  | IF
+  | IMPLIES
+  | LENGTH
+  | LESSP
+  | MEMBER
+  | NIL
+  | NOT
+  | ONE
+  | OR
+  | PLUS
+  | QUOTIENT
+  | REMAINDER
+  | REVERSE
+  | TIMES
+  | TRUE
+  | TWO
+  | ZERO
+  | ZEROP
 
 type term =
   Var of id
