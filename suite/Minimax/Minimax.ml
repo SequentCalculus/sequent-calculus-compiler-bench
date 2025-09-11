@@ -1,4 +1,5 @@
 exception BadIndex
+exception EmptyList
 
 type player = X | O 
 
@@ -10,10 +11,48 @@ let top (Rose (p,_)) = p
 
 let snd (_,x) = x 
 
+let player_equal p1 p2 = 
+  match (p1,p2) with 
+    | (X,X) -> true
+    | (O,O) -> true
+    | _ -> false
+
 let other p = 
   match p with 
     | X -> O 
-    | O -> X 
+    | O -> X
+
+let is_some p = 
+  match p with 
+    | None -> false
+    | Some(_) -> true
+
+let head l = 
+  match l with 
+    | [] -> raise EmptyList
+    | x::_ -> x
+
+let tail l = 
+  match l with 
+    | [] -> raise EmptyList
+    | _::xs -> xs
+
+let rec rev_acc l acc = 
+  match l with 
+    | [] -> acc
+    | x::xs -> rev_acc xs (x::acc)
+
+let rev l = rev_acc l []
+
+let rec map f l = 
+  match l with 
+    | [] -> []
+    | x::xs -> (f x) :: (map f xs)
+
+let rec fold f xs acc = 
+  match xs with 
+    | [] -> acc
+    | h::t -> fold f t (f acc h)
 
 let rec tabulate_loop n len f =
   if n=len then []
@@ -32,18 +71,28 @@ let rec find l i =
     | [] -> None
     | p::ps -> if i=0 then p else find ps (i-1)
 
+let rec exists f l = 
+  match l with 
+    | [] -> false
+    | x::xs -> if f x then true else exists f xs
+
+let rec all f l =
+  match l with 
+    | [] -> true
+    | x::xs -> if f x then all f xs else false
+
 let emptyBoard = tabulate 9 (fun () -> None)
 
 let is_full board =
-  List.for_all (fun p -> Option.is_some p) board
+  all (fun p -> is_some p) board
 
 let player_occupies p board i =
   match find board i with 
     | None -> false 
-    | Some p0 -> p=p0
+    | Some p0 -> player_equal p p0
 
 let has_trip board p l =
-  List.for_all (fun i -> player_occupies p board i) l
+  all (fun i -> player_occupies p board i) l
 
 let rows = 
   (0::1::2::[])::(3::4::5::[])::(6::7::8::[])::[]
@@ -53,13 +102,13 @@ let diags =
   (0::4::8::[])::(2::4::6::[])::[]
 
 let has_row board p = 
-  List.exists (fun l -> has_trip board p l) rows
+  exists (fun l -> has_trip board p l) rows
 
 let has_col board p = 
-  List.exists (fun l -> has_trip board p l) cols 
+  exists (fun l -> has_trip board p l) cols 
 
 let has_diag board p = 
-  List.exists (fun l -> has_trip board p l) diags
+  exists (fun l -> has_trip board p l) diags
 
 let is_win_for board p = 
   (has_row board p) || (has_col board p) || (has_diag board p)
@@ -70,14 +119,13 @@ let is_cat board =
 let list_extreme f l = 
   match l with 
     | [] -> 0 
-    | i::is -> List.fold_right f is i
+    | i::is -> fold f is i
 
 let listmax l = list_extreme Int.max l
 
 let listmin l = list_extreme Int.min l
 
-let is_occupied board i = Option.is_some (nth board i)
-
+let is_occupied board i = is_some (nth board i)
 
 let is_win board = (is_win_for board X) || (is_win_for board O)
 
@@ -89,8 +137,8 @@ let score board =
   else 0 
 
 let rec put_at x xs i = 
-  if i=0 then (x::List.tl xs) 
-  else if i>0 then List.hd xs :: put_at x (List.tl xs) (i-1)
+  if i=0 then (x::tail xs) 
+  else if i>0 then head xs :: put_at x (tail xs) (i-1)
   else raise BadIndex
 
 let move_to board p i = 
@@ -99,7 +147,7 @@ let move_to board p i =
 
 let rec all_moves_rec n board acc = 
   match board with 
-    | [] -> List.rev acc 
+    | [] -> rev acc 
     | (p::more) -> (
       match p with 
         | Some p -> all_moves_rec (n+1) more acc
@@ -107,14 +155,14 @@ let rec all_moves_rec n board acc =
 
 let all_moves board = all_moves_rec 0 board [] 
 let successors board p = 
-  List.map (fun i -> move_to board p i) (all_moves board)
+  map (fun i -> move_to board p i) (all_moves board)
 
 let rec minimax p board = 
   if game_over board then
     mk_leaf (board,score board)
   else 
-    let trees = List.map (fun b -> minimax (other p) b) (successors board p) in 
-    let scores = List.map (fun t -> snd (top t)) trees in 
+    let trees = map (fun b -> minimax (other p) b) (successors board p) in 
+    let scores = map (fun t -> snd (top t)) trees in 
     match p with 
       | X -> Rose ((board,listmax scores), trees)
       | O -> Rose ((board,listmin scores), trees)

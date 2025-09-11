@@ -75,6 +75,12 @@ def map[A, B](l: List[A]) { f: A => B }: List[B] = l match {
   case Cons(a, as) => Cons(f(a), as.map {f})
 }
 
+def fold[A, R](xs: List[A], acc: R) { f: (R, A) => R }: R =
+  xs match {
+    case Nil() => acc
+    case Cons(h, t) => t.fold(f(acc, h)) {f}
+  }
+
 def tabulate_loop(n: Int, len: Int) { f: () => Option[Player] }: List[Option[Player]] =
   if (n == len) {
     Nil()
@@ -113,7 +119,6 @@ def all[A](list: List[A]) { predicate: A => Bool }: Bool = {
     case Nil() => true
   }
 }
-
 
 // Actual functions
 
@@ -163,12 +168,6 @@ def is_win_for(board: List[Option[Player]], p: Player): Bool =
 
 def is_cat(board: List[Option[Player]]): Bool =
   is_full(board) && not(is_win_for(board, X())) && not(is_win_for(board, O()))
-
-def fold[A, R](xs: List[A], acc: R) { f: (R, A) => R }: R =
-  xs match {
-    case Nil() => acc
-    case Cons(h, t) => t.fold(f(acc, h)) {f}
-  }
 
 def list_extreme(l: List[Int]) { f: (Int, Int) => Int }: Int =
   l match {

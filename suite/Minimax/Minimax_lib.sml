@@ -1,6 +1,4 @@
 structure Minimax = struct 
-  exception BadIndex
-
   datatype Player =  X | O
 
   datatype 'a rosetree = Rose of 'a * ('a rosetree) list
@@ -11,10 +9,48 @@ structure Minimax = struct
 
   fun snd (_,x) = x
 
+  fun player_equal p1 p2 = 
+    case (p1,p2) of 
+         (X,X) => true
+       | (O,O) => true
+       | _ => false
+
   fun other p = 
     case p of 
          X => O 
        | O => X
+
+  fun is_some p = 
+    case p of 
+         NONE => false
+       | SOME(_) => true
+
+  fun head l = 
+    case l of 
+         nil => raise Fail("Empty List")
+       | a::_ => a
+
+  fun tail l = 
+    case l of
+         nil => raise Fail("Empty List")
+       | _::as_ => as_
+
+  fun rev_acc l acc = 
+    case l of 
+         nil => acc
+       | x::xs => rev_acc xs (x::acc)
+
+  fun rev l = rev_acc l nil
+
+  fun map_list f l = 
+    case l of 
+         nil => nil
+       | a::as_ => (f a) :: (map_list f as_)
+
+  fun fold_list f acc xs = 
+    case xs of 
+         nil => acc
+       | h::t => fold_list f (f (acc,h)) t
 
   fun tabulate_loop n len f = 
     if n=len then nil 
@@ -26,7 +62,7 @@ structure Minimax = struct
 
   fun nth l i = 
     case l of 
-         nil => raise BadIndex 
+         nil => raise Fail "Bad Index" 
        | p::ps => if i=0 then p else nth ps (i-1)
 
   fun find l i = 
@@ -34,31 +70,41 @@ structure Minimax = struct
          nil => NONE
        | p::ps => if i=0 then p else find ps (i-1)
 
+  fun exists f l = 
+    case l of 
+         nil => false
+       | x::xs => if f x then true else exists f xs
+
+  fun all f l = 
+    case l of 
+         nil => true
+       | x::xs => f x andalso all f xs
+
   fun emptyBoard () = tabulate 9 (fn () => NONE)
 
   fun is_full board = 
-    List.all (fn p => Option.isSome p) board
+    all is_some board
 
   fun player_occupies p board i = 
     case find board i of 
          NONE => false 
-       | SOME p0 => p=p0
+       | SOME p0 => player_equal p0 p
 
   fun has_trip board p l = 
-    List.all (fn i => player_occupies p board i) l
+    all (fn i => player_occupies p board i) l
 
   fun rows () = [[0,1,2],[3,4,5],[6,7,8]]
   fun cols () = [[0,3,6],[1,4,7],[2,5,8]]
   fun diags() = [[0,4,8],[2,4,6]]
 
   fun has_row board p = 
-    List.exists (fn l => has_trip board p l) (rows())
+    exists (fn l => has_trip board p l) (rows())
 
   fun has_col board p = 
-    List.exists (fn l => has_trip board p l) (cols())
+    exists (fn l => has_trip board p l) (cols())
 
   fun has_diag board p =
-    List.exists (fn l => has_trip board p l) (diags())
+    exists (fn l => has_trip board p l) (diags())
 
   fun is_win_for board p = 
     (has_row board p) orelse (has_col board p) orelse (has_diag board p)
@@ -69,7 +115,7 @@ structure Minimax = struct
   fun list_extreme f l = 
     case l of 
          nil => 0
-       | i::is => List.foldr f i is
+       | i::is => fold_list f i is
 
   fun listmax l = list_extreme Int.max l
 
@@ -88,9 +134,9 @@ structure Minimax = struct
     else 0
 
   fun put_at x xs i = 
-    if i=0 then (x::tl xs)
-    else if i>0 then (hd xs:: put_at x (tl xs) (i-1))
-    else raise BadIndex
+    if i=0 then (x::tail xs)
+    else if i>0 then (head xs:: put_at x (tail xs) (i-1))
+    else raise Fail "Bad Index"
 
   fun move_to board p i = 
     if is_occupied board i 
@@ -99,7 +145,7 @@ structure Minimax = struct
 
   fun all_moves_rec n board acc = 
     case board of 
-         nil => List.rev acc
+         nil => rev acc
        | p::more => 
            (case p of 
                  SOME p => all_moves_rec (n+1) more acc
@@ -107,14 +153,14 @@ structure Minimax = struct
 
   fun all_moves board = all_moves_rec 0 board nil
 
-  fun successors board p = map (fn i => move_to board p i) (all_moves board)
+  fun successors board p = map_list (fn i => move_to board p i) (all_moves board)
 
   fun minimax p board = 
     if game_over board 
     then mk_leaf (board,score board)
     else 
-      let val trees = map (fn b => minimax (other p) b) (successors board p)
-        val scores = map (fn t => snd (top t)) trees
+      let val trees = map_list (fn b => minimax (other p) b) (successors board p)
+        val scores = map_list (fn t => snd (top t)) trees
       in 
         case p of 
              X => Rose((board,listmax scores), trees)
@@ -130,7 +176,7 @@ structure Minimax = struct
       end
 
   fun run args =   
-    let val iters = valOf (Int.fromString (hd args))
+    let val iters = valOf (Int.fromString (head args))
   in 
     main_loop iters 
   end
