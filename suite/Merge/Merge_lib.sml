@@ -1,8 +1,20 @@
 structure Merge = struct
+  fun head l =
+    case l of 
+         nil => raise Fail("Empty List")
+       | x::_ => x 
+
+  fun rev_loop l acc = 
+    case l of 
+         nil => acc
+       | x::xs => rev_loop xs (x::acc)
+
+  fun rev l = rev_loop l nil
+
   fun tabulate_loop n len f acc =
     if n<len then
       tabulate_loop (n+1) len f (f n::acc)
-    else List.rev acc
+    else rev acc
 
   fun tabulate n f =
     if n<0 then nil else tabulate_loop 0 n f nil
@@ -20,13 +32,13 @@ structure Merge = struct
   let val res = merge l1 l2
   in
     if iters=1 then
-      print ((Int.toString (hd res)) ^ "\n")
+      print ((Int.toString (head res)) ^ "\n")
     else main_loop (iters-1) l1 l2
   end
 
   fun run args =
-    let val iters = valOf (Int.fromString (hd args))
-    val n = valOf (Int.fromString (hd (tl args)))
+    let val iters = valOf (Int.fromString (head args))
+    val n = valOf (Int.fromString (head (tl args)))
     val l1 = tabulate n (fn x => 2*x)
     val l2 = tabulate n (fn x => (2*x)+1)
   in

@@ -1,7 +1,21 @@
+exception EmptyList
+
+let head l = 
+  match l with 
+    | [] -> raise EmptyList
+    | x::_ -> x
+
+let rec rev_loop l acc = 
+  match l with
+    | [] -> acc
+    | p::ps -> rev_loop ps (p::acc)
+
+let rev l = rev_loop l []
+
 let rec tabulate_loop n len f acc = 
   if n<len then 
     tabulate_loop (n+1) len f (f n::acc)
-  else List.rev acc 
+  else rev acc 
 
 let tabulate n f = 
   if n<0 then [] else tabulate_loop 0 n f []
@@ -18,7 +32,7 @@ let rec merge l1 l2 =
 let rec main_loop iters l1 l2 = 
   let res = merge l1 l2 in 
   if iters = 1 then 
-    print_endline (string_of_int (List.hd res))
+    print_endline (string_of_int (head res))
   else main_loop (iters-1) l1 l2 
 
 let main = 
