@@ -19,22 +19,6 @@ def map_list(f: Fun[Expr, Expr], l: List[Expr]): List[Expr] {
   }
 }
 
-def equal_list(l1: List[Expr], l2: List[Expr]): Bool {
-  l1.case[Expr] {
-    Nil => l2.case[Expr] {
-      Nil => True,
-      Cons(e, es) => False
-    },
-    Cons(e1, es1) => l2.case[Expr] {
-      Nil => False,
-      Cons(e2, es2) => equal(e1, e2).case {
-        True => equal_list(es1, es2),
-        False => False
-      }
-    },
-  }
-}
-
 def equal(exp1: Expr, exp2: Expr): Bool {
   exp1.case {
     Add(sums1) => exp2.case {
@@ -86,6 +70,22 @@ def equal(exp1: Expr, exp2: Expr): Bool {
       Num(i) => False,
       X() => True
     }
+  }
+}
+
+def equal_list(l1: List[Expr], l2: List[Expr]): Bool {
+  l1.case[Expr] {
+    Nil => l2.case[Expr] {
+      Nil => True,
+      Cons(e, es) => False
+    },
+    Cons(e1, es1) => l2.case[Expr] {
+      Nil => False,
+      Cons(e2, es2) => equal(e1, e2).case {
+        True => equal_list(es1, es2),
+        False => False
+      }
+    },
   }
 }
 

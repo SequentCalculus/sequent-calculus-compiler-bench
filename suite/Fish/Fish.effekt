@@ -117,7 +117,7 @@ def grid(m: Int, n: Int, segments: List[Vec4], a: Vec, b: Vec, c: Vec): List[Vec
         tup2(
           vec_add(vec_add(a, scale_vec2(b, x0, m)), scale_vec2(c, y0, n)),
           vec_add(vec_add(a, scale_vec2(b, x1, m)), scale_vec2(c, y1, n))),
-      grid(m, n, t, a, b, c))
+        grid(m, n, t, a, b, c))
   }
 
 def tile_to_grid(arg: List[Vec4], arg2: Vec, arg3: Vec, arg4: Vec): List[Vec4] =

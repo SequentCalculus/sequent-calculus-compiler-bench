@@ -1132,9 +1132,13 @@ fn nil(_: Vec2, _: Vec2, _: Vec2) -> List<Vec4> {
 }
 
 fn grid(m: i64, n: i64, segments: List<Vec4>, a: Vec2, b: Vec2, c: Vec2) -> List<Vec4> {
-    segments.map(&|v| {
-        ((a + b.scale(v.x, m)) + c.scale(v.y, n)).tup2((a + b.scale(v.z, m)) + c.scale(v.w, n))
-    })
+    match segments {
+        List::Nil => List::Nil,
+        List::Cons(v, t) => List::Cons(
+            ((a + b.scale(v.x, m)) + c.scale(v.y, n)).tup2((a + b.scale(v.z, m)) + c.scale(v.w, n)),
+            grid(m, n, Rc::unwrap_or_clone(t), a, b, c).into(),
+        ),
+    }
 }
 
 fn rot(p: &impl Fn(Vec2, Vec2, Vec2) -> List<Vec4>, a: Vec2, b: Vec2, c: Vec2) -> List<Vec4> {
