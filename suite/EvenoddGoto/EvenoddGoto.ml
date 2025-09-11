@@ -1,5 +1,8 @@
 exception Return of bool
 
+let abs_int i = 
+  if i < 0 then -i else i
+
 let rec even_abs i =
   if i = 0 then true
   else try odd_abs (i - 1) with Return b -> b
@@ -7,9 +10,9 @@ and odd_abs i =
   if i = 0 then raise (Return false)
   else raise (Return (even_abs (i - 1)))
 
-let even i = even_abs (abs i)
+let even i = even_abs (abs_int i)
 
-let odd i = try odd_abs (abs i) with Return b -> b
+let odd i = try odd_abs (abs_int i) with Return b -> b
 
 let rec main_loop iters n =
   let res = (even n) && (not (odd n)) in

@@ -6,6 +6,10 @@ import std/os/env
 effect ret
   ctl ret(b:bool): bool
 
+fun abs_int(i:int64): total int64{
+  if i < 0.int64 then ~i else i
+}
+
 fun even_abs(i:int64): div bool{
   if i == 0.int64 then
     True
@@ -22,12 +26,12 @@ fun odd_abs(i:int64): <div,ret> bool{
 }
 
 fun even(i:int64): <exn,div> bool{
-  even_abs(abs(i))
+  even_abs(abs_int(i))
 }
 
 fun odd(i:int64): <exn,div> bool {
   with ctl ret(b) b
-  odd_abs(abs(i))
+  odd_abs(abs_int(i))
 }
 
 fun main_loop(iters:int64,n:int64): <console,div,exn> (){
