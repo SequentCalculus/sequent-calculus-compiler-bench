@@ -88,18 +88,22 @@ fun id_eq(id1:id,id2:id) : total bool {
   }
 }
 
-fun term_eq(t1:term,t2:term) : div bool {
+fun term_eq(t1:term,t2:term) : total bool {
   match (t1,t2)
     (Var(id1),Var(id2)) -> id_eq(id1,id2)
     (Func(f1,args1,_),Func(f2,args2,_)) ->
-      id_eq(f1,f2) &&
-      all(zip(args1,args2),fn (a12) match a12
-        (a1,a2) -> (term_eq(a1,a2))
-      )
+      id_eq(f1,f2) && term_ls_eq(args1,args2)
     _ -> False
 }
 
-fun term_in_list(a:term,ls:list<term>) : div bool {
+fun term_ls_eq(ls1:list<term>,ls2:list<term>) : total bool {
+  match (ls1,ls2)
+    (Nil,_) -> true,
+    (Cons(h1,t1),Cons(h2,t2)) -> term_eq(h1,h2) && term_ls_eq(t1,t2)
+    _ -> false
+}
+
+fun term_in_list(a:term,ls:list<term>) : <div,exn> bool {
   match ls
     Nil -> False
     Cons(a_,as_) ->
@@ -107,6 +111,20 @@ fun term_in_list(a:term,ls:list<term>) : div bool {
         True
       else
         term_in_list(a,as_)
+}
+
+fun all_list(ls: list<a>, f: a -> <div,exn> bool): <div,exn> bool{
+  match ls{
+    Nil -> True
+    Cons(a,as_) -> f(a) && all_list(as_,f)
+  }
+}
+
+fun map_list(ls: list<a>,f: a -> <div,exn> b): <div,exn> list<b>{
+  match ls{
+    Nil -> Nil
+    Cons(a,as_) -> Cons(f(a),map_list(as_,f))
+  }
 }
 
 fun replicate_term(n:int64, t:term) : div list<term> {
@@ -451,7 +469,11 @@ fun boyer_f(a:term): total term {
   Func(ID_F,Cons(a,Nil),fn() Nil)
 }
 
-fun one_way_unify1(term1:term,term2:term,subst:list<(id,term)>) : div (bool,list<(id,term)>){
+fun one_way_unify(term1:term,term2:term) : <div,exn> (bool,list<(id,term)>)  {
+  one_way_unify1(term1,term2,Nil)
+}
+
+fun one_way_unify1(term1:term,term2:term,subst:list<(id,term)>) : <div,exn> (bool,list<(id,term)>){
   match term2
     Var(vid2) ->
       val (found,v2) = find(vid2,subst)
@@ -467,10 +489,9 @@ fun one_way_unify1(term1:term,term2:term,subst:list<(id,term)>) : div (bool,list
           (False,Nil)
       _ -> (False,Nil)
     ERR -> (False,Nil)
-
 }
 
-fun one_way_unify1_lst(tts1:list<term>,tts2:list<term>,subst:list<(id,term)>) : div (bool,list<(id,term)>){
+fun one_way_unify1_lst(tts1:list<term>,tts2:list<term>,subst:list<(id,term)>) : <div,exn> (bool,list<(id,term)>){
   match (tts1,tts2)
     (Nil,Nil) -> (True,subst)
     (Nil,_) -> (False,Nil)
@@ -481,11 +502,19 @@ fun one_way_unify1_lst(tts1:list<term>,tts2:list<term>,subst:list<(id,term)>) : 
       (hd_ok && tl_ok,subst__)
 }
 
-fun one_way_unify(term1:term,term2:term) : div (bool,list<(id,term)>)  {
-  one_way_unify1(term1,term2,Nil)
+fun apply_subst(subst:list<(id,term)>,t:term) : <div,exn> term {
+  match t
+    Var(vid) ->
+      val (found,value) = find(vid,subst)
+      if found then
+        value
+      else
+        Var(vid)
+    Func(f,args,ls) -> Func(f,map_list(args,fn(x) apply_subst(subst,x)),ls)
+    ERR -> ERR
 }
 
-fun rewrite_with_lemmas(term:term,lss:list<(term,term)>) : div term {
+fun rewrite_with_lemmas(term:term,lss:list<(term,term)>) : <div,exn> term {
   match lss
     Nil -> term
     Cons((lhs,rhs),ls) ->
@@ -496,10 +525,10 @@ fun rewrite_with_lemmas(term:term,lss:list<(term,term)>) : div term {
         rewrite_with_lemmas(term,ls)
   }
 
-fun rewrite(t:term) : div term {
+fun rewrite(t:term) : <div,exn> term {
   match t
     Func(f,args,lemmas) ->
-      rewrite_with_lemmas(Func(f,map(args,rewrite),lemmas),lemmas())
+      rewrite_with_lemmas(Func(f,map_list(args,rewrite),lemmas),lemmas())
     _ -> t
 }
 
@@ -540,18 +569,6 @@ fun tautp(x:term) : <div,exn> bool {
   tautologyp(rewrite(x),Nil,Nil)
 }
 
-fun apply_subst(subst:list<(id,term)>,t:term) : div term {
-  match t
-    Var(vid) ->
-      val (found,value) = find(vid,subst)
-      if found then
-        value
-      else
-        Var(vid)
-    Func(f,args,ls) -> Func(f,map(args,fn(x) apply_subst(subst,x)),ls)
-    ERR -> ERR
-}
-
 fun boyer_subst0(): div list<(id,term)> {
   Cons((ID_X,boyer_f(boyer_plus(boyer_plus(boyer_a(),boyer_b()),boyer_plus(boyer_c(),boyer_zero())))),
     Cons((ID_Y,boyer_f(boyer_times(boyer_times(boyer_a(), boyer_b()), boyer_plus(boyer_c(), boyer_d())))),
@@ -582,7 +599,7 @@ fun test0(xxxx:term) : <div,exn> bool {
 }
 
 fun test_boyer_nofib(n:int64) : <div,exn> bool {
-  all(replicate_term(n,Var(ID_X)),fn (t) test0(t))
+  all_list(replicate_term(n,Var(ID_X)),fn (t) test0(t))
 }
 
 fun main_loop(iters:int64, n:int64) : <div,console,exn> () {

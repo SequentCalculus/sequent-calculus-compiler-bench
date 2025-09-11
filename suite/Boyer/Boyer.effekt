@@ -88,17 +88,17 @@ def id_equal(id1: Id, id2: Id): Bool =
     case _ => false
   }
 
-def term_ls_eq(l1: List[Term], l2: List[Term]): Bool =
-  (l1, l2) match {
-    case (Nil(), _) => true
-    case (Cons(t1, ts1), Cons(t2, ts2)) => term_eq(t1, t2) && term_ls_eq(ts1, ts2)
-    case _ => false
-  }
-
 def term_eq(t1: Term, t2: Term): Bool =
   (t1, t2) match {
     case (Var(id1), Var(id2)) => id_equal(id1, id2)
     case (Func(f1, args1, _), Func(f2, args2, _)) => id_equal(f1, f2) && term_ls_eq(args1, args2)
+    case _ => false
+  }
+
+def term_ls_eq(l1: List[Term], l2: List[Term]): Bool =
+  (l1, l2) match {
+    case (Nil(), _) => true
+    case (Cons(t1, ts1), Cons(t2, ts2)) => term_eq(t1, t2) && term_ls_eq(ts1, ts2)
     case _ => false
   }
 
@@ -113,6 +113,13 @@ def all_term(ls: List[Term]) { f: Term => Bool }: Bool =
     case Nil() => true
     case Cons(t, ts) => f(t) && all_term(ts) {f}
   }
+
+def map_list(l: List[Term]) { f: Term => Term }: List[Term] =
+  l match {
+    case Nil() => Nil()
+    case Cons(x, xs) => Cons(f(x), xs.map_list {f})
+  }
+
 
 def replicate_term(n: Int, t: Term): List[Term] =
   if (n == 0) {
@@ -130,12 +137,6 @@ def find(vid: Id, ls: List[(Id, Term)]): (Bool, Term) =
       } else {
         find(vid, bs)
       }
-  }
-
-def map(l: List[Term]) { f: Term => Term }: List[Term] =
-  l match {
-    case Nil() => Nil()
-    case Cons(x, xs) => Cons(f(x), xs.map {f})
   }
 
 def boyer_add1(a: Term): Term = Func(ADD1(), [a], box { () => [] })
@@ -351,6 +352,9 @@ def boyer_plus(a: Term, b: Term): Term =
 
 def boyer_f(a: Term): Term = Func(F(), [a], box { () => [] })
 
+def one_way_unify(term1: Term, term2: Term): (Bool, List[(Id, Term)]) =
+  one_way_unify1(term1, term2, Nil())
+
 def one_way_unify1(term1: Term, term2: Term, subst: List[(Id, Term)]): (Bool, List[(Id, Term)]) =
   term2 match {
     case Var(vid2) =>
@@ -384,8 +388,15 @@ def one_way_unify1_lst(tts1: List[Term], tts2: List[Term], subst: List[(Id, Term
       (hd_ok && tl_ok, subst__)
   }
 
-def one_way_unify(term1: Term, term2: Term): (Bool, List[(Id, Term)]) =
-  one_way_unify1(term1, term2, Nil())
+def apply_subst(subst: List[(Id, Term)], t: Term): Term =
+  t match {
+    case Var(vid) =>
+      val (found, value) = find(vid, subst)
+      if (found) { value }
+      else { Var(vid) }
+    case Func(f, args, ls) => Func(f, map_list(args) { x => apply_subst(subst, x) }, ls)
+    case ERROR() => ERROR()
+  }
 
 def rewrite_with_lemmas(term: Term, lss: List[(Term, Term)]): Term =
   lss match {
@@ -403,7 +414,7 @@ def rewrite(t: Term): Term =
   t match {
     case Var(v) => Var(v)
     case Func(f, args, lemmas) =>
-      rewrite_with_lemmas(Func(f, args.map {rewrite}, lemmas), lemmas())
+      rewrite_with_lemmas(Func(f, args.map_list {rewrite}, lemmas), lemmas())
     case ERROR() => ERROR()
   }
 
@@ -440,16 +451,6 @@ def tautologyp(x: Term, true_lst: List[Term], false_lst: List[Term]): Bool =
 
 def tautp(x: Term): Bool =
   tautologyp(rewrite(x), Nil(), Nil())
-
-def apply_subst(subst: List[(Id, Term)], t: Term): Term =
-  t match {
-    case Var(vid) =>
-      val (found, value) = find(vid, subst)
-      if (found) { value }
-      else { Var(vid) }
-    case Func(f, args, ls) => Func(f, map(args) { x => apply_subst(subst, x) }, ls)
-    case ERROR() => ERROR()
-  }
 
 def boyer_subst0(): List[(Id, Term)] = [
   (X(), boyer_f(boyer_plus(boyer_plus(boyer_a(), boyer_b()), boyer_plus(boyer_c(), boyer_zero())))),

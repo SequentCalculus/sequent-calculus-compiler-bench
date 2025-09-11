@@ -92,6 +92,21 @@ structure Boyer = struct
      | (t1::tss1,t2::tss2) => (term_equal t1 t2) andalso (term_list_equal tss1 tss2)
      | _ => false
 
+  fun term_in_list t ls = 
+    case ls of 
+         nil => false 
+       | t_::ts => (term_equal t_ t) orelse (term_in_list t ts)
+
+  fun all_term ls f = 
+    case ls of 
+        nil => true
+       | x::xs => (f x) andalso (all_term ls f)
+
+  fun map_list ls f = 
+    case ls of 
+         nil => nil
+       | x::xs => (f x) :: (map_list xs f)
+
   fun replicate_term n t =
     if n=0 then nil
     else t :: replicate_term (n-1) t
@@ -501,15 +516,15 @@ structure Boyer = struct
                (true,value) => value
              | (false,_) => Var vid)
              | Func (f, args, ls) =>
-                 Func (f, (map (fn x => apply_subst subst x) args),ls)
+                 Func (f, (map_list args (fn x => apply_subst subst x)),ls)
              | ERROR => ERROR
 
   fun rewrite t =
     case t of
          Var v => Var v
        | Func (f,args,lemmas) =>
-           rewrite_with_lemmas (Func (f, (map (fn x =>
-           rewrite x) args ), lemmas)) (lemmas())
+           rewrite_with_lemmas (Func (f, (map_list args (fn x =>
+           rewrite x) ), lemmas)) (lemmas())
        | ERROR => ERROR
   and rewrite_with_lemmas term lss =
   case lss of
@@ -524,18 +539,16 @@ structure Boyer = struct
          end
 
   fun truep x l =
-    Option.isSome (List.find (fn t => term_equal x t) l)
-    orelse
-    (case x of
-          Func(TRUE,args,lemmas) => true
-        | _ => false)
+    case x of 
+         Var(_) => term_in_list x l
+       | Func(t,_,_) => (id_equal t TRUE) orelse (term_in_list x l)
+       | ERROR => term_in_list x l
 
   fun falsep x l =
-    Option.isSome (List.find (fn t => term_equal x t) l)
-    orelse
-    (case x of
-          Func(FALSE,args,lemmas) => true
-        | _ => false)
+    case x of 
+         Var(_) => term_in_list x l
+       | Func(t,_,_) => (id_equal t FALSE) orelse (term_in_list x l)
+       | ERROR => term_in_list x l
 
   fun tautologyp x true_lst false_lst =
     if truep x true_lst then
@@ -613,7 +626,7 @@ structure Boyer = struct
     tautp (apply_subst (boyer_subst0()) (boyer_theorem xxxx))
 
   fun test_boyer_nofib n =
-    List.all (fn t => test0 t) (replicate_term n (Var X))
+    all_term (replicate_term n (Var X)) (fn t => test0 t)
 
   fun main_loop iters n =
   let val res = test_boyer_nofib n
@@ -629,4 +642,4 @@ structure Boyer = struct
   in
     main_loop iters n
   end
-end
+  end

@@ -1422,19 +1422,6 @@ def id_eq(i1: Id, i2: Id): Bool {
   }
 }
 
-def term_ls_eq(h1t1: List[Term], h2t2: List[Term]): Bool {
-  h1t1.case[Term] {
-    Nil => True,
-    Cons(h1, t1) => h2t2.case[Term] {
-      Nil => False,
-      Cons(h2, t2) => term_eq(h1, h2).case {
-        True => term_ls_eq(t1, t2),
-        False => False
-      }
-    }
-  }
-}
-
 def term_eq(t1: Term, t2: Term): Bool {
   t1.case {
     Var(i1) => t2.case {
@@ -1451,6 +1438,19 @@ def term_eq(t1: Term, t2: Term): Bool {
       ERROR => False
     },
     ERROR => False
+  }
+}
+
+def term_ls_eq(h1t1: List[Term], h2t2: List[Term]): Bool {
+  h1t1.case[Term] {
+    Nil => True,
+    Cons(h1, t1) => h2t2.case[Term] {
+      Nil => False,
+      Cons(h2, t2) => term_eq(h1, h2).case {
+        True => term_ls_eq(t1, t2),
+        False => False
+      }
+    }
   }
 }
 
@@ -1474,6 +1474,13 @@ def all_term(f: Fun[Term, Bool], ls: List[Term]): Bool {
   }
 }
 
+def map_list(f: Fun[Term, Term], l: List[Term]): List[Term] {
+  l.case[Term]{
+    Nil => Nil,
+    Cons(x,xs) => Cons(f.apply[Term,Term](x),map_list(f,xs))
+  }
+}
+
 def replicate_term(n: i64, t: Term): List[Term] {
   if n == 0 {
     Nil
@@ -1494,12 +1501,6 @@ def find(vid: Id, ls: List[Pair[Id, Term]]): Pair[Bool, Term] {
   }
 }
 
-def map(f: Fun[Term, Term], l: List[Term]): List[Term] {
-  l.case[Term]{
-    Nil => Nil,
-    Cons(x,xs) => Cons(f.apply[Term,Term](x),map(f,xs))
-  }
-}
 
 def boyer_add1(t: Term): Term {
   Func(ADD1, Cons(t, Nil), new { apply(u) => Nil })
@@ -1795,6 +1796,10 @@ def boyer_f(a: Term): Term {
   Func(F, Cons(a, Nil), new { apply(u) => Nil })
 }
 
+def one_way_unify(term1: Term, term2: Term): Pair[Bool, List[Pair[Id, Term]]] {
+  one_way_unify1(term1, term2, Nil)
+}
+
 def one_way_unify1(term1: Term, term2: Term, subst: List[Pair[Id, Term]]): Pair[Bool, List[Pair[Id, Term]]] {
   term2.case {
     Var(vid2) => find(vid2, subst).case[Bool, Term] {
@@ -1837,8 +1842,17 @@ def one_way_unify1_lst(tts1: List[Term], tts2: List[Term], subst: List[Pair[Id, 
   }
 }
 
-def one_way_unify(term1: Term, term2: Term): Pair[Bool, List[Pair[Id, Term]]] {
-  one_way_unify1(term1, term2, Nil)
+def apply_subst(subst: List[Pair[Id, Term]], t: Term): Term {
+  t.case {
+    Var(vid) => find(vid, subst).case[Bool, Term] {
+      Tup(found, value) => found.case {
+        True => value,
+        False => Var(vid)
+      }
+    },
+    Func(f, args, ls) => Func(f, map_list(new { apply(x) => apply_subst(subst, x) }, args), ls),
+    ERROR => ERROR
+  }
 }
 
 def rewrite_with_lemmas(term: Term, lss: List[Pair[Term, Term]]): Term {
@@ -1855,12 +1869,13 @@ def rewrite_with_lemmas(term: Term, lss: List[Pair[Term, Term]]): Term {
   }
 }
 
+
 def rewrite(t: Term): Term {
   t.case {
     Var(v) => Var(v),
     Func(f, args, lemmas) =>
       rewrite_with_lemmas(
-        Func(f, map(new { apply(x) => rewrite(x) }, args), lemmas),
+        Func(f, map_list(new { apply(x) => rewrite(x) }, args), lemmas),
         lemmas.apply[Unit, List[Pair[Term, Term]]](Unit)),
     ERROR => ERROR
   }
@@ -1928,19 +1943,6 @@ def tautologyp(x: Term, true_lst: List[Term], false_lst: List[Term]): Bool {
 
 def tautp(x: Term): Bool {
   tautologyp(rewrite(x), Nil, Nil)
-}
-
-def apply_subst(subst: List[Pair[Id, Term]], t: Term): Term {
-  t.case {
-    Var(vid) => find(vid, subst).case[Bool, Term] {
-      Tup(found, value) => found.case {
-        True => value,
-        False => Var(vid)
-      }
-    },
-    Func(f, args, ls) => Func(f, map(new { apply(x) => apply_subst(subst, x) }, args), ls),
-    ERROR => ERROR
-  }
 }
 
 def boyer_subst0(): List[Pair[Id, Term]] {
