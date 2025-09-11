@@ -1,3 +1,5 @@
+exception EmptyList
+
 type assign = Assign of int * int 
 
 type csp = CSP of int * int * ((assign * assign) -> bool)
@@ -13,6 +15,26 @@ let level (Assign(varr,_)) = varr
 
 let label (Node(a,_)) = a
 
+let rec map_list f ls = 
+  match ls with
+    | [] -> []
+    | x::xs -> (f x)::(map_list f xs)
+
+let rec all_list f ls = 
+  match ls with 
+    | [] -> true
+    | x::xs -> (f x) && (all_list f xs)
+
+let rec filter_list f ls = 
+  match ls with 
+    | [] -> []
+    | x::xs -> if f x then x::(filter_list f xs) else filter_list f xs
+
+let is_empty ls = 
+  match ls with
+    | [] -> true
+    | _ -> false
+
 let rec enum_from_to from to_ = 
   if from<=to_ then 
     from::(enum_from_to (from+1) to_)
@@ -24,22 +46,73 @@ let rec zip_with f x y =
     | (_,[]) -> []
     | (c::cs,p::ps) -> f(c,p) :: zip_with f cs ps
 
+let rec len ls = 
+  match ls with 
+    | [] -> 0
+    | _::xs -> 1 + (len xs)
+
+let head ls = 
+  match ls with 
+    | [] -> raise EmptyList
+    | x::_ -> x
+
+let tail ls = 
+  match ls with 
+    | [] -> raise EmptyList
+    | _::xs -> xs
+
+let rec at_index ls ind = 
+  match ls with 
+    | [] -> raise EmptyList
+    | x::xs -> if ind == 0 then x else at_index xs (ind-1)
+
+let rec rev_loop ls acc = 
+  match ls with 
+    | [] -> acc
+    | p::ps -> rev_loop ps (p::acc)
+
+let reverse ls = rev_loop ls []
+
+let rec concat_loop ls acc = 
+  match ls with 
+    | [] -> rev_loop acc []
+    | l::ls -> concat_loop ls (rev_loop l acc)
+
+let concat lss = concat_loop lss []
+
+let rec append l1 l2 = 
+  match l1 with 
+    | [] -> l2
+    | a::as_ -> a::(append as_ l2)
+
+let rec foldl xs acc f = 
+  match xs with 
+    | [] -> acc
+    | h::t -> foldl t (f acc h) f
+
+let rec in_list i ls = 
+  match ls with 
+    | [] -> false
+    | j::js -> if i == j then true else in_list i js
+
+let not_elem a ls = not (in_list a ls)
+
 let rec map_tree f (Node(l,ls)) = 
-  Node(f l,List.map (fun x -> map_tree f x) ls)
+  Node(f l,map_list (fun x -> map_tree f x) ls)
 
 let rec fold_tree f (Node(l,c)) = 
-  f (l,List.map (fun x -> fold_tree f x) c)
+  f (l,map_list (fun x -> fold_tree f x) c)
 
 let rec filter_tree p n =
   let f = fun (a,cs) ->
-    Node(a,List.filter (fun x -> p (label x)) cs)
+    Node(a,filter_list (fun x -> p (label x)) cs)
   in 
   fold_tree f n 
 
 let rec leaves n = 
   match n with
     | Node(leaf,[]) -> leaf::[]
-    | Node(leaf,cs) -> List.concat (List.map (fun x -> leaves x) cs)
+    | Node(leaf,cs) -> concat (map_list (fun x -> leaves x) cs)
 
 let prune f n = 
   filter_tree (fun x -> not (f x)) n
@@ -61,16 +134,15 @@ let rec delete_by f x ys =
 let rec nub_by f l = 
   match l with 
     | [] -> []
-    | h::t -> h::nub_by f (List.filter (fun y -> not (f(h,y))) t)
+    | h::t -> h::nub_by f (filter_list (fun y -> not (f(h,y))) t)
 
 let union_by f l1 l2 = 
-  List.append l1 
-  (List.fold_left
-    (fun acc -> fun y -> delete_by f y acc) 
+  append l1 
+  (foldl
     (nub_by f l2)
     l1
+    (fun acc -> fun y -> delete_by f y acc) 
   )
-
 
 let union l1 l2 = union_by (fun (x,y) -> x=y) l1 l2
 
@@ -78,14 +150,14 @@ let rec combine ls acc =
   match ls with 
     | [] -> acc
     | ((s,Known cs)::css) -> 
-        let maxl = max_level s in 
-        if not (Option.is_some (List.find_opt (fun x -> x=maxl) cs)) 
-        then cs 
-        else combine css (union cs acc)
+        if not_elem (max_level s) cs then
+          cs 
+        else 
+          combine css (union cs acc)
     | ((s,Unknown)::_) -> acc
 
 let rec init_tree f x = 
-  Node(x, List.map (fun y -> init_tree f y) (f x))
+  Node(x, map_list (fun y -> init_tree f y) (f x))
 
 let rec to_assign ls ss = 
   match ls with 
@@ -120,13 +192,20 @@ let known_conflict c =
     | Known (_::_) -> true
     | Unknown -> false
 
+let rec filter_known ls = 
+  match ls with 
+    | [] -> []
+    | vs::t1 -> if all_list known_conflict vs then 
+      vs::(filter_known t1) 
+    else 
+      filter_known t1
 
 let domain_wipeout csp t = 
   let f8 = fun ((as_,cs),tbl) ->
-    let wiped_domains = List.filter (fun x -> List.for_all known_conflict x) tbl in 
+    let wiped_domains = filter_known tbl in
     let cs_ = 
-      if List.is_empty wiped_domains then cs
-      else Known (collect (List.hd wiped_domains))
+      if is_empty wiped_domains then cs
+      else Known (collect (head wiped_domains))
     in 
     (as_,cs_)
   in 
@@ -139,7 +218,7 @@ let earliest_inconsistency (CSP(_,_,rel)) aas =
   match aas with 
     | [] -> None
     | a::as_ -> 
-        (match (List.filter (fun x -> not (rel(a,x))) (List.rev as_)) with
+        (match (filter_list (fun x -> not (rel(a,x))) (reverse as_)) with
           | [] -> None
           | b::bs_ -> Some(level a, level b)
         )
@@ -149,7 +228,7 @@ let lookup_cache csp t =
     match ls with 
       | [] -> (([],Unknown),tbl)
       | a::as_ -> 
-          let table_entry = List.nth (List.hd tbl) ((value a)-1) in 
+          let table_entry = at_index (head tbl) ((value a)-1) in 
           let cs = (
             match table_entry with 
               | Unknown -> check_complete csp (a::as_)
@@ -191,10 +270,10 @@ let fill_table s (CSP(vars,vals,rel)) tbl =
 
 let rec cache_checks csp tbl (Node (s,cs)) = 
   Node ((s,tbl),
-    List.map 
+    map_list
       (fun x -> 
         cache_checks csp 
-          (fill_table s csp (List.tl tbl)) 
+          (fill_table s csp (tail tbl)) 
         x) 
       cs)
 
@@ -212,8 +291,8 @@ and empty_table (CSP(vars,vals,_)) =
   []::(n_unknown (enum_from_to 1 vars) vals)
 
 let search labeler csp = 
-  List.map (fun (x,_) -> x)
-    (List.filter (fun (_,x) -> known_solution x)
+  map_list (fun (x,_) -> x)
+    (filter_list (fun (_,x) -> known_solution x)
       (leaves 
         (prune (fun (_,x) -> known_conflict x)
           (labeler csp (mk_tree csp))
@@ -244,7 +323,7 @@ let bj csp t =
     match conf with 
       | Known cs -> Node((a,Known cs),chs)
       | Unknown -> 
-          Node ((a,Known (combine (List.map (fun x -> label(x)) chs) [])), chs) 
+          Node ((a,Known (combine (map_list (fun x -> label(x)) chs) [])), chs) 
   in
   fold_tree f6 t 
 
@@ -255,7 +334,7 @@ let bj_ csp t =
     match conf with
       | Known cs -> Node ((a,Known cs),chs)
       | Unknown -> 
-          let cs_ = Known (combine (List.map (fun x -> label x) chs) []) in 
+          let cs_ = Known (combine (map_list (fun x -> label x) chs) []) in 
           if known_conflict cs_ then 
             Node ((a,cs_),[])
           else Node((a,cs_),chs) in 
@@ -269,15 +348,15 @@ let fc csp t =
       (cache_checks csp (empty_table csp) t))
 
 let try_ n algorithm = 
-  List.length (search algorithm (queens n))
+  len (search algorithm (queens n))
 
 let test_constraints_nofib n = 
-  List.map (fun x -> try_ n x) (bt::bm::bjbt::bjbt_::fc::[])
+  map_list (fun x -> try_ n x) (bt::bm::bjbt::bjbt_::fc::[])
 
 let rec main_loop iters n = 
   let res = test_constraints_nofib n in 
   if iters = 1 then
-    print_endline (string_of_int (List.hd res))
+    print_endline (string_of_int (head res))
   else main_loop (iters-1) n 
 
 let main = 

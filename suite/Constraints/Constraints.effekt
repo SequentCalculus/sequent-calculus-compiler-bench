@@ -48,6 +48,13 @@ def enum_from_to(from: Int, to: Int): List[Int] =
     Nil()
   }
 
+def zip_with[A,B,C](x:List[A],y:List[B]) { f: (A,B) => C}: List[C] = 
+  (x,y) match{
+    case (Nil(),_) => Nil()
+    case (_,Nil()) => Nil()
+    case (Cons(c,cs),Cons(p,ps)) => Cons(f(c,p),zip_with(cs,ps){f})
+  }
+
 def len[A](ls: List[A]): Int =
   ls match {
     case Nil() => 0
@@ -143,6 +150,33 @@ def max_level(ls: List[Assign]): Int =
 def complete(csp: CSP, s: List[Assign]): Bool =
   max_level(s) == csp.vars
 
+def delete_by(x: Int, ys: List[Int]) { f: (Int, Int) => Bool }: List[Int] =
+  ys match {
+    case Nil() => Nil()
+    case Cons(y, ys) =>
+      if (f(x, y)) {
+        ys
+      } else {
+        Cons(y, delete_by(x, ys) {f})
+      }
+  }
+
+def nub_by(ls: List[Int]) { f: (Int, Int) => Bool }: List[Int] =
+  ls match {
+    case Nil() => Nil()
+    case Cons(h, t) =>
+      Cons(h, nub_by(t.filter { y => not(f(h, y)) }) {f})
+  }
+
+def union_by(l1: List[Int], l2: List[Int]) { f: (Int, Int) => Bool }: List[Int] =
+  append(
+    l1,
+    nub_by(l2){f}.foldl(l1) { (acc, y) => delete_by(y, acc){f} }
+  )
+
+def union(l1:List[Int], l2:List[Int]): List[Int] =
+  union_by(l1, l2) { (x, y) => x == y }
+
 def combine(ls: List[(List[Assign], ConflictSet)], acc: List[Int]): List[Int] =
   ls match {
     case Nil() => acc
@@ -155,32 +189,6 @@ def combine(ls: List[(List[Assign], ConflictSet)], acc: List[Int]): List[Int] =
     case Cons((s, Unknown()), css) => acc
   }
 
-def nub_by(ls: List[Int]) { f: (Int, Int) => Bool }: List[Int] =
-  ls match {
-    case Nil() => Nil()
-    case Cons(h, t) =>
-      Cons(h, nub_by(t.filter { y => not(f(h, y)) }) {f})
-  }
-
-def delete_by(x: Int, ys: List[Int]) { f: (Int, Int) => Bool }: List[Int] =
-  ys match {
-    case Nil() => Nil()
-    case Cons(y, ys) =>
-      if (f(x, y)) {
-        ys
-      } else {
-        Cons(y, delete_by(x, ys) {f})
-      }
-  }
-
-def union_by(l1: List[Int], l2: List[Int]) { f: (Int, Int) => Bool }: List[Int] =
-  append(
-    l1,
-    nub_by(l2){f}.foldl(l1) { (acc, y) => delete_by(y, acc){f} }
-  )
-
-def union(l1:List[Int], l2:List[Int]): List[Int] =
-  union_by(l1, l2) { (x, y) => x == y }
 
 def init_tree(x:List[Assign]) { f:List[Assign] => List[List[Assign]] }: Node[List[Assign]] =
   Node(x, f(x).map_list { y => init_tree(y) {f} })
@@ -208,6 +216,20 @@ def collect(ls: List[ConflictSet]): List[Int] =
     case Nil() => Nil()
     case Cons(Known(cs),css) => union(cs, collect(css))
     case Cons(Unknown(),css) => Nil()
+  }
+
+def known_solution(c: ConflictSet): Bool =
+  c match {
+    case Known(Nil()) => true
+    case Known(Cons(_, _)) => false
+    case Unknown() => false
+  }
+
+def known_conflict(c:ConflictSet): Bool =
+  c match {
+    case Known(Nil()) => false
+    case Known(Cons(_, _)) => true
+    case Unknown() => false
   }
 
 def filter_known(ls: List[List[ConflictSet]]): List[List[ConflictSet]] =
@@ -267,31 +289,12 @@ def lookup_cache(
     }
   }
 
-def cache_checks(csp: CSP, tbl: List[List[ConflictSet]], n: Node[List[Assign]]): Node[(List[Assign], List[List[ConflictSet]])] =
-  n match {
-    case Node(s, cs) =>
-      Node((s, tbl), cs.map_list { x => cache_checks(csp, fill_table(s, csp, tbl.tail), x) })
-  }
-
-def known_solution(c: ConflictSet): Bool =
-  c match {
-    case Known(Nil()) => true
-    case Known(Cons(_, _)) => false
-    case Unknown() => false
-  }
-
-def known_conflict(c:ConflictSet): Bool =
-  c match {
-    case Known(Nil()) => false
-    case Known(Cons(_, _)) => true
-    case Unknown() => false
-  }
-
 def to_pairs(ls:List[Int],varrr:Int) : List[(Int,Int)] =
   ls match {
     case Nil() => Nil()
     case Cons(valll, t2) => Cons((varrr, valll), to_pairs(t2, varrr))
   }
+
 
 def n_pairs(ls: List[Int], n: Int) : List[List[(Int, Int)]] =
   ls match {
@@ -299,26 +302,6 @@ def n_pairs(ls: List[Int], n: Int) : List[List[(Int, Int)]] =
     case Cons(varrr, t1) => Cons(to_pairs(enum_from_to(1, n), varrr), n_pairs(t1, n))
   }
 
-def fill_zip_with(x: List[ConflictSet], y: List[(Int, Int)]) { f: (ConflictSet, (Int, Int)) => ConflictSet }: List[ConflictSet] =
-  x match {
-    case Nil() => Nil()
-    case Cons(c, cs) => y match {
-      case Nil() => Nil()
-      case Cons(p, ps) => Cons(f(c, p), fill_zip_with(cs, ps) {f})
-    }
-  }
-
-def fill_zip_with2(tbl: List[List[ConflictSet]], ls: List[List[(Int, Int)]]) {
-  f: (List[ConflictSet], List[(Int, Int)]) => List[ConflictSet]
-}: List[List[ConflictSet]] =
-    tbl match {
-      case Nil() => Nil()
-      case Cons(cs, css) => ls match {
-        case Nil() => Nil()
-        case Cons(ps, pss) =>
-          Cons(f(cs, ps), fill_zip_with2(css, pss) {f})
-      }
-    }
 
 def fill_table(s: List[Assign], csp: CSP, tbl: List[List[ConflictSet]]): List[List[ConflictSet]] =
   s match {
@@ -338,10 +321,16 @@ def fill_table(s: List[Assign], csp: CSP, tbl: List[List[ConflictSet]]): List[Li
                   }
               }
             }
-          fill_zip_with2(tbl, n_pairs(enum_from_to(var_ + 1, vars), vals)) {
-            (x, y) => fill_zip_with(x, y) {f4}
+          zip_with(tbl, n_pairs(enum_from_to(var_ + 1, vars), vals)) {
+            (x, y) => zip_with(x, y) {f4}
           }
     }
+  }
+
+def cache_checks(csp: CSP, tbl: List[List[ConflictSet]], n: Node[List[Assign]]): Node[(List[Assign], List[List[ConflictSet]])] =
+  n match {
+    case Node(s, cs) =>
+      Node((s, tbl), cs.map_list { x => cache_checks(csp, fill_table(s, csp, tbl.tail), x) })
   }
 
 def to_unknown(ls:List[Int]) : List[ConflictSet] =
@@ -355,7 +344,6 @@ def n_unknown(ls: List[Int], n: Int): List[List[ConflictSet]] =
     case Nil() => Nil()
     case Cons(_, t1) => Cons(to_unknown(enum_from_to(1, n)), n_unknown(t1, n))
   }
-
 
 def empty_table(csp: CSP): List[List[ConflictSet]] =
   csp match {
@@ -379,27 +367,12 @@ def safe(as1: Assign, as2: Assign): Bool =
 def queens(n: Int): CSP =
   CSP(n, n, box safe)
 
-def bt_map(
-  l: List[Node[List[Assign]]]
-) { f: Node[List[Assign]] => Node[(List[Assign], ConflictSet)] }: List[Node[(List[Assign], ConflictSet)]] =
-  l match {
-    case Nil() => Nil()
-    case Cons(p, ps) => Cons(f(p), ps.bt_map {f})
-  }
-
-def bt_map_tree(n: Node[List[Assign]]) { f: List[Assign] => (List[Assign], ConflictSet) }: Node[(List[Assign], ConflictSet)] =
-  n match {
-    case Node(l, ls) => Node(f(l),
-      ls.bt_map { x => x.bt_map_tree {f} })
-  }
-
 def bt(csp: CSP, t: Node[List[Assign]]): Node[(List[Assign], ConflictSet)] = {
   def f3(s: List[Assign]): (List[Assign], ConflictSet) =
     earliest_inconsistency(csp, s) match {
       case Some((a, b)) => (s, Known(Cons(a, Cons(b, Nil()))))
       case None() => (s, check_complete(csp, s))
     }
-
   t.map_tree { x => f3(x) }
 }
 

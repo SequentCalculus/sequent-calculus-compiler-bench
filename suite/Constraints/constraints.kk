@@ -1,4 +1,4 @@
-module constraints 
+module constraints
 
 import std/os/env
 import std/num/int64
@@ -29,10 +29,28 @@ fun label(n:node<a>) : total a{
     Node(l,_) -> l
 }
 
-fun list_head<a>(ls:list<a>): exn a{
+fun map_list<a,b>(ls: list<a>,f: a -> <div,exn> b): <div,exn> list<b>{
   match ls
-    Nil -> throw("Empty List")
-    Cons(h,_) -> h
+    Nil -> Nil
+    Cons(h,tl) -> Cons(f(h),map_list(tl,f)) 
+}
+
+fun all_list<a>(ls: list<a>, f: a -> bool): total bool{
+  match ls
+    Nil -> True
+    Cons(h,t) -> f(h) && all_list(t,f)
+}
+
+fun filter_list<a>(ls: list<a>, f: a -> exn bool): exn list<a>{
+  match ls
+    Nil -> Nil
+    Cons(h,t) -> if f(h) then Cons(h,filter_list(t,f)) else filter_list(t,f)
+}
+
+fun is_empty<a>(ls:list<a>) : total bool{
+  match ls
+    Nil -> True
+    Cons(_,_) -> False
 }
 
 fun enum_from_to(from:int64,to:int64): div list<int64>{
@@ -40,6 +58,33 @@ fun enum_from_to(from:int64,to:int64): div list<int64>{
     Cons(from,enum_from_to(from + 1.int64,to))
   else
     Nil 
+}
+
+fun zip_with<a,b,c>(x:list<a>, y:list<b>,f : (a,b) -> <div,exn> c): <div,exn> list<c> {
+  match (x,y){
+    (Nil,_) -> Nil
+    (_,Nil) -> Nil
+    (Cons(c,cs),Cons(p,ps)) -> Cons(f(c,p),zip_with(cs,ps,f))
+  }
+}
+
+fun len<a>(ls:list<a>) : total int64{
+  match ls {
+    Nil -> 0.int64
+    Cons(_,xs) -> 1.int64 + len(xs)
+  }
+}
+
+fun list_head<a>(ls:list<a>): exn a{
+  match ls
+    Nil -> throw("Empty List")
+    Cons(h,_) -> h
+}
+
+fun list_tail<a>(ls:list<a>) : exn list<a>{
+  match ls
+    Nil -> throw("Empty List")
+    Cons(_,t) -> t
 }
 
 fun at_index(ind:int64,ls:list<conflictset>) : exn conflictset{
@@ -50,6 +95,42 @@ fun at_index(ind:int64,ls:list<conflictset>) : exn conflictset{
         c 
       else 
         at_index(ind - 1.int64,cs)
+}
+
+fun rev_loop<a>(ls:list<a>,acc:list<a>): total list<a>{
+  match ls{
+    Nil -> acc
+    Cons(p,ps) -> rev_loop(ps,Cons(p,ps))
+  }
+}
+
+fun list_reverse<a>(ls:list<a>): total list<a>{
+  rev_loop(ls,Nil)
+}
+
+fun concat_loop<a>(ls:list<list<a>>, acc:list<a>) : total list<a>{
+  match ls{
+    Nil -> acc
+    Cons(l,ls) -> concat_loop(ls,rev_loop(l,acc))
+  }
+}
+
+fun concat_list<a>(lss:list<list<a>>): total list<a> {
+  concat_loop(lss,Nil)
+}
+
+fun append_list<a>(l1:list<a>,l2:list<a>): total list<a>{
+  match l1{
+    Nil -> l2
+    Cons(a,as_) -> Cons(a,append_list(as_,l2))
+  }
+}
+
+fun fold_list<a>(xs:list<a>,acc:list<a>,f: (list<a>,a) -> list<a>): total list<a>{
+  match xs{
+    Nil -> acc
+    Cons(h,t) -> fold_list(t,f(acc,h),f)
+  }
 }
 
 fun in_list(i:int64,ls:list<int64>): total bool{
@@ -65,26 +146,26 @@ fun not_elem(i:int64,ls:list<int64>): total bool {
 
 fun map_tree(f:a -> <div,exn> b,t:node<a>): <div,exn> node<b> {
   match t 
-    Node(l,ls) -> Node(f(l),map(ls,fn(x) map_tree(f,x)))
+    Node(l,ls) -> Node(f(l),map_list(ls,fn(x) map_tree(f,x)))
 }
 
-fun fold_tree(f:(a,list<node<b>>) -> div node<b> ,t:node<a>) : div node<b> {
+fun fold_tree(f:(a,list<node<b>>) -> <div,exn> node<b> ,t:node<a>) : <div,exn> node<b> {
   match t 
-    Node(l,c) -> f(l,map(c, fn(x) fold_tree(f,x)))
+    Node(l,c) -> f(l,map_list(c, fn(x) fold_tree(f,x)))
 }
 
-fun filter_tree(p:a -> bool,n:node<a>): div node<a>{
-  val f = fn(a,cs) Node(a,filter(cs,fn(x) -> p(label(x))))
+fun filter_tree(p:a -> bool,n:node<a>): <div,exn> node<a>{
+  val f = fn(a,cs) Node(a,filter_list(cs,fn(x) -> p(label(x))))
   fold_tree(f,n)
 }
 
-fun leaves(n:node<a>): div list<a> {
+fun leaves(n:node<a>): <div,exn> list<a> {
   match n 
     Node(leaf,Nil) -> Cons(leaf,Nil)
-    Node(_,Cons(c,cs)) -> concat(map(Cons(c,cs),fn(x) leaves(x)))
+    Node(_,Cons(c,cs)) -> concat_list(map_list(Cons(c,cs),fn(x) leaves(x)))
 }
 
-fun prune(f:a -> bool, n:node<a>): div node<a>{
+fun prune(f:a -> bool, n:node<a>): <div,exn> node<a>{
   filter_tree(fn(x) not(f(x)),n)
 }
 
@@ -99,24 +180,6 @@ fun complete(csp:csp, s:list<assign>) : total bool {
     Csp(v,_,_) -> max_level(s) == v
 }
 
-fun combine(ls:list<(list<assign>,conflictset)>,acc:list<int64>) : div list<int64>{
-  match ls
-    Nil -> acc
-    Cons((s,Known(cs)),css) -> 
-      if not_elem(max_level(s),cs) then
-        cs
-      else 
-        combine(css,union(cs,acc))
-    Cons((_,Unknown),_) -> acc
-}
-
-fun nub_by(f:(int64,int64) -> bool,ls:list<int64>) : div list<int64>{
-  match ls
-    Nil -> Nil
-    Cons(h,t) -> Cons(h,nub_by(f,filter(t,fn(y) not(f(h,y)))))
-  
-}
-
 fun delete_by(f:(int64,int64) -> bool,x:int64,ys:list<int64>): list<int64>{
   match ys 
     Nil -> Nil
@@ -127,16 +190,34 @@ fun delete_by(f:(int64,int64) -> bool,x:int64,ys:list<int64>): list<int64>{
         Cons(y,delete_by(f,x,ys))
 }
 
-fun union_by(f:(int64,int64) -> bool,l1:list<int64>,l2:list<int64>): div list<int64>{
-  append(l1,foldl(nub_by(f,l2),l1,fn(acc,y) -> delete_by(f,y,acc)))
+fun nub_by(f:(int64,int64) -> bool,ls:list<int64>) : <div,exn> list<int64>{
+  match ls
+    Nil -> Nil
+    Cons(h,t) -> Cons(h,nub_by(f,filter_list(t,fn(y) not(f(h,y)))))
+  
 }
 
-fun union(l1:list<int64>,l2:list<int64>): div list<int64>{
+fun union_by(f:(int64,int64) -> bool,l1:list<int64>,l2:list<int64>): <div,exn> list<int64>{
+  append_list(l1,fold_list(nub_by(f,l2),l1,fn(acc,y) -> delete_by(f,y,acc)))
+}
+
+fun union(l1:list<int64>,l2:list<int64>): <div,exn> list<int64>{
   union_by(fn(x,y) -> x==y,l1,l2)
 }
 
-fun init_tree(f:list<assign> -> div list<list<assign>>,x:list<assign>): div node<list<assign>>{
-  Node(x,map(f(x),fn(y) -> init_tree(f,y)))
+fun combine(ls:list<(list<assign>,conflictset)>,acc:list<int64>) : <div,exn> list<int64>{
+  match ls
+    Nil -> acc
+    Cons((s,Known(cs)),css) -> 
+      if not_elem(max_level(s),cs) then
+        cs
+      else 
+        combine(css,union(cs,acc))
+    Cons((_,Unknown),_) -> acc
+}
+
+fun init_tree(f:list<assign> -> div list<list<assign>>,x:list<assign>): <div,exn> node<list<assign>>{
+  Node(x,map_list(f(x),fn(y) -> init_tree(f,y)))
 }
 
 fun to_assign(ls:list<int64>,ss:list<assign>): total list<list<assign>> {
@@ -145,7 +226,7 @@ fun to_assign(ls:list<int64>,ss:list<assign>): total list<list<assign>> {
     Cons(j,t1) -> Cons(Cons(Assign(max_level(ss) + 1.int64, j), ss), to_assign(t1,ss))
 }
 
-fun mk_tree(csp:csp) : div node<list<assign>> {
+fun mk_tree(csp:csp) : <div,exn> node<list<assign>> {
   match csp 
     Csp(vars,vals,_) -> 
       val next = fn(ss) 
@@ -156,18 +237,42 @@ fun mk_tree(csp:csp) : div node<list<assign>> {
       init_tree(next,Nil)
 }
 
-fun collect(ls:list<conflictset>): div list<int64> {
+fun collect(ls:list<conflictset>): <div,exn> list<int64> {
   match ls 
     Nil -> Nil
     Cons(Known(cs),css) -> union(cs,collect(css))
     Cons(Unknown,_) -> Nil
 }
 
+fun known_solution(c:conflictset): total bool{
+  match c
+    Known(Nil) -> True
+    Known(Cons(_,_)) -> False
+    Unknown -> False 
+}
+
+fun known_conflict(c:conflictset): total bool{
+  match c
+    Known(Nil) -> False
+    Known(Cons(_,_)) -> True
+    Unknown -> False
+}
+
+fun filter_known(ls: list<list<conflictset>>) : total list<list<conflictset>> {
+  match ls{
+    Nil -> Nil
+    Cons(vs,t1) -> if all_list(vs,known_conflict) then
+      Cons(vs,filter_known(t1)) 
+    else 
+      filter_known(t1)
+  }
+}
+
 fun domain_wipeout(csp:csp,t:node<((list<assign>,conflictset),list<list<conflictset>>)>): <div,exn> node<(list<assign>,conflictset)>{
   val f8 = fn(((as_,cs),tbl))
-    val wiped_domains = filter(tbl,fn(x) all(x,known_conflict))
+    val wiped_domains = filter_known(tbl)
     val cs_ = 
-      if (is-empty(wiped_domains)) then
+      if (is_empty(wiped_domains)) then
         cs
       else 
         Known(collect(list_head(wiped_domains)))
@@ -186,7 +291,7 @@ fun earliest_inconsistency(csp:csp,aas:list<assign>): exn maybe<(int64,int64)> {
   match(csp,aas)
     (_,Nil) -> Nothing
     (Csp(_,_,rel),Cons(a,as_)) ->
-      match filter(reverse(as_),fn(x) not(rel(a,x)))
+      match filter_list(list_reverse(as_),fn(x) not(rel(a,x)))
         Nil -> Nothing
         Cons(b,_) -> Just((level(a),level(b)))
 }
@@ -196,31 +301,12 @@ fun lookup_cache(csp:csp,t:node<(list<assign>,list<list<conflictset>>)>) : <div,
     match ls
       Nil -> ((Nil,Unknown),tbl)
       Cons(a,as_) -> 
-        val table_entry = at_index(value(a) - 1.int64, head(tbl, Nil))
+        val table_entry = at_index(value(a) - 1.int64, list_head(tbl))
         val cs = match table_entry
           Unknown  -> check_complete(csp_,Cons(a,as_))
           Known(_) -> table_entry
         ((Cons(a,as_),cs),tbl)
   map_tree(fn(x) f5(csp,x),t)
-}
-
-fun cache_checks(csp:csp,tbl:list<list<conflictset>>,n:node<list<assign>>): <div,exn> node<(list<assign>,list<list<conflictset>>)>{
-  match n
-    Node(s,cs) -> Node((s,tbl),map(cs,fn(x) cache_checks(csp,fill_table(s,csp,tail(tbl)),x)))
-}
-
-fun known_solution(c:conflictset): total bool{
-  match c
-    Known(Nil) -> True
-    Known(Cons(_,_)) -> False
-    Unknown -> False 
-}
-
-fun known_conflict(c:conflictset): total bool{
-  match c
-    Known(Nil) -> False
-    Known(Cons(_,_)) -> True
-    Unknown -> False
 }
 
 fun to_pairs(ls:list<int64>,varrr:int64): total list<(int64,int64)> {
@@ -249,7 +335,12 @@ fun fill_table(s:list<assign>,csp:csp,tbl:list<list<conflictset>>) : <div,exn> l
                   Known(Cons(var_,Cons(varr,Nil)))
                 else
                   cs
-          zipwith(tbl,n_pairs(enum_from_to(var_ + 1.int64,vars),vals),fn(x,y) -> zipwith(x,y,f4))
+          zip_with(tbl,n_pairs(enum_from_to(var_ + 1.int64,vars),vals),fn(x,y) -> zip_with(x,y,f4))
+}
+
+fun cache_checks(csp:csp,tbl:list<list<conflictset>>,n:node<list<assign>>): <div,exn> node<(list<assign>,list<list<conflictset>>)>{
+  match n
+    Node(s,cs) -> Node((s,tbl),map_list(cs,fn(x) cache_checks(csp,fill_table(s,csp,list_tail(tbl)),x)))
 }
 
 fun to_unknown(ls:list<int64>): total list<conflictset>{
@@ -270,8 +361,8 @@ fun empty_table(csp:csp): div list<list<conflictset>> {
 }
 
 fun search(labeler: (csp,node<list<assign>>) -> <div,exn> node<(list<assign>,conflictset)>,csp:csp) : <div,exn> list<list<assign>> {
-  map(
-    filter(
+  map_list(
+    filter_list(
       leaves(
         prune(
           fn((_,x)) known_conflict(x),
@@ -305,11 +396,11 @@ fun bm(csp:csp,t:node<list<assign>>): <div,exn> node<(list<assign>,conflictset)>
   map_tree(fn((x,_)) x,lookup_cache(csp,cache_checks(csp,empty_table(csp),t)))
 }
 
-fun bj(csp:csp,t:node<(list<assign>,conflictset)>): div node<(list<assign>,conflictset)>{
+fun bj(csp:csp,t:node<(list<assign>,conflictset)>): <div,exn> node<(list<assign>,conflictset)>{
   val f6 = fn((a,conf),chs)
     match conf
       Known(cs) -> Node((a,Known(cs)),chs)
-      Unknown -> Node((a,Known(combine(map(chs,fn(x) label(x)),Nil))),chs)
+      Unknown -> Node((a,Known(combine(map_list(chs,fn(x) label(x)),Nil))),chs)
   fold_tree(f6,t)
 }
 
@@ -317,12 +408,12 @@ fun bjbt(csp:csp,t:node<list<assign>>): <div,exn> node<(list<assign>,conflictset
   bj(csp,bt(csp,t))
 }
 
-fun bj_(csp:csp,t:node<(list<assign>,conflictset)>): div node<(list<assign>,conflictset)>{
+fun bj_(csp:csp,t:node<(list<assign>,conflictset)>): <div,exn> node<(list<assign>,conflictset)>{
   val f7 = fn((a,conf),chs) 
     match conf
       Known(cs) -> Node((a,Known(cs)),chs)
       Unknown ->
-        val cs_ = Known(combine(map(chs,fn(x) label(x)),Nil))
+        val cs_ = Known(combine(map_list(chs,fn(x) label(x)),Nil))
         if known_conflict(cs_) then
           Node((a,cs_),Nil)
         else 
@@ -339,11 +430,11 @@ fun fc(csp:csp,t:node<list<assign>>): <div,exn> node<(list<assign>,conflictset)>
 }
 
 fun try_(n:int64,algorithm:(csp,node<list<assign>>) -> <div,exn> node<(list<assign>,conflictset)>) : <div,exn> int64 {
-  length(search(algorithm,queens(n))).int64
+  len(search(algorithm,queens(n)))
 }
 
 fun test_constraints_nofib(n:int64) : <div,exn> list<int64>{
-  map(
+  map_list(
     Cons(bt,Cons(bm,Cons(bjbt,Cons(bjbt_,Cons(fc,Nil))))),
     fn(x) try_(n,x)
   )
