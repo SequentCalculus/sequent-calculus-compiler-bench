@@ -74,7 +74,7 @@ impl<A> List<A> {
         matches!(self, List::Nil)
     }
 
-    fn len(&self) -> usize {
+    fn len(&self) -> i64 {
         match self {
             List::Nil => 0,
             List::Cons(_, as_) => 1 + as_.len(),
@@ -98,7 +98,7 @@ impl<A> List<A> {
         }
     }
 
-    fn at_index(self, ind: usize) -> A
+    fn at_index(&self, ind: i64) -> A
     where
         A: Clone,
     {
@@ -106,25 +106,25 @@ impl<A> List<A> {
             List::Nil => panic!("Cannot take {}th element of empty list", ind),
             List::Cons(a, as_) => {
                 if ind == 0 {
-                    a
+                    a.clone()
                 } else {
-                    Rc::unwrap_or_clone(as_).at_index(ind - 1)
+                    as_.at_index(ind - 1)
                 }
             }
         }
     }
 
-    fn rev_loop(self, acc: List<A>) -> List<A>
+    fn rev_loop(&self, acc: List<A>) -> List<A>
     where
         A: Clone,
     {
         match self {
             List::Nil => acc,
-            List::Cons(p, ps) => Rc::unwrap_or_clone(ps).rev_loop(List::Cons(p, Rc::new(acc))),
+            List::Cons(p, ps) => ps.rev_loop(List::Cons(p.clone(), Rc::new(acc))),
         }
     }
 
-    fn reverse(self) -> List<A>
+    fn reverse(&self) -> List<A>
     where
         A: Clone,
     {
@@ -259,13 +259,11 @@ where
     }
 }
 
-impl List<i64> {
-    pub fn enum_from_to(from: i64, to: i64) -> List<i64> {
-        if from <= to {
-            List::Cons(from, Rc::new(List::enum_from_to(from + 1, to)))
-        } else {
-            List::Nil
-        }
+fn enum_from_to(from: i64, to: i64) -> List<i64> {
+    if from <= to {
+        List::Cons(from, Rc::new(enum_from_to(from + 1, to)))
+    } else {
+        List::Nil
     }
 }
 
@@ -389,7 +387,7 @@ fn to_assign(ls: List<i64>, ass: List<Assign>) -> List<List<Assign>> {
 fn mk_tree(csp: &CSP) -> Node<List<Assign>> {
     let next = |ss: List<Assign>| {
         if max_level(&ss) < csp.vars {
-            to_assign(List::enum_from_to(1, csp.vals), ss)
+            to_assign(enum_from_to(1, csp.vals), ss)
         } else {
             List::Nil
         }
@@ -435,10 +433,7 @@ fn check_complete(csp: &CSP, s: &List<Assign>) -> ConflictSet {
 fn earliest_inconsistency(csp: &CSP, aas: List<Assign>) -> Option<(i64, i64)> {
     match aas {
         List::Nil => None,
-        List::Cons(a, aas_) => match Rc::unwrap_or_clone(aas_)
-            .reverse()
-            .filter(&|x| !((csp.rel)(&a, x)))
-        {
+        List::Cons(a, aas_) => match aas_.reverse().filter(&|x| !((csp.rel)(&a, x))) {
             List::Nil => None,
             List::Cons(b, _) => Some((a.varr, b.varr)),
         },
@@ -452,7 +447,7 @@ fn lookup_cache(
     let f5 = |csp, (as_, tbl): (List<Assign>, List<List<ConflictSet>>)| match as_ {
         List::Nil => ((List::Nil, ConflictSet::Unknown), tbl),
         List::Cons(ref a, _) => {
-            let table_entry = tbl.clone().head().at_index((a.value - 1) as usize);
+            let table_entry = tbl.clone().head().at_index(a.value - 1);
             let cs = match table_entry {
                 ConflictSet::Unknown => check_complete(csp, &as_),
                 ConflictSet::Known(_) => table_entry.clone(),
@@ -511,7 +506,7 @@ fn n_pairs(ls: List<i64>, n: i64) -> List<List<(i64, i64)>> {
     match ls {
         List::Nil => List::Nil,
         List::Cons(varrr, t1) => List::Cons(
-            to_pairs(List::enum_from_to(1, n), varrr),
+            to_pairs(enum_from_to(1, n), varrr),
             Rc::new(n_pairs(Rc::unwrap_or_clone(t1), n)),
         ),
     }
@@ -539,7 +534,7 @@ fn fill_table(
                 }
             };
             tbl.zip_with(
-                n_pairs(List::enum_from_to(as_.varr + 1, csp.vars), csp.vals),
+                n_pairs(enum_from_to(as_.varr + 1, csp.vars), csp.vals),
                 &|x, y| x.zip_with(y, &f4),
             )
         }
@@ -560,7 +555,7 @@ fn n_unknown(ls: List<i64>, n: i64) -> List<List<ConflictSet>> {
     match ls {
         List::Nil => List::Nil,
         List::Cons(_, t1) => List::Cons(
-            to_unknown(List::enum_from_to(1, n)),
+            to_unknown(enum_from_to(1, n)),
             Rc::new(n_unknown(Rc::unwrap_or_clone(t1), n)),
         ),
     }
@@ -569,7 +564,7 @@ fn n_unknown(ls: List<i64>, n: i64) -> List<List<ConflictSet>> {
 fn empty_table(csp: &CSP) -> List<List<ConflictSet>> {
     List::Cons(
         List::Nil,
-        Rc::new(n_unknown(List::enum_from_to(1, csp.vars), csp.vals)),
+        Rc::new(n_unknown(enum_from_to(1, csp.vars), csp.vals)),
     )
 }
 

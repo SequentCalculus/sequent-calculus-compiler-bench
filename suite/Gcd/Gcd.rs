@@ -28,15 +28,15 @@ impl<A> List<A> {
     }
 }
 
-impl List<i64> {
-    fn enum_from_to(from: i64, to: i64) -> List<i64> {
-        if from <= to {
-            List::Cons(from, Rc::new(List::enum_from_to(from + 1, to)))
-        } else {
-            List::Nil
-        }
+fn enum_from_to(from: i64, to: i64) -> List<i64> {
+    if from <= to {
+        List::Cons(from, Rc::new(enum_from_to(from + 1, to)))
+    } else {
+        List::Nil
     }
+}
 
+impl List<i64> {
     fn max(self) -> i64 {
         match self {
             List::Nil => panic!("Empty List"),
@@ -92,8 +92,8 @@ fn to_pair(i: i64, l: List<i64>) -> List<(i64, i64)> {
 }
 
 fn test(d: i64) -> i64 {
-    let ns: List<i64> = List::enum_from_to(5000, 5000 + d);
-    let ms: List<i64> = List::enum_from_to(10000, 10000 + d);
+    let ns: List<i64> = enum_from_to(5000, 5000 + d);
+    let ms: List<i64> = enum_from_to(10000, 10000 + d);
     let tripls: List<(i64, i64, (i64, i64, i64))> =
         cartesian_product(ns, ms).map(&|(x, y)| (x, y, gcd_e(x, y)));
     let rs: List<i64> = tripls.map(&|(_, _, (gg, u, v))| (gg + u + v).abs());

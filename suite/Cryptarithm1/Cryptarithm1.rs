@@ -65,18 +65,16 @@ impl<A> List<A> {
     }
 }
 
-impl List<i64> {
-    pub fn enum_from_to(from: i64, to: i64) -> List<i64> {
-        if to >= from {
-            List::Cons(from, Rc::new(List::enum_from_to(from + 1, to)))
-        } else {
-            List::Nil
-        }
-    }
-}
-
 fn expand(a: i64, b: i64, c: i64, d: i64, e: i64, f: i64) -> i64 {
     f + 10 * e + 100 * d + 1000 * c + 10000 * b + 100000 * a
+}
+
+fn enum_from_to(from: i64, to: i64) -> List<i64> {
+    if to >= from {
+        List::Cons(from, Rc::new(enum_from_to(from + 1, to)))
+    } else {
+        List::Nil
+    }
 }
 
 fn condition(thirywelvn: &List<i64>) -> bool {
@@ -155,8 +153,8 @@ fn permutations(ls: List<i64>) -> List<List<i64>> {
 }
 
 fn test_cryptarithm_nofib(n: i64) -> List<List<List<i64>>> {
-    List::enum_from_to(1, n)
-        .map(&|i| permutations(List::enum_from_to(0, 9 + i).take(10)).filter(&|l| condition(l)))
+    enum_from_to(1, n)
+        .map(&|i| permutations(enum_from_to(0, 9 + i).take(10)).filter(&|l| condition(l)))
 }
 
 fn main_loop(iters: u64, n: i64) {

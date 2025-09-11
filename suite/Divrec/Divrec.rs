@@ -7,7 +7,7 @@ enum List<A> {
 }
 
 impl<A> List<A> {
-    fn create_n(n: u64) -> List<A>
+    fn create_n(n: i64) -> List<A>
     where
         A: Default,
     {
@@ -18,7 +18,7 @@ impl<A> List<A> {
         ls
     }
 
-    fn len(&self) -> usize {
+    fn len(&self) -> i64 {
         match self {
             List::Nil => 0,
             List::Cons(_, as_) => 1 + as_.len(),
@@ -36,7 +36,7 @@ fn rec_div2(l: List<()>) -> List<()> {
     }
 }
 
-fn main_loop(iters: u64, n: u64) {
+fn main_loop(iters: u64, n: i64) {
     let res = rec_div2(List::create_n(n)).len();
     if iters == 1 {
         println!("{res}");
@@ -56,7 +56,7 @@ fn main() {
     let n = args
         .next()
         .expect("Missing Argument n")
-        .parse::<u64>()
+        .parse::<i64>()
         .expect("n must be a number");
     main_loop(iters, n)
 }

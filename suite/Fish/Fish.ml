@@ -15,17 +15,10 @@ let nil_ _ _ _ = []
 
 let tup2 (Vec(x1,y1)) (Vec(x2,y2)) = Vec4(x1,y1,x2,y2)
 
-let rec append_rev l1 l2 = 
-  match l1 with
-    | [] -> l2
-    | v::vs -> append_rev vs (v::l2)
-
-let rec rev l = append_rev l []
-
 let rec append l1 l2 = 
-  match l2 with 
-    | [] -> l1
-    | v::vs -> append_rev (rev l1) (v::vs)
+  match l1 with 
+    | [] -> l2
+    | a::as_ -> a::(append as_ l2)
 
 let rec map f ls = 
   match ls with
