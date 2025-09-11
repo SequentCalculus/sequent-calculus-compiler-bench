@@ -41,107 +41,107 @@ structure Boyer = struct
                 | ERROR
 
   fun id_equal id1 id2 =
-    case (id1,id2) of
-         (A,A) => true
-       | (B,B) => true
-       | (C,C) => true
-       | (D,D) => true
-       | (X,X) => true
-       | (Y,Y) => true
-       | (Z,Z) => true
-       | (U,U) => true
-       | (W,W) => true
-       | (ADD1,ADD1) => true
-       | (AND,AND) => true
-       | (APPEND,APPEND) => true
-       | (CONS,CONS) => true
-       | (DIFFERENCE,DIFFERENCE) => true
-       | (EQUAL,EQUAL) => true
-       | (F,F) => true
-       | (FALSE,FALSE) => true
-       | (FOUR,FOUR) => true
-       | (IF,IF) => true
-       | (IMPLIES,IMPLIES) => true
-       | (LENGTH,LENGTH) => true
-       | (LESSP,LESSP) => true
-       | (MEMBER,MEMBER) => true
-       | (NIL,NIL) => true
-       | (NOT,NOT) => true
-       | (ONE,ONE) => true
-       | (OR,OR) => true
-       | (PLUS,PLUS) => true
-       | (QUOTIENT,QUOTIENT) => true
-       | (REMAINDER,REMAINDER) => true
-       | (REVERSE,REVERSE) => true
-       | (TIMES,TIMES) => true
-       | (TRUE,TRUE) => true
-       | (TWO,TWO) => true
-       | (ZERO,ZERO) => true
-       | (ZEROP,ZEROP) => true
+    case (id1, id2) of
+         (A, A) => true
+       | (B, B) => true
+       | (C, C) => true
+       | (D, D) => true
+       | (X, X) => true
+       | (Y, Y) => true
+       | (Z, Z) => true
+       | (U, U) => true
+       | (W, W) => true
+       | (ADD1, ADD1) => true
+       | (AND, AND) => true
+       | (APPEND, APPEND) => true
+       | (CONS, CONS) => true
+       | (DIFFERENCE, DIFFERENCE) => true
+       | (EQUAL, EQUAL) => true
+       | (F, F) => true
+       | (FALSE, FALSE) => true
+       | (FOUR, FOUR) => true
+       | (IF, IF) => true
+       | (IMPLIES, IMPLIES) => true
+       | (LENGTH, LENGTH) => true
+       | (LESSP, LESSP) => true
+       | (MEMBER, MEMBER) => true
+       | (NIL, NIL) => true
+       | (NOT, NOT) => true
+       | (ONE, ONE) => true
+       | (OR, OR) => true
+       | (PLUS, PLUS) => true
+       | (QUOTIENT, QUOTIENT) => true
+       | (REMAINDER, REMAINDER) => true
+       | (REVERSE, REVERSE) => true
+       | (TIMES, TIMES) => true
+       | (TRUE, TRUE) => true
+       | (TWO, TWO) => true
+       | (ZERO, ZERO) => true
+       | (ZEROP, ZEROP) => true
        | _ => false
 
   fun term_equal t1 t2 =
-    case (t1,t2) of
-         (Var id1, Var id2) => id1=id2
-       | (Func (id1,args1,_),Func (id2,args2,_)) =>
-           (id1=id2) andalso (term_list_equal args1 args2)
+    case (t1, t2) of
+         (Var id1, Var id2) => id1 = id2
+       | (Func (id1, args1, _), Func (id2, args2, _)) =>
+           (id1 = id2) andalso (term_list_equal args1 args2)
        | _ => false
   and term_list_equal (ts1:Term list) (ts2: Term list)=
-  case (ts1,ts2) of
-       (nil,nil) => true
-     | (t1::tss1,t2::tss2) => (term_equal t1 t2) andalso (term_list_equal tss1 tss2)
+  case (ts1, ts2) of
+       (nil, nil) => true
+     | (t1 :: tss1, t2 :: tss2) => (term_equal t1 t2) andalso (term_list_equal tss1 tss2)
      | _ => false
 
-  fun term_in_list t ls = 
-    case ls of 
-         nil => false 
-       | t_::ts => (term_equal t_ t) orelse (term_in_list t ts)
+  fun term_in_list t ls =
+    case ls of
+         nil => false
+       | t_ :: ts => (term_equal t_ t) orelse (term_in_list t ts)
 
-  fun all_term ls f = 
-    case ls of 
+  fun all_term ls f =
+    case ls of
         nil => true
-       | x::xs => (f x) andalso (all_term ls f)
+       | x :: xs => (f x) andalso (all_term xs f)
 
-  fun map_list ls f = 
-    case ls of 
+  fun map_list ls f =
+    case ls of
          nil => nil
-       | x::xs => (f x) :: (map_list xs f)
+       | x :: xs => (f x) :: (map_list xs f)
 
   fun replicate_term n t =
-    if n=0 then nil
-    else t :: replicate_term (n-1) t
+    if n = 0 then nil
+    else t :: replicate_term (n - 1) t
 
   fun find vid ls =
     case ls of
-         nil => (false,ERROR)
-       | (vid2,val2)::bs =>
+         nil => (false, ERROR)
+       | (vid2, val2) :: bs =>
            if id_equal vid vid2
-           then (true,val2)
+           then (true, val2)
            else find vid bs
 
-  fun boyer_add1 a = Func(ADD1,a::nil, fn () => nil)
-  and boyer_zero () = Func (ZERO,nil,fn () => nil)
-  and boyer_zerop a = Func(ZEROP,a::nil,fn () =>
+  fun boyer_add1 a = Func(ADD1, a :: nil, fn () => nil)
+  and boyer_zero () = Func (ZERO, nil, fn () => nil)
+  and boyer_zerop a = Func(ZEROP, a :: nil, fn () =>
   (
   boyer_zerop (boyer_x()),
   boyer_equal (boyer_x()) (boyer_zero())
-  )::nil)
-  and boyer_one () = Func (ONE,nil,fn () =>
+  ) :: nil)
+  and boyer_one () = Func (ONE, nil, fn () =>
   (
   boyer_one(),
   boyer_add1 (boyer_zero())
-  )::nil)
-  and boyer_two () = Func (TWO,nil,fn () =>
+  ) :: nil)
+  and boyer_two () = Func (TWO, nil, fn () =>
   (
   boyer_two(),
   boyer_add1 (boyer_one())
-  )::nil)
-  and boyer_four () = Func(FOUR,nil, fn () =>
+  ) :: nil)
+  and boyer_four () = Func(FOUR, nil, fn () =>
   (
   boyer_four(),
   boyer_add1 (boyer_add1 (boyer_two()))
-  )::nil)
-  and boyer_if_ a b c = Func(IF,a::b::c::nil,fn () =>
+  ) :: nil)
+  and boyer_if_ a b c = Func(IF, a :: b :: c :: nil, fn () =>
   (
   boyer_if_
   (boyer_if_
@@ -155,14 +155,14 @@ structure Boyer = struct
   (boyer_x())
   (boyer_if_ (boyer_y()) (boyer_u()) (boyer_w()))
   (boyer_if_ (boyer_z()) (boyer_u()) (boyer_w()))
-  )::nil
+  ) :: nil
   )
-  and boyer_not_ a = Func(NOT,a::nil,fn () =>
+  and boyer_not_ a = Func(NOT, a :: nil, fn () =>
   (
   boyer_not_ (boyer_x()),
   boyer_if_ (boyer_x()) (boyer_false()) (boyer_true())
-  )::nil)
-  and boyer_and_ a b = Func(AND,(a::b::nil),fn () =>
+  ) :: nil)
+  and boyer_and_ a b = Func(AND, (a :: b :: nil), fn () =>
   (
   boyer_and_ (boyer_x()) (boyer_y()),
   boyer_if_
@@ -173,8 +173,8 @@ structure Boyer = struct
   (boyer_false())
   )
   (boyer_false())
-  )::nil)
-  and boyer_equal a b = Func(EQUAL,a::b::nil, fn () =>
+  ) :: nil)
+  and boyer_equal a b = Func(EQUAL, a :: b :: nil, fn () =>
   (
   boyer_equal
   (boyer_plus (boyer_x()) (boyer_y()))
@@ -253,8 +253,8 @@ structure Boyer = struct
   (boyer_lessp (boyer_x()) (boyer_y()))
   (boyer_equal (boyer_true()) (boyer_z()))
   (boyer_equal (boyer_false()) (boyer_z()))
-  )::nil)
-  and boyer_append_ a b = Func(APPEND,a::b::nil,fn () =>
+  ) :: nil)
+  and boyer_append_ a b = Func(APPEND, a :: b :: nil, fn () =>
   (
   boyer_append_
   (boyer_append_ (boyer_x()) (boyer_y()))
@@ -262,7 +262,7 @@ structure Boyer = struct
   boyer_append_
   (boyer_x())
   (boyer_append_ (boyer_y()) (boyer_z()))
-  )::nil)
+  ) :: nil)
   and boyer_x () = Var X
   and boyer_y () = Var Y
   and boyer_z () = Var Z
@@ -272,17 +272,17 @@ structure Boyer = struct
   and boyer_b () = Var B
   and boyer_c () = Var C
   and boyer_d () = Var D
-  and boyer_false() = Func (FALSE,nil,fn () => nil)
-  and boyer_true() = Func (TRUE,nil,fn () => nil)
-  and boyer_or_ a b = Func(OR,a::b::nil,fn () =>
+  and boyer_false() = Func (FALSE, nil, fn () => nil)
+  and boyer_true() = Func (TRUE, nil, fn () => nil)
+  and boyer_or_ a b = Func(OR, a :: b :: nil, fn () =>
   (
   boyer_or_ (boyer_x()) (boyer_y()),
   boyer_if_
   (boyer_x())
   (boyer_true())
   (boyer_if_ (boyer_y()) (boyer_true()) (boyer_false()))
-  )::nil)
-  and boyer_lessp a b = Func(LESSP,a::b::nil,fn () =>
+  ) :: nil)
+  and boyer_lessp a b = Func(LESSP, a :: b :: nil, fn () =>
   (
   boyer_lessp
   (boyer_remainder (boyer_x()) (boyer_y()))
@@ -312,9 +312,9 @@ structure Boyer = struct
   (boyer_y())
   (boyer_plus (boyer_x()) (boyer_y())),
   boyer_not_ (boyer_zerop (boyer_x()))
-  )::nil)
-  and boyer_cons a b = Func(CONS,a::b::nil,fn () => nil)
-  and boyer_remainder a b = Func(REMAINDER,a::b::nil,fn () =>
+  ) :: nil)
+  and boyer_cons a b = Func(CONS, a :: b :: nil, fn () => nil)
+  and boyer_remainder a b = Func(REMAINDER, a :: b :: nil, fn () =>
   (
   boyer_remainder (boyer_x()) (boyer_one()),
   boyer_zero()
@@ -331,8 +331,8 @@ structure Boyer = struct
   (boyer_times (boyer_x()) (boyer_y()))
   (boyer_y()),
   boyer_zero()
-  )::nil)
-  and boyer_quotient a  b = Func(QUOTIENT,a::b::nil,fn () =>
+  ) :: nil)
+  and boyer_quotient a  b = Func(QUOTIENT, a :: b :: nil, fn () =>
   (
   boyer_quotient
   (boyer_plus
@@ -343,8 +343,8 @@ structure Boyer = struct
   boyer_plus
   (boyer_x())
   (boyer_quotient (boyer_y()) (boyer_two()))
-  )::nil)
-  and boyer_times a b = Func(TIMES,a::b::nil,fn () =>
+  ) :: nil)
+  and boyer_times a b = Func(TIMES, a :: b :: nil, fn () =>
   (
   boyer_times
   (boyer_x())
@@ -373,8 +373,8 @@ structure Boyer = struct
   boyer_plus
   (boyer_x())
   (boyer_times (boyer_x()) (boyer_y()))
-  )::nil)
-  and boyer_difference a b = Func(DIFFERENCE,a::b::nil,fn () =>
+  ) :: nil)
+  and boyer_difference a b = Func(DIFFERENCE, a :: b :: nil, fn () =>
   (
   boyer_difference (boyer_x()) (boyer_x()),
   boyer_zero()
@@ -409,8 +409,8 @@ structure Boyer = struct
   )::(
   boyer_difference (boyer_add1 (boyer_add1 (boyer_x()))) (boyer_two()),
   boyer_x()
-  )::nil)
-  and boyer_implies a b = Func (IMPLIES,a::b::nil,fn () =>
+  ) :: nil)
+  and boyer_implies a b = Func (IMPLIES, a :: b :: nil, fn () =>
   (
   boyer_implies (boyer_x()) (boyer_y()),
   boyer_if_
@@ -421,8 +421,8 @@ structure Boyer = struct
   (boyer_false())
   )
   (boyer_true())
-  )::nil)
-  and boyer_length_ a = Func(LENGTH,a::nil,fn() =>
+  ) :: nil)
+  and boyer_length_ a = Func(LENGTH, a :: nil, fn() =>
   (
   boyer_length_ (boyer_reverse_ (boyer_x())),
   boyer_length_ (boyer_x())
@@ -437,14 +437,14 @@ structure Boyer = struct
   boyer_plus
   (boyer_four())
   (boyer_length_ (boyer_w()))
-  )::nil)
-  and boyer_reverse_ a = Func(REVERSE,a::nil,fn () =>
+  ) :: nil)
+  and boyer_reverse_ a = Func(REVERSE, a :: nil, fn () =>
   (
   boyer_reverse_ (boyer_append_ (boyer_x()) (boyer_y())),
   boyer_append_ (boyer_reverse_ (boyer_y())) (boyer_reverse_ (boyer_x()))
-  )::nil)
-  and boyer_nil () = Func(NIL,nil,fn () => nil)
-  and boyer_member a b = Func(MEMBER,a::b::nil,fn () =>
+  ) :: nil)
+  and boyer_nil () = Func(NIL, nil, fn () => nil)
+  and boyer_member a b = Func(MEMBER, a :: b :: nil, fn () =>
   (
   boyer_member
   (boyer_x())
@@ -457,8 +457,8 @@ structure Boyer = struct
   (boyer_x())
   (boyer_reverse_ (boyer_y())),
   boyer_member (boyer_x()) (boyer_y())
-  )::nil)
-  and boyer_plus a b = Func(PLUS,a::b::nil,fn () =>
+  ) :: nil)
+  and boyer_plus a b = Func(PLUS, a :: b :: nil, fn () =>
   (
   boyer_plus
   (boyer_plus (boyer_x()) (boyer_y()))
@@ -477,60 +477,59 @@ structure Boyer = struct
   )::(
   boyer_plus (boyer_x()) (boyer_add1 (boyer_y())),
   boyer_add1 (boyer_plus (boyer_x()) (boyer_y()))
-  )::nil
+  ) :: nil
   )
-  and boyer_f a = Func (F,a::nil,fn () => nil)
-
+  and boyer_f a = Func (F, a :: nil, fn () => nil)
 
   fun one_way_unify term1 term2 = one_way_unify1 term1 term2 nil
   and one_way_unify1 term1 term2 subst =
   case term2 of
        Var vid2 =>
        (case (find vid2 subst) of
-             (true,v2) => (term_equal term1 v2,subst)
-           | (false,v2) => (true,((vid2,term1)::subst)))
-           | Func (f2,as2,l2) =>
+             (true, v2) => (term_equal term1 v2, subst)
+           | (false, v2) => (true, ((vid2, term1) :: subst)))
+           | Func (f2, as2, l2) =>
                (case term1 of
-                     Var vid1 => (false,nil)
-                   | Func(f1,as1,l1) => if f1=f2 then
-                     one_way_unify1_lst as1 as2 subst else (false,nil)
-                   | ERROR => (false,nil))
-                   | ERROR => (false,nil)
+                     Var vid1 => (false, nil)
+                   | Func(f1, as1, l1) => if f1 = f2 then
+                     one_way_unify1_lst as1 as2 subst else (false, nil)
+                   | ERROR => (false, nil))
+                   | ERROR => (false, nil)
 
   and one_way_unify1_lst tts1 tts2 subst =
-  case (tts1,tts2) of
-       (nil,nil) => (true,subst)
-     | (nil,_::_) => (false,nil)
-     | (_::_,nil) => (false,nil)
-     | (t1::ts1,t2::ts2) =>
-         let val (hd_ok,subst_) = one_way_unify1 t1 t2 subst
-           val (tl_ok,subst__) = one_way_unify1_lst ts1 ts2 subst_
+  case (tts1, tts2) of
+       (nil, nil) => (true, subst)
+     | (nil, _::_) => (false, nil)
+     | (_::_, nil) => (false, nil)
+     | (t1 :: ts1, t2 :: ts2) =>
+         let val (hd_ok, subst_) = one_way_unify1 t1 t2 subst
+           val (tl_ok, subst__) = one_way_unify1_lst ts1 ts2 subst_
          in
-           (hd_ok andalso tl_ok,subst__)
+           (hd_ok andalso tl_ok, subst__)
          end
 
   fun apply_subst subst t =
     case t of
          Var vid =>
          (case (find vid subst) of
-               (true,value) => value
-             | (false,_) => Var vid)
+               (true, value) => value
+             | (false, _) => Var vid)
              | Func (f, args, ls) =>
-                 Func (f, (map_list args (fn x => apply_subst subst x)),ls)
+                 Func (f, (map_list args (fn x => apply_subst subst x)), ls)
              | ERROR => ERROR
 
   fun rewrite t =
     case t of
          Var v => Var v
-       | Func (f,args,lemmas) =>
+       | Func (f, args, lemmas) =>
            rewrite_with_lemmas (Func (f, (map_list args (fn x =>
            rewrite x) ), lemmas)) (lemmas())
        | ERROR => ERROR
   and rewrite_with_lemmas term lss =
   case lss of
        nil => term
-     | (lhs,rhs)::ls =>
-         let val (unified,subst) = one_way_unify term lhs
+     | (lhs, rhs) :: ls =>
+         let val (unified, subst) = one_way_unify term lhs
          in
            if unified then
              rewrite (apply_subst subst rhs)
@@ -539,15 +538,15 @@ structure Boyer = struct
          end
 
   fun truep x l =
-    case x of 
+    case x of
          Var(_) => term_in_list x l
-       | Func(t,_,_) => (id_equal t TRUE) orelse (term_in_list x l)
+       | Func(t, _, _) => (id_equal t TRUE) orelse (term_in_list x l)
        | ERROR => term_in_list x l
 
   fun falsep x l =
-    case x of 
+    case x of
          Var(_) => term_in_list x l
-       | Func(t,_,_) => (id_equal t FALSE) orelse (term_in_list x l)
+       | Func(t, _, _) => (id_equal t FALSE) orelse (term_in_list x l)
        | ERROR => term_in_list x l
 
   fun tautologyp x true_lst false_lst =
@@ -557,16 +556,16 @@ structure Boyer = struct
       false
          else
            case x of
-                Func(IF,cond::t::e::nil,lemmas) =>
+                Func(IF, cond :: t :: e :: nil, lemmas) =>
                 if truep cond true_lst then
                   tautologyp t true_lst false_lst
                 else if falsep cond false_lst
                 then
                   tautologyp e true_lst false_lst
                      else
-                       (tautologyp t (cond::true_lst) false_lst)
+                       (tautologyp t (cond :: true_lst) false_lst)
                        andalso
-                       (tautologyp e true_lst (cond::false_lst))
+                       (tautologyp e true_lst (cond :: false_lst))
               | _ => false
 
   fun tautp x =
@@ -574,19 +573,19 @@ structure Boyer = struct
 
   fun boyer_subst0 () =
     [
-    (X,boyer_f
+    (X, boyer_f
     (boyer_plus
     (boyer_plus (boyer_a()) (boyer_b()))
     (boyer_plus (boyer_c()) (boyer_zero()))
     )
     ),
-    (Y,boyer_f
+    (Y, boyer_f
     (boyer_times
     (boyer_times (boyer_a()) (boyer_b()))
     (boyer_plus (boyer_c()) (boyer_d()))
     )
     ),
-    (Z,boyer_f
+    (Z, boyer_f
     (boyer_reverse_
     (boyer_append_
     (boyer_append_ (boyer_a()) (boyer_b()))
@@ -631,9 +630,9 @@ structure Boyer = struct
   fun main_loop iters n =
   let val res = test_boyer_nofib n
          in
-           if iters=1
+           if iters = 1
            then if res then print "1\n" else print "0\n"
-           else main_loop (iters-1) n
+           else main_loop (iters - 1) n
          end
 
   fun run args =

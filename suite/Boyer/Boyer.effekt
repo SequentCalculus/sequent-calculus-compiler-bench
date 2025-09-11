@@ -120,7 +120,6 @@ def map_list(l: List[Term]) { f: Term => Term }: List[Term] =
     case Cons(x, xs) => Cons(f(x), xs.map_list {f})
   }
 
-
 def replicate_term(n: Int, t: Term): List[Term] =
   if (n == 0) {
     Nil()

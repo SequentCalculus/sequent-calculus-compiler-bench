@@ -1,6 +1,6 @@
 $(SML_LIB)/basis/basis.mlb
-local 
+local
   Ack_lib.sml
-in 
+in
   Ack_mlton.sml
 end

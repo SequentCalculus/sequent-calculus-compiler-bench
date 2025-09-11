@@ -1,34 +1,5 @@
 use std::rc::Rc;
 
-#[derive(Clone, PartialEq, Eq)]
-enum List<T> {
-    Nil,
-    Cons(T, Rc<List<T>>),
-}
-
-impl<'a> List<Term<'a>> {
-    fn term_in_list(&self, term: &Term<'a>) -> bool {
-        match self {
-            List::Nil => false,
-            List::Cons(t, ts) => term == t || ts.term_in_list(term),
-        }
-    }
-
-    fn all_term(&self, f: &impl Fn(&Term<'a>) -> bool) -> bool {
-        match self {
-            List::Nil => true,
-            List::Cons(t, ts) => f(t) && ts.all_term(f),
-        }
-    }
-
-    fn map(self, f: impl Fn(Term<'a>) -> Term<'a>) -> List<Term<'a>> {
-        match self {
-            List::Nil => List::Nil,
-            List::Cons(x, xs) => List::Cons(f(x), Rc::new(Rc::unwrap_or_clone(xs).map(f))),
-        }
-    }
-}
-
 #[derive(PartialEq, Eq, Clone, Copy)]
 enum Id {
     A,
@@ -91,6 +62,35 @@ impl<'a> PartialEq for Term<'a> {
 }
 
 impl<'a> Eq for Term<'a> {}
+
+#[derive(Clone, PartialEq, Eq)]
+enum List<T> {
+    Nil,
+    Cons(T, Rc<List<T>>),
+}
+
+impl<'a> List<Term<'a>> {
+    fn term_in_list(&self, term: &Term<'a>) -> bool {
+        match self {
+            List::Nil => false,
+            List::Cons(t, ts) => term == t || ts.term_in_list(term),
+        }
+    }
+
+    fn all_term(&self, f: &impl Fn(&Term<'a>) -> bool) -> bool {
+        match self {
+            List::Nil => true,
+            List::Cons(t, ts) => f(t) && ts.all_term(f),
+        }
+    }
+
+    fn map(self, f: impl Fn(Term<'a>) -> Term<'a>) -> List<Term<'a>> {
+        match self {
+            List::Nil => List::Nil,
+            List::Cons(x, xs) => List::Cons(f(x), Rc::new(Rc::unwrap_or_clone(xs).map(f))),
+        }
+    }
+}
 
 fn replicate_term<'a>(n: i64, t: Term<'a>) -> List<Term<'a>> {
     if n == 0 {
@@ -856,6 +856,25 @@ fn one_way_unify<'a>(term1: Term<'a>, term2: Term<'a>) -> (bool, List<(Id, Term<
     one_way_unify1(term1, term2, List::Nil)
 }
 
+fn apply_subst<'a>(subst: List<(Id, Term<'a>)>, t: Term<'a>) -> Term<'a> {
+    match t {
+        Term::Var(vid) => {
+            let (found, value) = find(&vid, subst);
+            if found {
+                value
+            } else {
+                Term::Var(vid)
+            }
+        }
+        Term::Fun(f, args, ls) => Term::Fun(
+            f,
+            Rc::new(Rc::unwrap_or_clone(args).map(|t| apply_subst(subst.clone(), t))),
+            ls,
+        ),
+        Term::ERROR => Term::ERROR,
+    }
+}
+
 fn rewrite_with_lemmas<'a>(term: Term<'a>, lss: List<(Term<'a>, Term<'a>)>) -> Term<'a> {
     match lss {
         List::Nil => term,
@@ -933,25 +952,6 @@ fn tautologyp<'a>(x: Term<'a>, true_lst: List<Term<'a>>, false_lst: List<Term<'a
 
 fn tautp<'a>(x: Term<'a>) -> bool {
     tautologyp(rewrite(x), List::Nil, List::Nil)
-}
-
-fn apply_subst<'a>(subst: List<(Id, Term<'a>)>, t: Term<'a>) -> Term<'a> {
-    match t {
-        Term::Var(vid) => {
-            let (found, value) = find(&vid, subst);
-            if found {
-                value
-            } else {
-                Term::Var(vid)
-            }
-        }
-        Term::Fun(f, args, ls) => Term::Fun(
-            f,
-            Rc::new(Rc::unwrap_or_clone(args).map(|t| apply_subst(subst.clone(), t))),
-            ls,
-        ),
-        Term::ERROR => Term::ERROR,
-    }
 }
 
 fn boyer_subst0<'a>() -> List<(Id, Term<'a>)> {

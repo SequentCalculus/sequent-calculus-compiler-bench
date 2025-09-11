@@ -1,7 +1,7 @@
 $(SML_LIB)/basis/basis.mlb
 $(SML_LIB)/basis/sml-nj.mlb
-local 
+local
   AckGoto_lib.sml
-in 
+in
   AckGoto_mlton.sml
 end
