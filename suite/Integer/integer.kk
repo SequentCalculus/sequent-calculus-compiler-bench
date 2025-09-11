@@ -3,6 +3,13 @@ module integer
 import std/os/env
 import std/num/int64
 
+fun head_list<a>(ls:list<a>): exn a{
+  match ls{
+    Nil -> throw("Empty List")
+    Cons(a,_) -> a
+  }
+}
+
 fun enum_from_then_to(from:int64,then_:int64,to:int64): div list<int64>{
   if from<=to then 
     Cons(from,enum_from_then_to(then_,(2.int64 * then_) - from,to))
@@ -86,14 +93,14 @@ fun print_either(e:either<int64,bool>): console (){
 fun main_loop(iters:int64,n:int64): <console,div,exn> (){
   val res = test_integer_nofib(n)
   if iters == 1.int64 then
-    print_either(unjust(head(res)))
+    print_either(head_list(res))
   else 
     main_loop(iters - 1.int64,n)
 }
 
 fun main(): <ndet,exn,console,div> () {
   val args = get-args()
-  val iters = unjust(parse-int(unjust(head(args)))).int64
-  val n = unjust(parse-int(unjust(head(tail(args))))).int64
+  val iters = unjust(parse-int(head_list(args))).int64
+  val n = unjust(parse-int(head_list(tail(args)))).int64
   main_loop(iters,n)
 }

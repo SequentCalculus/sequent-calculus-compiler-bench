@@ -1,6 +1,11 @@
 structure Integer = struct 
   datatype ('a, 'b) either = Left of 'a | Right of 'b 
 
+  fun head l = 
+    case l of 
+         nil => raise Fail("Empty List")
+       | a::_ => a
+
   fun enum_from_then_to from th to = 
     if from<=to
     then from::(enum_from_then_to th ((2*th) - from) to)
@@ -68,13 +73,13 @@ structure Integer = struct
   let val res = test_integer_nofib n 
   in 
     if iters=1 then 
-      print_either (hd res)
+      print_either (head res)
     else main_loop (iters-1) n
   end
 
   fun run args =   
-    let val iters = valOf (Int.fromString (hd args))
-    val n = valOf (Int.fromString (hd (tl args)))
+    let val iters = valOf (Int.fromString (head args))
+    val n = valOf (Int.fromString (head (tl args)))
   in 
     main_loop iters n 
   end

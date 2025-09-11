@@ -1,4 +1,12 @@
+exception EmptyList 
+
 type ('a,'b) either = Left of 'a | Right of 'b 
+
+let head l = 
+  match l with
+    | [] -> raise EmptyList
+    | e::_ -> e
+
 let rec enum_from_then_to from th to_ = 
   if from<=to_ then
     from::enum_from_then_to th ((2*th) - from) to_
@@ -65,7 +73,7 @@ let print_either e =
 let rec main_loop iters n = 
   let res = test_integer_nofib n in 
   if iters=1 then 
-    print_either (List.hd res)
+    print_either (head res)
         else main_loop (iters-1) n 
 
 let main = 

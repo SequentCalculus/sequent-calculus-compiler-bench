@@ -5,6 +5,12 @@ type Either[A, B] {
   Right(b: B)
 }
 
+def head(l: List[Either[Int, Bool]]): Either[Int, Bool] =
+  l match {
+    case Nil() => Left(-1)
+    case Cons(e, es) => e
+  }
+
 def enum_from_then_to(from: Int, then: Int, to: Int): List[Int] =
   if (from <= to) {
     Cons(from, enum_from_then_to(then, (2 * then) - from, to))
@@ -73,12 +79,6 @@ def print_either(e: Either[Int, Bool]): Unit =
       } else {
         println("00")
       }
-  }
-
-def head(l: List[Either[Int, Bool]]): Either[Int, Bool] =
-  l match {
-    case Nil() => Left(-1)
-    case Cons(e, es) => e
   }
 
 def main_loop(iters: Int, n: Int): Unit = {
