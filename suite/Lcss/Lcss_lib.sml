@@ -29,6 +29,11 @@ structure Lcss = struct
               [] => []
             | x::xs => drop (n - 1) xs
 
+  fun is_nil ls = 
+    case ls of 
+         nil => true
+       | _ => false
+
   fun is_singleton ls = 
     case ls of 
          x::nil => SOME x
@@ -87,7 +92,7 @@ structure Lcss = struct
            else findk (k+1) km m xys
 
   fun algc m n xs ys = 
-    if null ys 
+    if is_nil ys 
     then fn x => x
     else 
       case (is_singleton xs) of 

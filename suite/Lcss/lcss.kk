@@ -48,13 +48,19 @@ fun findk(k:int64,km:int64,m:int64,ls:list<(int64,int64)>): div int64{
         findk(k + 1.int64,km,m,xys)
 }
 
-fun is_singleton(xs:list<a>): total maybe<a>{
+fun is_nil(xs:list<a>): total bool {
+  match xs
+    Nil -> True
+    _ -> False
+}
+
+fun is_singleton(xs:list<a>): total maybe<a> {
   match xs
     Cons(x,Nil) -> Just(x)
     _ -> Nothing
 }
 
-fun in_list(x:int64,ls:list<int64>): div bool{
+fun in_list(x:int64,ls:list<int64>): div bool {
   match ls
     Nil -> False
     Cons(x_,xs) -> 
@@ -65,7 +71,7 @@ fun in_list(x:int64,ls:list<int64>): div bool{
 }
 
 fun algc(m:int64,n:int64,xs:list<int64>,ys:list<int64>): div (list<int64> -> div list<int64>) {
-  if is-empty(ys) then
+  if is_nil(ys) then
     fn(x) x
   else
     match is_singleton(xs)

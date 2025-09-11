@@ -35,6 +35,13 @@ def geq(i1: i64, i2: i64): Bool {
   leq(i2, i1)
 }
 
+def head(l: List[Either[i64, Bool]]): Either[i64,Bool] {
+  l.case[Either[i64, Bool]] {
+    Nil => Left(-1),
+    Cons(e, es) => e
+  }
+}
+
 def enum_from_then_to(from: i64, then: i64, t: i64): List[i64] {
   if from <= t {
     Cons(from, enum_from_then_to(then, (2 * then) - from, t))
@@ -119,13 +126,6 @@ def runalltests(astart: i64, astep: i64, alim: i64): List[Either[i64, Bool]] {
 
 def test_integer_nofib(n: i64): List[Either[i64, Bool]] {
   runalltests(-2100000000, n, 2100000000)
-}
-
-def head(l: List[Either[i64, Bool]]): Either[i64,Bool] {
-  l.case[Either[i64, Bool]] {
-    Nil => Left(-1),
-    Cons(e, es) => e
-  }
 }
 
 def print_either(e:Either[i64,Bool]) : i64 {

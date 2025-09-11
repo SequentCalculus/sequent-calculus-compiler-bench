@@ -30,6 +30,11 @@ let rec drop n ls =
     | [] -> []
     | i::iss -> drop (n-1) iss
 
+let is_nil ls = 
+  match ls with 
+    | [] -> true
+    | _ -> false
+
 let is_singleton ls = 
   match ls with 
     | x::[] -> Some x 
@@ -85,11 +90,12 @@ let rec findk k km m ls =
         then findk (k+1) k (x+y) xys 
         else findk (k+1) km m xys
 
-
 let rec algc m n xs ys = 
-  match ys with
-    | [] -> fun x -> x 
-    | _ -> match is_singleton xs with
+  if is_nil ys
+  then
+    fun x -> x 
+  else
+    match is_singleton xs with
       | Some x -> 
           if in_list x ys 
           then fun t -> x::t
