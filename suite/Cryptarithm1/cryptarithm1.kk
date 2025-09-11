@@ -3,6 +3,41 @@ module cryptarithm1
 import std/os/env
 import std/num/int64
 
+fun first(l:list<list<list<int64>>>) : total int64{
+  match l {
+    Cons(Cons(Cons(i,_),_),_) -> i
+    _ -> -1.int64
+  }
+}
+
+fun append_list<a>(l1:list<a>,l2:list<a>): total list<a>{
+  match l1{
+    Nil -> l2
+    Cons(a,as_) -> Cons(a,append_list(as_,l2))
+  }
+}
+
+fun take_list<a>(n:int64,l:list<a>): total list<a>{
+  match l{
+    Nil -> Nil
+    Cons(a,as_) -> if n<=0.int64 then Nil else Cons(a,take_list(n - 1.int64,as_))
+  }
+}
+
+fun filter_list<a>(l:list<a>,f: a -> bool): total list<a>{
+  match l{
+    Nil -> Nil
+    Cons(a,as_) -> if f(a) then Cons(a,filter_list(as_,f)) else filter_list(as_,f)
+  }
+}
+
+fun map_list<a,b>(l:list<a>,f: a -> div b): div list<b>{
+  match l{
+    Nil -> Nil
+    Cons(a,as_) -> Cons(f(a),map_list(as_,f))
+  }
+}
+
 fun expand(a:int64,b:int64,c:int64,d:int64,e:int64,f:int64) : total int64{
   f + (10.int64 * e) + (100.int64 * d) + (1000.int64 * c) + (10000.int64 * b) + (100000.int64 * a)
 }
@@ -38,7 +73,7 @@ fun addj(j:int64,ls:list<int64>): total list<list<int64>>{
 fun addj_ls(p1:list<list<int64>>,j:int64): div list<list<int64>>{
   match p1 
     Nil -> Nil
-    Cons(pjs,t1) -> append(addj(j,pjs),addj_ls(t1,j))
+    Cons(pjs,t1) -> append_list(addj(j,pjs),addj_ls(t1,j))
 }
 
 fun permutations(ls:list<int64>): div list<list<int64>>{
@@ -48,16 +83,16 @@ fun permutations(ls:list<int64>): div list<list<int64>>{
 }
 
 fun test_cryptarithm_nofib(n:int64): div list<list<list<int64>>>{
-  map(enum_from_to(1.int64,n),fn(i)
-    val p0 = take(enum_from_to(0.int64,9.int64 + i),10)
-    filter(permutations(p0),fn(l) condition(l))
+  map_list(enum_from_to(1.int64,n),fn(i)
+    val p0 = take_list(10.int64,enum_from_to(0.int64,9.int64 + i))
+    filter_list(permutations(p0),fn(l) condition(l))
   )
 }
 
 fun main_loop(iters:int64,n:int64) : <console,div,exn> () {
   val res = test_cryptarithm_nofib(n)
   if iters==1.int64 then
-    println(unjust(head(unjust(head(unjust(head(res)))))))
+    println(first(res))
   else 
     main_loop(iters - 1.int64,n)
 }

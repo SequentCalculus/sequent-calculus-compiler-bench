@@ -1,4 +1,29 @@
 structure Cryptarithm1 = struct
+  fun first l = 
+    case l of 
+         ((i::_)::_)::_ => i
+       | _ => ~1
+
+  fun append l1 l2 = 
+    case l1 of 
+         nil => l2
+       | a::as_ => a::(append as_ l2)
+
+  fun take n l = 
+    case l of 
+         nil => nil
+       | i::iss => if n <= 0 then nil else i::(take (n-1) iss)
+
+  fun filter_list ls f = 
+    case ls of 
+         nil => nil
+       | x::xs => if f x then x::(filter_list xs f) else filter_list xs f
+
+  fun map_list ls f = 
+    case ls of 
+         nil => nil
+       | x::xs => (f x) :: (map_list xs f)
+
   fun expand a b c d e f =
     f + (10*e) + (100*d) + (1000*c) + (10000*b) + (100000*a)
 
@@ -27,7 +52,7 @@ structure Cryptarithm1 = struct
   fun addj_ls p1 j =
     case p1 of
          nil => nil
-       | pjs::t1 => (addj j pjs) @ (addj_ls t1 j)
+       | pjs::t1 => append (addj j pjs) (addj_ls t1 j)
 
   fun permutations ls =
     case ls of
@@ -35,17 +60,17 @@ structure Cryptarithm1 = struct
        | j::js => addj_ls (permutations js) j
 
   fun test_cryptarithm_nofib n =
-    map (fn i =>
-    let val p0 = List.take ((enum_from_to 0 (9+i)), 10)
+    map_list (enum_from_to 1 n) (fn i =>
+    let val p0 = take 10 (enum_from_to 0 (9+i))
     in
-      List.filter (fn l => condition l) (permutations p0)
-    end) (enum_from_to 1 n)
+      filter_list (permutations p0) (fn l => condition l)
+    end) 
 
   fun main_loop iters n =
   let val res = test_cryptarithm_nofib n
     in
       if iters=1
-      then print ((Int.toString (hd (hd (hd res)))) ^ "\n")
+      then print (Int.toString (first res) ^ "\n")
       else main_loop (iters-1) n
     end
 
