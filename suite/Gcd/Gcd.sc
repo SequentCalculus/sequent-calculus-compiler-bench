@@ -3,6 +3,59 @@ data Pair[A, B] { Pair(a: A, b: B) }
 data List[A] { Nil, Cons(a: A, as: List[A]) }
 codata Fun[A, B] { apply(a: A): B }
 
+def abs_int(i: i64): i64 {
+  if i < 0 {
+    -1 * i
+  } else {
+    i
+  }
+}
+
+def map_pairs(
+  f: Fun[Pair[i64, i64], Triple[i64, i64, Triple[i64, i64, i64]]],
+  l: List[Pair[i64, i64]]
+): List[Triple[i64, i64, Triple[i64, i64, i64]]] {
+  l.case[Pair[i64,i64]]{
+    Nil => Nil,
+    Cons(p,ps) => Cons(f.apply[Pair[i64,i64],Triple[i64,i64,Triple[i64,i64,i64]]](p),map_pairs(f,ps))
+  }
+}
+
+def map_triples(
+  f: Fun[Triple[i64, i64, Triple[i64, i64, i64]], i64],
+  l: List[Triple[i64, i64, Triple[i64, i64, i64]]]
+): List[i64] {
+  l.case[Triple[i64,i64,Triple[i64,i64,i64]]]{
+    Nil => Nil,
+    Cons(p,ps) => Cons(f.apply[Triple[i64,i64,Triple[i64,i64,i64]],i64](p),map_triples(f,ps))
+  }
+}
+
+def append(l1:List[Pair[i64,i64]],l2:List[Pair[i64,i64]]): List[Pair[i64,i64]] {
+  l1.case[Pair[i64,i64]]{
+    Nil => l2,
+    Cons(p,ps) => Cons(p,append(ps,l2))
+  }
+}
+
+def enum_from_to(from: i64, t: i64): List[i64] {
+  if from <= t {
+    Cons(from, enum_from_to(from + 1, t))
+  } else {
+    Nil
+  }
+}
+
+def max_(ls: List[i64]): i64 {
+  ls.case[i64] {
+    Nil => -1, //runtime error
+    Cons(x, xs) => xs.case[i64] {
+      Nil => x,
+      Cons(y, ys) => if x < y { max_(Cons(y, ys)) } else { max_(Cons(x, ys)) }
+    }
+  }
+}
+
 def quot_rem(a: i64, b: i64): Pair[i64, i64] {
   Pair(a / b, a % b)
 }
@@ -30,25 +83,6 @@ def gcd_e(x: i64, y: i64): Triple[i64, i64, i64] {
   }
 }
 
-def max_(ls: List[i64]): i64 {
-  ls.case[i64] {
-    Nil => -1, //runtime error
-    Cons(x, xs) => xs.case[i64] {
-      Nil => x,
-      Cons(y, ys) => if x < y { max_(Cons(y, ys)) } else { max_(Cons(x, ys)) }
-    }
-  }
-}
-
-def enum_from_to(from: i64, t: i64): List[i64] {
-  if from <= t {
-    Cons(from, enum_from_to(from + 1, t))
-  } else {
-    Nil
-  }
-}
-
-
 def cartesian_product(p1: List[i64], ms: List[i64]): List[Pair[i64, i64]] {
   p1.case[i64] {
     Nil => Nil,
@@ -56,46 +90,10 @@ def cartesian_product(p1: List[i64], ms: List[i64]): List[Pair[i64, i64]] {
   }
 }
 
-def append(l1:List[Pair[i64,i64]],l2:List[Pair[i64,i64]]): List[Pair[i64,i64]] {
-  l1.case[Pair[i64,i64]]{
-    Nil => l2,
-    Cons(p,ps) => Cons(p,append(ps,l2))
-  }
-}
-
 def to_pair(i:i64,l:List[i64]): List[Pair[i64,i64]]{
   l.case[i64]{
     Nil => Nil,
     Cons(j,js) => Cons(Pair(i,j),to_pair(i,js))
-  }
-}
-
-
-def map_pairs(
-  f: Fun[Pair[i64, i64], Triple[i64, i64, Triple[i64, i64, i64]]],
-  l: List[Pair[i64, i64]]
-): List[Triple[i64, i64, Triple[i64, i64, i64]]] {
-  l.case[Pair[i64,i64]]{
-    Nil => Nil,
-    Cons(p,ps) => Cons(f.apply[Pair[i64,i64],Triple[i64,i64,Triple[i64,i64,i64]]](p),map_pairs(f,ps))
-  }
-}
-
-def map_triples(
-  f: Fun[Triple[i64, i64, Triple[i64, i64, i64]], i64],
-  l: List[Triple[i64, i64, Triple[i64, i64, i64]]]
-): List[i64] {
-  l.case[Triple[i64,i64,Triple[i64,i64,i64]]]{
-    Nil => Nil,
-    Cons(p,ps) => Cons(f.apply[Triple[i64,i64,Triple[i64,i64,i64]],i64](p),map_triples(f,ps))
-  }
-}
-
-def abs_int(i: i64): i64 {
-  if i < 0 {
-    -1 * i
-  } else {
-    i
   }
 }
 

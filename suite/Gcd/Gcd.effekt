@@ -1,11 +1,14 @@
 import args
+
 def abs_int(i: Int): Int =
   if (i < 0) -1 * i else i
 
-def map[A, B](l: List[A]) { f: A => B }: List[B] = l match {
-  case Nil() => Nil()
-  case Cons(a, as) => Cons(f(a), as.map {f})
-}
+def map[A, B](l: List[A]) { f: A => B }: List[B] =
+  l match {
+    case Nil() => Nil()
+    case Cons(a, as) => Cons(f(a), as.map {f})
+  }
+
 def append[A](l1: List[A], l2: List[A]): List[A] =
   l1 match {
     case Nil() => l2
@@ -68,7 +71,7 @@ def test(d: Int): Int = {
   val ns = enum_from_to(5000, 5000 + d)
   val ms = enum_from_to(10000, 10000 + d)
   val tripls = cartesian_product(ns, ms).map { case (x, y) => (x, y, gcd_e(x, y)) }
-  val rs = tripls.map { case (d1, d2, (gg, u, v)) => abs_int((gg + u) + v) }
+  val rs = tripls.map { case (_, _, (gg, u, v)) => abs_int((gg + u) + v) }
   max_(rs)
 }
 
