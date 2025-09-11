@@ -1,5 +1,28 @@
 exception EmptyList 
 
+let abs_int i = if i < 0 then -i else i
+
+let rec map f ls = 
+  match ls with 
+    | [] -> []
+    | x::xs -> (f x) :: (map f xs)
+
+let rec append l1 l2 = 
+  match l1 with 
+    | [] -> l2
+    | p::ps -> p::append ps l2
+
+let rec max ls = 
+  match ls with 
+    | [] -> raise EmptyList
+    | x::[] -> x
+    | x::y::ys -> if x < y then max (y::ys) else max (x::ys)
+
+let rec enum_from_to from to_ = 
+  if from<=to_ then 
+    from::enum_from_to (from+1) to_
+  else []
+
 let quot_rem a b = (a/b, a mod b)
 
 let rec g (u1,u2,u3) (v1,v2,v3) = 
@@ -11,18 +34,6 @@ let rec g (u1,u2,u3) (v1,v2,v3) =
 let gcd_e x y =
   if x=0 then (y,0,1) else g (1,0,x) (0,1,y)
 
-let rec max ls = 
-  match ls with 
-    | [] -> raise EmptyList
-    | x::[] -> x
-    | x::y::ys -> if x < y then max (y::ys) else max (x::ys)
-
-
-let rec enum_from_to from to_ = 
-  if from<=to_ then 
-    from::enum_from_to (from+1) to_
-  else []
-
 let rec to_pair i l = 
   match l with
     | [] -> []
@@ -31,13 +42,13 @@ let rec to_pair i l =
 let rec cartesian_product p1 m1 = 
   match p1 with 
     | [] -> [] 
-    | h1::t1 -> List.append (to_pair h1 m1) (cartesian_product t1 m1)
+    | h1::t1 -> append (to_pair h1 m1) (cartesian_product t1 m1)
 
 let test d =
   let ns = enum_from_to 5000 (5000+d) in 
   let ms = enum_from_to 10000 (10000+d) in 
-  let tripls = List.map (fun (x,y) -> (x,y,gcd_e x y)) (cartesian_product ns ms) in 
-  let rs = List.map (fun (d1,d2,(gg,u,v)) -> abs (gg+u+v)) tripls in 
+  let tripls = map (fun (x,y) -> (x,y,gcd_e x y)) (cartesian_product ns ms) in 
+  let rs = map (fun (d1,d2,(gg,u,v)) -> abs_int (gg+u+v)) tripls in 
   max rs 
 
 let test_gcd_nofib x = test x 

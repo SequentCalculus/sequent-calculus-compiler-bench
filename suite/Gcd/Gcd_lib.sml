@@ -1,6 +1,30 @@
 structure Gcd = struct 
   exception EmptyList
 
+  fun abs_int i = if i < 0 then ~i else i
+
+  fun map_list f l = 
+    case l of 
+         nil => nil
+       | x::xs => (f x) :: (map_list f xs)
+
+  fun append l1 l2 = 
+    case l1 of 
+         nil => l2
+       | p::ps => p :: append ps l2
+
+  fun enum_from_to from to = 
+    if from<=to 
+    then from::(enum_from_to (from+1) to) 
+    else nil
+
+  fun max ls = 
+    case ls of 
+         nil => raise EmptyList
+       | x::nil => x
+       | x::y::ys => 
+           if x < y then max (y::ys) else max (x::ys)
+
   fun quot_rem a b = (a div b, a mod b)
 
   fun g (u1,u2,u3) (v1,v2,v3) = 
@@ -14,17 +38,6 @@ structure Gcd = struct
   fun gcd_e x y = 
     if x=0 then (y,0,1) else g (1,0,x) (0,1,y)
 
-  fun max ls = 
-    case ls of 
-         nil => raise EmptyList
-       | x::nil => x
-       | x::y::ys => 
-           if x < y then max (y::ys) else max (x::ys)
-
-  fun enum_from_to from to = 
-    if from<=to 
-    then from::(enum_from_to (from+1) to) 
-    else nil
 
   fun to_pair i ls = 
     case ls of 
@@ -34,16 +47,16 @@ structure Gcd = struct
   fun cartesian_product p1 ms = 
     case p1 of 
          nil => nil
-       | h1::t1 => (to_pair h1 ms) @ (cartesian_product t1 ms)
+       | h1::t1 => append (to_pair h1 ms) (cartesian_product t1 ms)
 
 
   fun test d = 
   let val ns = enum_from_to 5000 (5000+d)
     val ms = enum_from_to 10000 (10000+d)
     val tripls = 
-      map (fn (x,y) => (x,y,gcd_e x y)) (cartesian_product ns ms)
+      map_list (fn (x,y) => (x,y,gcd_e x y)) (cartesian_product ns ms)
     val rs = 
-      map (fn (d1,d2,(gg,u,v)) => abs (gg+u+v)) tripls
+      map_list (fn (d1,d2,(gg,u,v)) => abs_int (gg+u+v)) tripls
       in 
         max rs
       end

@@ -1,4 +1,35 @@
 import args
+def abs_int(i: Int): Int =
+  if (i < 0) -1 * i else i
+
+def map[A, B](l: List[A]) { f: A => B }: List[B] = l match {
+  case Nil() => Nil()
+  case Cons(a, as) => Cons(f(a), as.map {f})
+}
+def append[A](l1: List[A], l2: List[A]): List[A] =
+  l1 match {
+    case Nil() => l2
+    case Cons(p, ps) => Cons(p, append(ps, l2))
+  }
+
+def enum_from_to(from: Int, to: Int): List[Int] =
+  if (from <= to) {
+    Cons(from, enum_from_to(from + 1, to))
+  } else {
+    Nil()
+  }
+
+def max_(l: List[Int]): Int =
+  l match {
+    case Nil() => -1 // panic("Empty List")
+    case Cons(x, Nil()) => x
+    case Cons(x, Cons(y, ys)) =>
+      if (x > y) {
+        max_(Cons(x, ys))
+      } else {
+        max_(Cons(y, ys))
+      }
+  }
 
 def quot_rem(a: Int, b: Int): (Int, Int) =
   (a / b, mod(a, b))
@@ -21,23 +52,10 @@ def gcd_e(x: Int, y: Int): (Int, Int, Int) =
     g((1, 0, x), (0, 1, y))
   }
 
-def max_(l: List[Int]): Int =
+def to_pair(i: Int, l: List[Int]): List[(Int, Int)] =
   l match {
-    case Nil() => -1 // panic("Empty List")
-    case Cons(x, Nil()) => x
-    case Cons(x, Cons(y, ys)) =>
-      if (x > y) {
-        max_(Cons(x, ys))
-      } else {
-        max_(Cons(y, ys))
-      }
-  }
-
-def enum_from_to(from: Int, to: Int): List[Int] =
-  if (from <= to) {
-    Cons(from, enum_from_to(from + 1, to))
-  } else {
-    Nil()
+    case Nil() => Nil()
+    case Cons(j, js) => Cons((i, j), to_pair(i, js))
   }
 
 def cartesian_product(p1: List[Int], ms: List[Int]): List[(Int, Int)] =
@@ -45,26 +63,6 @@ def cartesian_product(p1: List[Int], ms: List[Int]): List[(Int, Int)] =
     case Nil() => Nil()
     case Cons(h1, t1) => append(to_pair(h1, ms), cartesian_product(t1, ms))
   }
-
-def append[A](l1: List[A], l2: List[A]): List[A] =
-  l1 match {
-    case Nil() => l2
-    case Cons(p, ps) => Cons(p, append(ps, l2))
-  }
-
-def map[A, B](l: List[A]) { f: A => B }: List[B] = l match {
-  case Nil() => Nil()
-  case Cons(a, as) => Cons(f(a), as.map {f})
-}
-
-def to_pair(i: Int, l: List[Int]): List[(Int, Int)] =
-  l match {
-    case Nil() => Nil()
-    case Cons(j, js) => Cons((i, j), to_pair(i, js))
-  }
-
-def abs_int(i: Int): Int =
-  if (i < 0) -1 * i else i
 
 def test(d: Int): Int = {
   val ns = enum_from_to(5000, 5000 + d)
