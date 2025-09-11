@@ -3,6 +3,18 @@ module nqueens
 import std/os/env
 import std/num/int64
 
+fun len<a>(l:list<a>): total int64{
+  match l 
+    Nil -> 0.int64
+    Cons(_,xs) -> 1.int64 + len(xs)
+}
+
+fun append_list<a>(l1:list<a>,l2:list<a>): total list<a>{
+  match l1
+    Nil -> l2
+    Cons(hd,tl) -> Cons(hd,append_list(tl,l2))
+}
+
 fun safe(x:int64,d:int64,l:list<int64>): total bool{
   match l
     Nil -> True
@@ -25,7 +37,7 @@ fun enumerate(q:int64,acc:list<list<int64>>,bs:list<list<int64>>): div list<list
     acc
   else 
     val res = check(bs,Nil,q)
-    enumerate(q - 1.int64,append(res,acc),bs)
+    enumerate(q - 1.int64,append_list(res,acc),bs)
 }
 
 fun gen(n:int64,nq:int64): div list<list<int64>>{
@@ -37,7 +49,7 @@ fun gen(n:int64,nq:int64): div list<list<int64>>{
 }
 
 fun nsoln(n:int64): div int64{
-  length(gen(n,n)).int64
+  len(gen(n,n))
 }
 
 fun main_loop(iters:int64,n:int64): <console,div> (){

@@ -1,4 +1,14 @@
 structure Nqueens = struct 
+  fun len l = 
+    case l of 
+         nil => 0
+       | _::xs => 1 + (len xs)
+
+  fun append l1 l2 = 
+    case l1 of 
+         nil => l2
+       | x::xs => x::append xs l2
+
   fun safe x d l = 
     case l of 
          nil => true
@@ -21,7 +31,7 @@ structure Nqueens = struct
     else 
       let val res = check bs nil q 
       in
-        enumerate (q-1) (res @ acc) bs
+        enumerate (q-1) (append res acc) bs
       end
 
   fun gen n nq = 
@@ -32,7 +42,7 @@ structure Nqueens = struct
         enumerate nq nil bs
       end
 
-  fun nsoln n = length (gen n n)
+  fun nsoln n = len (gen n n)
 
   fun main_loop iters n = 
   let val res = nsoln n

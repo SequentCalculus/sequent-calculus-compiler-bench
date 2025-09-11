@@ -1,3 +1,13 @@
+let rec len l = 
+  match l with
+    | [] -> 0
+    | _::xs -> 1 + (len xs)
+
+let rec append l1 l2 = 
+  match l1 with 
+    | [] -> l2
+    | hd::tl -> hd::append tl l2
+
 let rec safe x d l = 
   match l with 
     | [] -> true 
@@ -16,7 +26,7 @@ let rec enumerate q acc bs =
   if q=0 then acc 
   else 
     let res = check bs [] q in 
-    enumerate (q-1) (List.append res acc) bs 
+    enumerate (q-1) (append res acc) bs 
 
 let rec gen n nq = 
   if n=0 then []::[]
@@ -24,7 +34,7 @@ let rec gen n nq =
     let bs = gen (n-1) nq  in
     enumerate nq [] bs
 
-let nsoln n = List.length (gen n n)
+let nsoln n = len (gen n n)
 
 let rec main_loop iters n = 
   let res = nsoln n in
