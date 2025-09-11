@@ -1,17 +1,17 @@
 import args
 
-def useless(i: Int, n: Int, b: List[Int]): Int =
-  if (i < n) {
-    useless(i + 1, n, replicate(0, i, Nil()))
-  } else {
-    i
-  }
-
 def replicate(v: Int, n: Int, a: List[Int]): List[Int] =
   if (n == 0) {
     a
   } else {
     replicate(v, n - 1, Cons(v, a))
+  }
+
+def useless(i: Int, n: Int, b: List[Int]): Int =
+  if (i < n) {
+    useless(i + 1, n, replicate(0, i, Nil()))
+  } else {
+    i
   }
 
 def main_loop(iters: Int, n: Int): Unit = {
