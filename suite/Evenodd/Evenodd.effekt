@@ -1,8 +1,5 @@
 import args
 
-def not(b: Bool): Bool =
-  if (b) false else true
-
 def abs_i(n: Int): Int =
   if (n < 0) -1 * n else n
 

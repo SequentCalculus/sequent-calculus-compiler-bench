@@ -1,10 +1,13 @@
+let abs_int i = 
+  if i < 0 then -i else i
+
 let rec odd_abs n = 
   if n=0 then false else even_abs (n-1)
 and even_abs n = 
   if n=0 then true else odd_abs (n-1)
 
-let even n = even_abs (abs n)
-let odd n = odd_abs (abs n)
+let even n = even_abs (abs_int n)
+let odd n = odd_abs (abs_int n)
 
 let rec main_loop iters n =
   let res = even n && (not (odd n)) in 

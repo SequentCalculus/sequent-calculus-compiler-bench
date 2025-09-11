@@ -1,13 +1,16 @@
 structure Evenodd = struct 
 
+  fun abs_int i = 
+    if i < 0 then ~i else i
+
   fun odd_abs n = 
     if n=0 then false else even_abs (n-1)
   and even_abs n = 
   if n=0 then true else odd_abs (n-1)
 
-  fun even n = even_abs(abs n)
+  fun even n = even_abs(abs_int n)
 
-  fun odd n = odd_abs(abs n)
+  fun odd n = odd_abs(abs_int n)
 
   fun main_loop iters n = 
   let val res = (even n) andalso (not (odd n))

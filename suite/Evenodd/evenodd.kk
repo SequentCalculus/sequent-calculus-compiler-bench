@@ -3,6 +3,10 @@ module evenodd
 import std/os/env
 import std/num/int64
 
+fun abs_int(i:int64): total int64{
+  if i < 0.int64 then ~i else i
+}
+
 fun even_abs(n:int64): div bool{
   if n == 0.int64 then 
     True 
@@ -18,11 +22,11 @@ fun odd_abs(n:int64): div bool{
 }
 
 fun odd(n:int64): <div,exn> bool{
-  odd_abs(abs(n))
+  odd_abs(abs_int(n))
 }
 
 fun even(n:int64): <div,exn> bool{
-  even_abs(abs(n))
+  even_abs(abs_int(n))
 }
 
 fun main_loop(iters:int64,n:int64): <div,exn,console> (){
