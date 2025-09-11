@@ -8,12 +8,32 @@ structure Deriv = struct
                 | Num of int 
                 | X
 
+  fun map_list f ls = 
+    case ls of 
+         nil => nil
+       | a::as_ => (f a) :: (map_list f as_)
+
+  fun equal a b = 
+    case (a,b) of 
+         (Add(sums1),Add(sums2)) => equal_list sums1 sums2
+       | (Sub(subs1),Sub(subs2)) => equal_list subs1 subs2
+       | (Mul(muls1),Mul(muls2)) => equal_list muls1 muls2
+       | (Div(divs1),Div(divs2)) => equal_list divs1 divs2
+       | (Num(i),Num(j)) => i = j
+       | (X,X) => true
+       | _ => false
+  and equal_list ls1 ls2 = 
+    case (ls1,ls2) of 
+         (nil,nil) => true
+       | (e1::es1,e2::es2) => (equal e1 e2) andalso (equal_list es1 es2)
+       | _ => false
+
   fun deriv e = 
     case e of 
-         Add sums => Add (map deriv sums)
-       | Sub subs => Sub (map deriv subs)
+         Add sums => Add (map_list deriv sums)
+       | Sub subs => Sub (map_list deriv subs)
        | Mul muls => 
-           Mul [e,Add (map (fn x => Div [deriv x,x]) muls)] 
+           Mul [e,Add (map_list (fn x => Div [deriv x,x]) muls)] 
        | Div (x::y::nil) => 
            Sub [Div [deriv x, y],Div [x,Mul[y,y,deriv y]]]
        | Num i => Num 0
@@ -53,7 +73,7 @@ structure Deriv = struct
   in 
     if iters=1 
     then 
-      if expected = res 
+      if equal expected res
       then print "1\n" else print "0\n"
       else main_loop (iters-1) n m
   end

@@ -8,13 +8,32 @@ type expr =
   | Num of int 
   | X
 
+let rec map_list f l = 
+  match l with
+    | [] -> []
+    | a::as_ -> (f a)::(map_list f as_)
+
+let rec equal a b = 
+  match (a,b) with 
+    | (Add(sums1),Add(sums2)) -> equal_list sums1 sums2 
+    | (Sub(subs1),Sub(subs2)) -> equal_list subs1 subs2
+    | (Mul(muls1),Mul(muls2)) -> equal_list muls1 muls2
+    | (Div(divs1),Div(divs2)) -> equal_list divs1 divs2
+    | (Num(i),Num(j)) -> i == j
+    | (X,X) -> true
+    | _ -> false
+and equal_list ls1 ls2 = 
+  match (ls1,ls2) with
+    | ([],[]) -> true
+    | (e1::es1,e2::es2) -> equal e1 e2 && equal_list es1 es2
+    | _ -> false
 
 let rec deriv e = 
   match e with
-    | Add sums -> Add (List.map deriv sums)
-    | Sub subs -> Sub (List.map deriv subs)
+    | Add sums -> Add (map_list deriv sums)
+    | Sub subs -> Sub (map_list deriv subs)
     | Mul muls -> 
-        Mul (e::(Add (List.map (fun x -> Div (deriv x :: x :: [])) muls))::[])
+        Mul (e::(Add (map_list (fun x -> Div (deriv x :: x :: [])) muls))::[])
     | Div (x::y::[]) ->
         Sub ( 
           (Div (deriv x :: y :: []))
@@ -84,7 +103,7 @@ let rec main_loop iters n m =
   let res = deriv (mk_exp (Num n) (Num m)) in 
   let expected = mk_ans (Num n) (Num m) in 
   if iters = 1 then
-    if res=expected then print_endline "1" else print_endline "0"
+    if equal res expected then print_endline "1" else print_endline "0"
   else main_loop (iters-1) n m
 
 let main = 

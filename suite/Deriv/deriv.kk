@@ -11,6 +11,13 @@ type expr
   Num(i:int64)
   X
 
+fun map_list<a,b>(l:list<a>,f: a -> <div,exn> b): <div,exn> list<b> {
+  match l {
+    Nil -> Nil
+    Cons(a,as_) -> Cons(f(a),map_list(as_,f))
+  }
+}
+
 fun equal(e1:expr,e2:expr): div bool{
   match (e1,e2)
     (Add(sums1),Add(sums2)) -> equal_list(sums1,sums2)
@@ -32,12 +39,12 @@ fun equal_list(l1:list<expr>,l2:list<expr>): div bool{
 
 fun deriv(e:expr) : <div,exn> expr{
   match e 
-    Add(sums) -> Add(map(sums,deriv))
-    Sub(subs) -> Sub(map(subs,deriv))
+    Add(sums) -> Add(map_list(sums,deriv))
+    Sub(subs) -> Sub(map_list(subs,deriv))
     Mul(muls) -> Mul(Cons(
       e,
       Cons(
-        Add(map(muls,fn(x) Div(Cons(deriv(x), Cons(x, Nil))))),
+        Add(map_list(muls,fn(x) Div(Cons(deriv(x), Cons(x, Nil))))),
         Nil)))
     Div(Cons(x,Cons(y,Nil))) -> Sub(
       Cons(
