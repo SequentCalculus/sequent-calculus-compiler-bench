@@ -1,21 +1,38 @@
+exception EmptyList
+
+let null ls =
+  match ls with 
+    | [] -> true
+    | _ -> false
+
+let tail l = 
+  match l with
+    | [] -> raise EmptyList
+    | _::xs -> xs
+
+let rec len l = 
+  match l with
+    | [] -> 0
+    | _::xs -> 1 + (len xs)
+
 let rec list_n n = 
   if n=0 then [] else n :: (list_n (n-1))
 
 let rec shorterp x y = 
-  if List.is_empty y then false 
-  else if List.is_empty x then true 
-  else shorterp (List.tl x) (List.tl y)
+  if null y then false 
+  else if null x then true 
+  else shorterp (tail x) (tail y)
 
 let rec mas x y z = 
   if not (shorterp y x) then z 
   else 
     mas 
-      (mas (List.tl x) y z)
-      (mas (List.tl y) z x)
-      (mas (List.tl z) x y)
+      (mas (tail x) y z)
+      (mas (tail y) z x)
+      (mas (tail z) x y)
 
 let rec main_loop iters x y z = 
-  let res = List.length (mas (list_n x) (list_n y) (list_n z)) in 
+  let res = len (mas (list_n x) (list_n y) (list_n z)) in 
   if iters = 1 then 
     print_endline (string_of_int res)
   else main_loop (iters-1) x y z 
