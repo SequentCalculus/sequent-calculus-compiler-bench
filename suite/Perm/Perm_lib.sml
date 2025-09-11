@@ -12,12 +12,10 @@ structure Perm = struct
         [] => raise Fail("Empty List")
        | x::_ => x
 
-  fun len_loop l acc = 
+  fun len l = 
     case l of 
-         [] => acc
-       | _::tl => len_loop tl (acc + 1)
-
-  fun len l = len_loop l 0
+         [] => 0 
+       | _::xs => 1 + (len xs)
 
   fun rev_loop x n y = 
     if n=0 then y else 

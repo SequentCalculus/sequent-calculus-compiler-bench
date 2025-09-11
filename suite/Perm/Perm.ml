@@ -13,12 +13,10 @@ let head l =
     | [] -> raise EmptyList
     | a::_ -> a
 
-let rec len_loop l acc = 
+let rec len l = 
   match l with
-    | [] -> acc
-    | hd::tl -> len_loop tl (acc + 1)
-
-let len l = len_loop l 0
+    | [] -> 0
+    | _::xs -> 1 + (len xs)
 
 let rec rev_loop x n y = 
   if n=0 then y else 

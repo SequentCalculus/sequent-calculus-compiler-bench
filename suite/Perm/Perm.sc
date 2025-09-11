@@ -19,15 +19,12 @@ def head_i(l: List[i64]): i64 {
   }
 }
 
-def len_i_loop(l: List[i64], acc: i64): i64 {
-  l.case[i64] {
-    Nil => acc,
-    Cons(is, iss) => len_i_loop(iss, acc + 1)
-  }
-}
 
-def len_i(l: List[i64]): i64 {
-  len_i_loop(l, 0)
+def len(l: List[i64]): i64 {
+  l.case[i64]{
+    Nil => 0,
+    Cons(x,xs) => 1 + len(xs)
+  }
 }
 
 def head_l(l: List[List[i64]]): List[i64] {
@@ -83,7 +80,7 @@ def list_tail(x: List[i64], n: i64): List[i64] {
 }
 
 def permutations(x0: List[i64]): List[List[i64]] {
-  p(len_i(x0), Cons(x0, Nil), x0).case[List[List[i64]], List[i64]] {
+  p(len(x0), Cons(x0, Nil), x0).case[List[List[i64]], List[i64]] {
     Tup(final_perms, x) => final_perms
   }
 }

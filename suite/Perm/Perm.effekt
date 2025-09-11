@@ -19,13 +19,11 @@ def head[A](ls: List[A]): A =
     case Cons(a, _) => a
   }
 
-def len_i_loop(l: List[Int], acc: Int): Int =
-  l match {
-    case Nil() => acc
-    case Cons(hd, tl) => len_i_loop(tl, acc + 1)
+def len(l: List[Int]): Int = 
+  l match{
+    case Nil() => 0
+    case Cons(_,xs) => 1 + len(xs)
   }
-
-def len_i(l: List[Int]): Int = len_i_loop(l, 0)
 
 def rev_loop(x: List[Int], n: Int, y: List[Int]): List[Int] =
   if (n == 0) {
@@ -87,7 +85,7 @@ def p(n: Int, perms: List[List[Int]], x: List[Int]): (List[List[Int]], List[Int]
   }
 
 def permutations(x0: List[Int]): List[List[Int]] = {
-  val (final_perms, x) = p(len_i(x0), Cons(x0, Nil()), x0)
+  val (final_perms, x) = p(len(x0), Cons(x0, Nil()), x0)
   final_perms
 }
 

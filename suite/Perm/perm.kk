@@ -22,14 +22,10 @@ fun head_list<a>(ls:list<a>): exn a{
     Cons(x,_) -> x
 }
 
-fun len_loop<a>(ls:list<a>,acc:int64): total int64{
-  match ls
-    Nil -> acc
-    Cons(_,xs) -> len_loop(xs,acc + 1.int64)
-}
-
 fun len<a>(ls:list<a>): total int64 {
-  len_loop(ls,0.int64)
+  match ls
+    Nil -> 0.int64
+    Cons(_,xs) -> 1.int64 + len(xs)
 }
 
 fun rev_loop(x:list<int64>,n:int64,y:list<int64>): <div,exn> list<int64>{
