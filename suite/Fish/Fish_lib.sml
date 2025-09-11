@@ -12,18 +12,11 @@ structure Fish = struct
   fun nil_ a b c = nil
 
   fun tup2 (Vec(x1,y1)) (Vec(x2,y2)) = Vec4 (x1,y1,x2,y2)
-
-  fun append_rev l1 l2 = 
+  
+  fun append l1 l2 = 
     case l1 of 
          nil => l2
-       | v::vs => append_rev vs (v::l2)
-
-  fun rev l = append_rev l nil
-
-  fun append l1 l2 = 
-    case l2 of 
-         nil => l1 
-       | v::vs => append_rev (rev l1) (v::vs)
+        | x::xs => x::(append xs l2)
 
   fun map_list f l = 
     case l of 

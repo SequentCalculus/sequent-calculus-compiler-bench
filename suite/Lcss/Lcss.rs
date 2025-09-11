@@ -7,17 +7,17 @@ enum List<T> {
 }
 
 impl<T> List<T> {
-    fn rev_loop(self, acc: List<T>) -> List<T>
+    fn rev_loop(&self, acc: List<T>) -> List<T>
     where
         T: Clone,
     {
         match self {
             List::Nil => acc,
-            List::Cons(hd, tl) => Rc::unwrap_or_clone(tl).rev_loop(List::Cons(hd, Rc::new(acc))),
+            List::Cons(hd, tl) => tl.rev_loop(List::Cons(hd.clone(), Rc::new(acc))),
         }
     }
 
-    fn rev(self) -> List<T>
+    fn rev(&self) -> List<T>
     where
         T: Clone,
     {
@@ -42,18 +42,32 @@ impl<T> List<T> {
         }
     }
 
-    fn split_at(self, n: usize) -> (List<T>, List<T>)
+    fn take(&self, n: i64) -> List<T>
+    where
+        T: Clone,
+    {
+        match self {
+            List::Nil => List::Nil,
+            List::Cons(hd, tl) => {
+                if n == 0 {
+                    List::Nil
+                } else {
+                    List::Cons(hd.clone(), Rc::new(tl.take(n - 1)))
+                }
+            }
+        }
+    }
+
+    fn drop_(&self, n: i64) -> List<T>
     where
         T: Clone,
     {
         if n == 0 {
-            return (List::Nil, self);
-        }
-        match self {
-            List::Nil => panic!("Cannot split empty list"),
-            List::Cons(hd, tl) => {
-                let (fst, snd) = Rc::unwrap_or_clone(tl).split_at(n - 1);
-                (List::Cons(hd, Rc::new(fst)), snd)
+            self.clone()
+        } else {
+            match self {
+                List::Nil => List::Nil,
+                List::Cons(_, tl) => tl.drop_(n - 1),
             }
         }
     }
@@ -75,7 +89,7 @@ impl<T> List<T> {
         }
     }
 
-    fn len(&self) -> usize {
+    fn len(&self) -> i64 {
         match self {
             List::Nil => 0,
             List::Cons(_, tl) => 1 + tl.len(),
@@ -97,7 +111,7 @@ impl<T> List<T> {
         }
     }
 
-    fn contains(&self, t: &T) -> bool
+    fn in_list(&self, t: &T) -> bool
     where
         T: PartialEq,
     {
@@ -107,7 +121,7 @@ impl<T> List<T> {
                 if *t == *t1 {
                     true
                 } else {
-                    ts.contains(t)
+                    ts.in_list(t)
                 }
             }
         }
@@ -153,7 +167,7 @@ fn algb(xs: List<i64>, ys: List<i64>) -> List<i64> {
     List::Cons(0, Rc::new(algb1(xs, add_zero(ys))))
 }
 
-fn findk(k: usize, km: usize, m: i64, ls: List<(i64, i64)>) -> usize {
+fn findk(k: i64, km: i64, m: i64, ls: List<(i64, i64)>) -> i64 {
     match ls {
         List::Nil => km,
         List::Cons((x, y), xys) => {
@@ -166,11 +180,11 @@ fn findk(k: usize, km: usize, m: i64, ls: List<(i64, i64)>) -> usize {
     }
 }
 
-fn algc(m: usize, n: usize, xs: List<i64>, ys: List<i64>) -> Box<dyn Fn(List<i64>) -> List<i64>> {
+fn algc(m: i64, n: i64, xs: List<i64>, ys: List<i64>) -> Box<dyn Fn(List<i64>) -> List<i64>> {
     if ys.is_nil() {
         Box::new(|x| x)
     } else if let Some(x) = xs.is_singleton() {
-        if ys.contains(x) {
+        if ys.in_list(x) {
             let x_ = *x;
             Box::new(move |t| List::Cons(x_, Rc::new(t)))
         } else {
@@ -178,14 +192,14 @@ fn algc(m: usize, n: usize, xs: List<i64>, ys: List<i64>) -> Box<dyn Fn(List<i64
         }
     } else {
         let m2 = m / 2;
-        let (xs1, xs2) = xs.split_at(m2);
+        let xs1 = xs.take(m2);
+        let xs2 = xs.drop_(m2);
         let l1 = algb(xs1.clone(), ys.clone());
-        let l2 = algb(xs2.clone().rev(), ys.clone().rev()).rev();
+        let l2 = algb(xs2.rev(), ys.rev()).rev();
         let k = findk(0, 0, -1, l1.zip(l2));
         Box::new(move |x| {
-            let (ys_head, ys_tail) = ys.clone().split_at(k);
-            let f1 = algc(m - m2, n - k, xs2.clone(), ys_tail);
-            let f2 = algc(m2, k, xs1.clone(), ys_head);
+            let f1 = algc(m - m2, n - k, xs2.clone(), ys.drop_(k));
+            let f2 = algc(m2, k, xs1.clone(), ys.take(k));
             f2(f1(x))
         })
     }

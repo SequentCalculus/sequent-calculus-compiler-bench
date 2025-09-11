@@ -10,17 +10,13 @@ enum List<A> {
 }
 
 impl<A> List<A> {
-    fn len(&self) -> usize {
+    fn append(self, other: List<A>) -> List<A>
+    where
+        A: Clone,
+    {
         match self {
-            List::Nil => 0,
-            List::Cons(_, as_) => 1 + as_.len(),
-        }
-    }
-
-    fn head(self) -> A {
-        match self {
-            List::Nil => panic!("Cannot take head of empty list"),
-            List::Cons(a, _) => a,
+            List::Nil => other,
+            List::Cons(a, as_) => List::Cons(a, Rc::new(Rc::unwrap_or_clone(as_).append(other))),
         }
     }
 
@@ -34,41 +30,26 @@ impl<A> List<A> {
         }
     }
 
-    fn append_rev(self, other: List<A>) -> List<A>
-    where
-        A: Clone,
-    {
+    fn len(&self) -> i64 {
         match self {
-            List::Nil => other,
-            List::Cons(v, vs) => Rc::unwrap_or_clone(vs).append_rev(List::Cons(v, Rc::new(other))),
+            List::Nil => 0,
+            List::Cons(_, as_) => 1 + as_.len(),
         }
     }
 
-    fn rev(self) -> List<A>
-    where
-        A: Clone,
-    {
-        self.append_rev(List::Nil)
-    }
-
-    fn append(self, other: List<A>) -> List<A>
-    where
-        A: Clone,
-    {
-        match other {
-            List::Nil => self,
-            List::Cons(v, vs) => self.rev().append_rev(List::Cons(v, vs)),
+    fn head(self) -> A {
+        match self {
+            List::Nil => panic!("Cannot take head of empty list"),
+            List::Cons(a, _) => a,
         }
     }
 }
 
-impl List<i64> {
-    fn enum_from_to(from: i64, to: i64) -> List<i64> {
-        if from <= to {
-            List::Cons(from, Rc::new(List::enum_from_to(from + 1, to)))
-        } else {
-            List::Nil
-        }
+fn enum_from_to(from: i64, to: i64) -> List<i64> {
+    if from <= to {
+        List::Cons(from, Rc::new(enum_from_to(from + 1, to)))
+    } else {
+        List::Nil
     }
 }
 
@@ -1277,7 +1258,7 @@ fn pseudolimit(arg: Vec2, p2: Vec2, p3: Vec2) -> List<Vec4> {
 }
 
 fn test_fish_nofib(n: i64) -> List<List<Vec4>> {
-    List::enum_from_to(1, n).map(&|i: i64| {
+    enum_from_to(1, n).map(&|i: i64| {
         let n = i.min(0);
         pseudolimit(
             Vec2 { x: 0, y: 0 },

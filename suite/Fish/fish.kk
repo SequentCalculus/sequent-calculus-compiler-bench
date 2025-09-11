@@ -39,20 +39,10 @@ fun tup2(a_b:vec,c_d:vec): total vec4{
     (Vec(a,b),Vec(c,d)) -> Vec4(a,b,c,d)
 }
 
-fun append_rev<a>(l1:list<a>,l2:list<a>): total list<a> {
-  match l1
-    Nil -> l2
-    Cons(v,vs) -> append_rev(vs,Cons(v,l2))
-}
-
-fun rev<a>(l:list<a>): total list<a>{
-  append_rev(l,Nil)
-}
-
 fun append_list<a>(l1:list<a>,l2:list<a>): total list<a>{
-  match l2{
-    Nil -> l1
-    Cons(v,vs) -> append_rev(rev(l1),Cons(v,vs))
+  match l1{
+    Nil -> l2
+    Cons(a,as_) -> Cons(a,append_list(as_,l2))
   }
 }
 

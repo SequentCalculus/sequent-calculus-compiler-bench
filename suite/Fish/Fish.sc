@@ -97,21 +97,10 @@ def rot(p: Fun3[Vec, Vec, Vec, List[Vec4]], a: Vec, b: Vec, c: Vec): List[Vec4] 
   p.apply3[Vec, Vec, Vec, List[Vec4]](vec_add(a, b), c, vec_sub(Vec(0, 0), b))
 }
 
-def appendRev(l1: List[Vec4], l2: List[Vec4]): List[Vec4] {
+def append(l1: List[Vec4], l2: List[Vec4]): List[Vec4] {
   l1.case[Vec4] {
     Nil => l2,
-    Cons(v, vs) => appendRev(vs, Cons(v, l2))
-  }
-}
-
-def rev(l: List[Vec4]): List[Vec4] {
-  appendRev(l, Nil)
-}
-
-def append(l1: List[Vec4], l2: List[Vec4]): List[Vec4] {
-  l2.case[Vec4] {
-    Nil => l1,
-    Cons(v, vs) => appendRev(rev(l1), Cons(v, vs))
+    Cons(is, iss) => Cons(is,append(iss,l2))
   }
 }
 

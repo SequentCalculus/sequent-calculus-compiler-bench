@@ -29,19 +29,10 @@ def tup2(ab: Vec, cd: Vec): Vec4 =
     case (Vec(a, b), Vec(c, d)) => Vec4(a, b, c, d)
   }
 
-def append_rev(l1: List[Vec4], l2: List[Vec4]): List[Vec4] =
+def append[A](l1: List[A], l2: List[A]): List[A] =
   l1 match {
     case Nil() => l2
-    case Cons(v, vs) => append_rev(vs, Cons(v, l2))
-  }
-
-def rev(l: List[Vec4]): List[Vec4] =
-  append_rev(l, Nil())
-
-def append(l1: List[Vec4], l2: List[Vec4]): List[Vec4] =
-  l2 match {
-    case Nil() => l1
-    case Cons(v, vs) => append_rev(rev(l1), Cons(v, vs))
+    case Cons(a, as) => Cons(a, as.append(l2))
   }
 
 def map[A, B](l: List[A]) { f: A => B }: List[B] = l match {

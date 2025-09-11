@@ -92,7 +92,7 @@ impl<'a> PartialEq for Term<'a> {
 
 impl<'a> Eq for Term<'a> {}
 
-fn replicate_term<'a>(n: u64, t: Term<'a>) -> List<Term<'a>> {
+fn replicate_term<'a>(n: i64, t: Term<'a>) -> List<Term<'a>> {
     if n == 0 {
         List::Nil
     } else {
@@ -1023,11 +1023,11 @@ fn test0<'a>(xxxx: Term<'a>) -> bool {
     tautp(apply_subst(boyer_subst0(), boyer_theorem(xxxx)))
 }
 
-fn test_boyer_nofib(n: u64) -> bool {
+fn test_boyer_nofib(n: i64) -> bool {
     replicate_term(n, Term::Var(Id::X)).all_term(&|t| test0(t.clone()))
 }
 
-fn main_loop(iters: u64, n: u64) {
+fn main_loop(iters: u64, n: i64) {
     let res = test_boyer_nofib(n);
     if iters == 1 {
         if res {
@@ -1051,7 +1051,7 @@ fn main() {
     let n = args
         .next()
         .expect("Missing Argument n")
-        .parse::<u64>()
+        .parse::<i64>()
         .expect("n must be a number");
     main_loop(iters, n)
 }
