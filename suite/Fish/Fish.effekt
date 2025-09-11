@@ -19,6 +19,54 @@ def scale_vec2(a: Vec, m: Int, n: Int): Vec =
     case Vec(x, y) => Vec((x * m) / n, (y * m) / n)
   }
 
+def min(i1: Int, i2: Int): Int =
+  if (i1 < i2) i1 else i2
+
+def nil(a: Vec, b: Vec, c: Vec): List[Vec4] = Nil()
+
+def tup2(ab: Vec, cd: Vec): Vec4 =
+  (ab, cd) match {
+    case (Vec(a, b), Vec(c, d)) => Vec4(a, b, c, d)
+  }
+
+def append_rev(l1: List[Vec4], l2: List[Vec4]): List[Vec4] =
+  l1 match {
+    case Nil() => l2
+    case Cons(v, vs) => append_rev(vs, Cons(v, l2))
+  }
+
+def rev(l: List[Vec4]): List[Vec4] =
+  append_rev(l, Nil())
+
+def append(l1: List[Vec4], l2: List[Vec4]): List[Vec4] =
+  l2 match {
+    case Nil() => l1
+    case Cons(v, vs) => append_rev(rev(l1), Cons(v, vs))
+  }
+
+def map[A, B](l: List[A]) { f: A => B }: List[B] = l match {
+  case Nil() => Nil()
+  case Cons(a, as) => Cons(f(a), as.map {f})
+}
+
+def length[A](l: List[A]): Int =
+  l match {
+    case Nil() => 0
+    case Cons(_, as) => 1 + length(as)
+  }
+
+def head(l: List[List[Vec4]]): List[Vec4] =
+  l match {
+    case Nil() => Nil()
+    case Cons(l, ls) => l
+  }
+
+def enum_from_to(from: Int, to: Int): List[Int] =
+  if (from <= to) {
+    Cons(from, enum_from_to(from + 1, to))
+  } else {
+    Nil()
+  }
 
 def p_tile(): List[Vec4] = {
   val p5: List[Vec4] = Cons(Vec4(10, 4, 13, 5), Cons(Vec4(13, 5, 16, 4), Cons(Vec4(11, 0, 14, 2), Cons(Vec4(14, 2, 16, 2), Nil()))));
@@ -61,13 +109,6 @@ def s_tile(): List[Vec4] = {
   s
 }
 
-def nil(a: Vec, b: Vec, c: Vec): List[Vec4] = Nil()
-
-def tup2(ab: Vec, cd: Vec): Vec4 =
-  (ab, cd) match {
-    case (Vec(a, b), Vec(c, d)) => Vec4(a, b, c, d)
-  }
-
 def grid(m: Int, n: Int, segments: List[Vec4], a: Vec, b: Vec, c: Vec): List[Vec4] =
   segments match {
     case Nil() => Nil()
@@ -78,34 +119,6 @@ def grid(m: Int, n: Int, segments: List[Vec4], a: Vec, b: Vec, c: Vec): List[Vec
           vec_add(vec_add(a, scale_vec2(b, x1, m)), scale_vec2(c, y1, n))),
       grid(m, n, t, a, b, c))
   }
-
-def rot(a: Vec, b: Vec, c: Vec) { p: (Vec, Vec, Vec) => List[Vec4] }: List[Vec4] =
-  p(vec_add(a, b), c, vec_sub(Vec(0, 0), b))
-
-def appendRev(l1: List[Vec4], l2: List[Vec4]): List[Vec4] =
-  l1 match {
-    case Nil() => l2
-    case Cons(v, vs) => appendRev(vs, Cons(v, l2))
-  }
-
-def rev(l: List[Vec4]): List[Vec4] =
-  appendRev(l, Nil())
-
-def append(l1: List[Vec4], l2: List[Vec4]): List[Vec4] =
-  l2 match {
-    case Nil() => l1
-    case Cons(v, vs) => appendRev(rev(l1), Cons(v, vs))
-  }
-
-def beside(m: Int, n: Int, a: Vec, b: Vec, c: Vec) { p: (Vec, Vec, Vec) => List[Vec4] } { q: (Vec, Vec, Vec) => List[Vec4] } =
-  append(
-    p(a, scale_vec2(b, m, m + n), c),
-    q(vec_add(a, scale_vec2(b, m, m + n)), scale_vec2(b, n, n + m), c))
-
-def above(m: Int, n: Int, a: Vec, b: Vec, c: Vec) { p: (Vec, Vec, Vec) => List[Vec4] } { q: (Vec, Vec, Vec) => List[Vec4] }: List[Vec4] =
-  append(
-    p(vec_add(a, scale_vec2(c, n, m + n)), b, scale_vec2(c, m, n + m)),
-    q(a, b, scale_vec2(c, n, m + n)))
 
 def tile_to_grid(arg: List[Vec4], arg2: Vec, arg3: Vec, arg4: Vec): List[Vec4] =
   grid(16, 16, arg, arg2, arg3, arg4)
@@ -122,6 +135,18 @@ def r(arg: Vec, q6: Vec, q7: Vec): List[Vec4] =
 def s(arg: Vec, q6: Vec, q7: Vec): List[Vec4] =
   tile_to_grid(s_tile(), arg, q6, q7)
 
+def rot(a: Vec, b: Vec, c: Vec) { p: (Vec, Vec, Vec) => List[Vec4] }: List[Vec4] =
+  p(vec_add(a, b), c, vec_sub(Vec(0, 0), b))
+
+def beside(m: Int, n: Int, a: Vec, b: Vec, c: Vec) { p: (Vec, Vec, Vec) => List[Vec4] } { q: (Vec, Vec, Vec) => List[Vec4] } =
+  append(
+    p(a, scale_vec2(b, m, m + n), c),
+    q(vec_add(a, scale_vec2(b, m, m + n)), scale_vec2(b, n, n + m), c))
+
+def above(m: Int, n: Int, a: Vec, b: Vec, c: Vec) { p: (Vec, Vec, Vec) => List[Vec4] } { q: (Vec, Vec, Vec) => List[Vec4] }: List[Vec4] =
+  append(
+    p(vec_add(a, scale_vec2(c, n, m + n)), b, scale_vec2(c, m, n + m)),
+    q(a, b, scale_vec2(c, n, m + n)))
 
 def quartet(arg: Vec, a6: Vec, a7: Vec) { a: (Vec, Vec, Vec) => List[Vec4] } { b: (Vec, Vec, Vec) => List[Vec4] } { c: (Vec, Vec, Vec) => List[Vec4] } { d: (Vec, Vec, Vec) => List[Vec4] }: List[Vec4] =
   above(1, 1, arg, a6, a7)
@@ -158,38 +183,12 @@ def pseudocorner(arg: Vec, q6: Vec, q7: Vec): List[Vec4] =
 def pseudolimit(arg: Vec, p2: Vec, p3: Vec): List[Vec4] =
   cycle_(arg, p2, p3) { pseudocorner }
 
-def enum_from_to(from: Int, to: Int): List[Int] =
-  if (from <= to) {
-    Cons(from, enum_from_to(from + 1, to))
-  } else {
-    Nil()
-  }
-
-def min(i1: Int, i2: Int): Int =
-  if (i1 < i2) i1 else i2
-
-def map[A, B](l: List[A]) { f: A => B }: List[B] = l match {
-  case Nil() => Nil()
-  case Cons(a, as) => Cons(f(a), as.map {f})
-}
-
 def test_fish_nofib(n: Int): List[List[Vec4]] =
   enum_from_to(1, n).map { i =>
     val n = min(0, i)
     pseudolimit(Vec(0, 0), Vec(640 + n, 0), Vec(0, 640 + n))
   }
 
-def length[A](l: List[A]): Int =
-  l match {
-    case Nil() => 0
-    case Cons(_, as) => 1 + length(as)
-  }
-
-def head(l: List[List[Vec4]]): List[Vec4] =
-  l match {
-    case Nil() => Nil()
-    case Cons(l, ls) => l
-  }
 
 def main() =
   commandLineArgs() match {

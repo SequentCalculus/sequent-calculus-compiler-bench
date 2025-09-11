@@ -23,9 +23,65 @@ fun vec_sub(v1:vec,v2:vec): total vec{
     (Vec(x1,y1),Vec(x2,y2)) -> Vec(x1 - x2, y1 - y2)
 }
 
-fun scale_vec2(v:vec,a:int64,b:int64): vec{
+fun scale_vec2(v:vec,a:int64,b:int64): total vec{
   match v
     Vec(x,y) -> Vec((x * a) / b, (y * a) / b)
+}
+
+fun min_int(i1:int64,i2:int64): total int64{
+  if i1<i2 then i1 else i2
+}
+
+fun nil(_:vec,_:vec,_:vec): total list<vec4>{ Nil }
+
+fun tup2(a_b:vec,c_d:vec): total vec4{
+  match (a_b,c_d)
+    (Vec(a,b),Vec(c,d)) -> Vec4(a,b,c,d)
+}
+
+fun append_rev<a>(l1:list<a>,l2:list<a>): total list<a> {
+  match l1
+    Nil -> l2
+    Cons(v,vs) -> append_rev(vs,Cons(v,l2))
+}
+
+fun rev<a>(l:list<a>): total list<a>{
+  append_rev(l,Nil)
+}
+
+fun append_list<a>(l1:list<a>,l2:list<a>): total list<a>{
+  match l2{
+    Nil -> l1
+    Cons(v,vs) -> append_rev(rev(l1),Cons(v,vs))
+  }
+}
+
+fun map_list<a,b>(l:list<a>,f: a -> div b): div list<b>{
+  match l {
+    Nil -> Nil
+    Cons(v,vs) -> Cons(f(v),map_list(vs,f))
+  }
+}
+
+fun len<a>(l:list<a>): total int64{
+  match l {
+    Nil -> 0.int64
+    Cons(_,vs) -> 1.int64 + len(vs)
+  }
+}
+
+fun head_list<a>(l:list<a>): exn a{
+  match l {
+    Nil -> throw("Empty List")
+    Cons(v,_) -> v
+  }
+}
+
+fun enum_from_to(from:int64,to:int64): div list<int64>{
+  if from<=to then
+    Cons(from,enum_from_to(from + 1.int64,to))
+  else 
+    Nil 
 }
 
 fun p_tile(): total list<vec4> {
@@ -189,13 +245,6 @@ fun s_tile(): total list<vec4> {
   s
 }
 
-fun nil(_:vec,_:vec,_:vec): total list<vec4>{ Nil }
-
-fun tup2(a_b:vec,c_d:vec): total vec4{
-  match (a_b,c_d)
-    (Vec(a,b),Vec(c,d)) -> Vec4(a,b,c,d)
-}
-
 fun grid(m:int64, n:int64, segments:list<vec4>, a:vec,b:vec,c:vec): total list<vec4>{
   match segments
     Nil -> Nil
@@ -205,24 +254,6 @@ fun grid(m:int64, n:int64, segments:list<vec4>, a:vec,b:vec,c:vec): total list<v
         vec_add(vec_add(a,scale_vec2(b,x1,m)),scale_vec2(c, y1,n))),
         grid(m,n,t,a,b,c)
       )
-}
-
-fun rot(p:(vec,vec,vec) -> div list<vec4>,a:vec,b:vec,c:vec): div list<vec4>{
-  p(vec_add(a,b),c,vec_sub(Vec(0.int64,0.int64),b))
-}
-
-fun beside(m:int64,n:int64,p:(vec,vec,vec) -> div list<vec4>,q:(vec,vec,vec) -> div list<vec4>, a:vec,b:vec,c:vec): div list<vec4>{
-  append(
-    p(a,scale_vec2(b,m,m + n),c),
-    q(vec_add(a, scale_vec2(b, m, m + n)),scale_vec2(b, n, n + m),c)
-  )
-}
-
-fun above(m:int64,n:int64,p:(vec,vec,vec) -> div list<vec4>,q:(vec,vec,vec) -> div list<vec4>, a:vec,b:vec,c:vec): div list<vec4>{
-  append(
-    p(vec_add(a,scale_vec2(c,n,m + n)),b,scale_vec2(c,m,n + m)),
-    q(a,b,scale_vec2(c,n,m + n))
-  )
 }
 
 fun tile_to_grid(arg:list<vec4>, arg2:vec,arg3:vec,arg4:vec) : total list<vec4>{
@@ -243,6 +274,24 @@ fun r(arg:vec,q6:vec,q7:vec): total list<vec4>{
 
 fun s(arg:vec,q6:vec,q7:vec): total list<vec4>{
   tile_to_grid(s_tile(),arg,q6,q7)
+}
+
+fun rot(p:(vec,vec,vec) -> div list<vec4>,a:vec,b:vec,c:vec): div list<vec4>{
+  p(vec_add(a,b),c,vec_sub(Vec(0.int64,0.int64),b))
+}
+
+fun beside(m:int64,n:int64,p:(vec,vec,vec) -> div list<vec4>,q:(vec,vec,vec) -> div list<vec4>, a:vec,b:vec,c:vec): div list<vec4>{
+  append_list(
+    p(a,scale_vec2(b,m,m + n),c),
+    q(vec_add(a, scale_vec2(b, m, m + n)),scale_vec2(b, n, n + m),c)
+  )
+}
+
+fun above(m:int64,n:int64,p:(vec,vec,vec) -> div list<vec4>,q:(vec,vec,vec) -> div list<vec4>, a:vec,b:vec,c:vec): div list<vec4>{
+  append_list(
+    p(vec_add(a,scale_vec2(c,n,m + n)),b,scale_vec2(c,m,n + m)),
+    q(a,b,scale_vec2(c,n,m + n))
+  )
 }
 
 fun quartet(
@@ -298,24 +347,16 @@ fun pseudocorner(arg:vec,q6:vec,q7:vec): div list<vec4> {
 fun pseudolimit(arg:vec,p2:vec,p3:vec): div list<vec4>{
   cycle_(pseudocorner,arg,p2,p3)
 }
-
-fun enum_from_to(from:int64,to:int64): div list<int64>{
-  if from<=to then
-    Cons(from,enum_from_to(from + 1.int64,to))
-  else 
-    Nil 
-}
-
 fun test_fish_nofib(m:int64): div list<list<vec4>>{
-  map(enum_from_to(1.int64,m),fn(i)
-    val n = min(0.int64,i)
+  map_list(enum_from_to(1.int64,m),fn(i)
+    val n = min_int(0.int64,i)
     pseudolimit(Vec(0.int64,0.int64),Vec(640.int64 + n,0.int64),Vec(0.int64,640.int64 + n))
   )
 }
 
 fun main(): <ndet,exn,console,div> () {
   val args = get-args()
-  val n = unjust(parse-int(unjust(head(args)))).int64
+  val n = unjust(parse-int(head_list(args))).int64
   val res = test_fish_nofib(n)
-  println(length(unjust(head(res))))
+  println(len(head_list(res)))
 }

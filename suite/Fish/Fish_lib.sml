@@ -7,6 +7,44 @@ structure Fish = struct
   fun scale_vec (Vec(x,y)) (a:int) (b:int) = 
     Vec ((x*a) div b ,(y*a) div b)
 
+  fun min i1 i2 = if i1 < i2 then i1 else i2
+
+  fun nil_ a b c = nil
+
+  fun tup2 (Vec(x1,y1)) (Vec(x2,y2)) = Vec4 (x1,y1,x2,y2)
+
+  fun append_rev l1 l2 = 
+    case l1 of 
+         nil => l2
+       | v::vs => append_rev vs (v::l2)
+
+  fun rev l = append_rev l nil
+
+  fun append l1 l2 = 
+    case l2 of 
+         nil => l1 
+       | v::vs => append_rev (rev l1) (v::vs)
+
+  fun map_list f l = 
+    case l of 
+         nil => nil
+       | v::vs => (f v) :: (map_list f vs)
+
+  fun len l = 
+    case l of 
+         nil => 0
+       | _::vs => 1 + (len vs)
+
+  fun head l = 
+    case l of 
+         nil => raise Fail "Empty List"
+       | v::_ => v
+
+  fun enum_from_to from to =
+    if from <= to
+    then from::(enum_from_to (from+1) to)
+    else nil
+
   fun p_tile () = 
   let val p5 = [
   Vec4(10, 4, 13, 5),
@@ -197,10 +235,6 @@ structure Fish = struct
     s
   end
 
-  fun nil_ a b c = nil
-
-  fun tup2 (Vec(x1,y1)) (Vec(x2,y2)) = Vec4 (x1,y1,x2,y2)
-
   fun grid m n segments a b c = 
     case segments of 
          nil => nil
@@ -216,30 +250,6 @@ structure Fish = struct
            )
            )::grid m n t a b c
 
-  fun rot p a b c = p((vec_add a b), c, (vec_sub (Vec (0,0)) b))
-
-  fun beside (m:int) (n:int) p q a b c = 
-    (p (a,(scale_vec b m (m+n)),c))
-    @ 
-    (q (
-    (vec_add a (scale_vec b m (m+n))), 
-    (scale_vec b n (n+m)),
-    c
-    ))
-
-  fun above (m:int) (n:int) p q a b (c:vec) = 
-    (p (
-    (vec_add a (scale_vec c n (n+m))),
-    b,
-    (scale_vec c m (n+m))
-    )) 
-    @ 
-    (q (
-    a,
-    b, 
-    (scale_vec c n (m+n))
-    ))
-
   fun tile_to_grid arg arg2 arg3 arg4 = 
     grid 16 16 arg arg2 arg3 arg4
 
@@ -250,6 +260,28 @@ structure Fish = struct
   fun r arg q6 q7 = tile_to_grid (r_tile()) arg q6 q7
 
   fun s arg q6 q7 = tile_to_grid (s_tile()) arg q6 q7 
+
+  fun rot p a b c = p((vec_add a b), c, (vec_sub (Vec (0,0)) b))
+
+  fun beside (m:int) (n:int) p q a b c = 
+    append (p (a,(scale_vec b m (m+n)),c))
+    (q (
+    (vec_add a (scale_vec b m (m+n))), 
+    (scale_vec b n (n+m)),
+    c
+    ))
+
+  fun above (m:int) (n:int) p q a b (c:vec) = 
+    append (p (
+    (vec_add a (scale_vec c n (n+m))),
+    b,
+    (scale_vec c m (n+m))
+    ))  
+    (q (
+    a,
+    b, 
+    (scale_vec c n (m+n))
+    ))
 
   fun quartet a b c d arg a6 a7 = 
     above 1 1 
@@ -331,22 +363,17 @@ structure Fish = struct
     (fn (a,b,c) => pseudocorner a b c)
     arg p2 p3 
 
-  fun enum_from_to from to =
-    if from <= to
-    then from::(enum_from_to (from+1) to)
-    else nil
-
   fun test_fish_nofib n = 
-    map (fn i => 
-    let val n = Int.min (0,i)
+    map_list (fn i => 
+    let val n = min 0 i
   in 
     pseudolimit (Vec (0, 0)) (Vec (640+n,0)) (Vec (0,640+n))
   end) (enum_from_to 1 n)
 
   fun run args =   
-    let val n = valOf (Int.fromString (hd args))
+    let val n = valOf (Int.fromString (head args))
     val res = test_fish_nofib n 
     in 
-      print ((Int.toString (length (hd res))) ^ "\n")
+      print ((Int.toString (len (head res))) ^ "\n")
     end
 end
