@@ -7,6 +7,11 @@ structure Divrec = struct
     else 
       () :: (create_n (n-1))
 
+  fun len l = 
+    case l of 
+         nil => 0 
+       | _::xs => 1 + (len xs)
+
   fun rec_div2 l = 
     case l of 
          nil => nil
@@ -14,7 +19,7 @@ structure Divrec = struct
        | _ => raise OddNumber
 
   fun main_loop iters n = 
-  let val res = length (rec_div2 (create_n n))
+  let val res = len (rec_div2 (create_n n))
   in 
     if iters=1 
     then print ((Int.toString res) ^ "\n")

@@ -6,6 +6,11 @@ let rec create_n n =
   else 
     ()::(create_n (n - 1))
 
+let rec len l = 
+  match l with
+    | [] -> 0
+    | _::xs -> 1+(len xs)
+
 let rec rec_div2 l =
   match l with 
     | [] -> []
@@ -13,7 +18,7 @@ let rec rec_div2 l =
     | _ -> raise OddNumber
 
 let rec main_loop iters n =
-  let res = List.length (rec_div2 (create_n n)) in 
+  let res = len (rec_div2 (create_n n)) in 
   if iters = 1 then
     print_endline (string_of_int res) 
   else main_loop (iters-1) n
