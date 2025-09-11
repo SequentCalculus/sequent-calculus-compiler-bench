@@ -3,7 +3,7 @@ import args
 def null(x: List[Int]): Bool =
   x match {
     case Nil() => true
-    case Cons(x, xs) => false
+    case Cons(_, _) => false
   }
 
 def tail(x: List[Int]): List[Int] =

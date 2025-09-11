@@ -7,10 +7,10 @@ enum List<A> {
 }
 
 impl<A> List<A> {
-    fn len(&self) -> usize {
+    fn null(&self) -> bool {
         match self {
-            List::Nil => 0,
-            List::Cons(_, as_) => 1 + as_.len(),
+            List::Nil => true,
+            List::Cons(_, _) => false,
         }
     }
 
@@ -24,11 +24,27 @@ impl<A> List<A> {
         }
     }
 
+    fn tail_ref<'a>(&'a self) -> &'a List<A> {
+        match self {
+            List::Nil => panic!("Cannot take tail of empty list"),
+            List::Cons(_, as_) => &(*as_),
+        }
+    }
+
+    fn len(&self) -> usize {
+        match self {
+            List::Nil => 0,
+            List::Cons(_, as_) => 1 + as_.len(),
+        }
+    }
+
     fn shorterp<B>(&self, other: &List<B>) -> bool {
-        match (self, other) {
-            (_, List::Nil) => false,
-            (List::Nil, _) => true,
-            (List::Cons(_, as_), List::Cons(_, bs)) => as_.shorterp(&(*bs)),
+        if other.null() {
+            false
+        } else if self.null() {
+            true
+        } else {
+            self.tail_ref().shorterp(other.tail_ref())
         }
     }
 }

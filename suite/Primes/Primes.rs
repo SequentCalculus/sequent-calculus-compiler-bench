@@ -6,24 +6,24 @@ enum List<A> {
     Cons(A, Rc<List<A>>),
 }
 
-impl List<u64> {
-    fn interval(m: u64, n: u64) -> List<u64> {
+impl List<i64> {
+    fn len(&self) -> i64 {
+        match self {
+            List::Nil => 0,
+            List::Cons(_, as_) => 1 + as_.len(),
+        }
+    }
+
+    fn interval(m: i64, n: i64) -> List<i64> {
         if n < m {
             List::Nil
         } else {
             List::Cons(m, Rc::new(List::interval(m + 1, n)))
         }
     }
-
-    fn len(&self) -> usize {
-        match self {
-            List::Nil => 0,
-            List::Cons(_, as_) => 1 + as_.len(),
-        }
-    }
 }
 
-fn remove_multiples(n: u64, l: List<u64>) -> List<u64> {
+fn remove_multiples(n: i64, l: List<i64>) -> List<i64> {
     match l {
         List::Nil => List::Nil,
         List::Cons(x, xs) => {
@@ -36,7 +36,7 @@ fn remove_multiples(n: u64, l: List<u64>) -> List<u64> {
     }
 }
 
-fn sieve(l: List<u64>) -> List<u64> {
+fn sieve(l: List<i64>) -> List<i64> {
     match l {
         List::Nil => List::Nil,
         List::Cons(x, xs) => List::Cons(
@@ -46,7 +46,7 @@ fn sieve(l: List<u64>) -> List<u64> {
     }
 }
 
-fn main_loop(iters: u64, n: u64) {
+fn main_loop(iters: u64, n: i64) {
     let res = sieve(List::interval(2, n));
     if iters == 1 {
         println!("{}", res.len());
@@ -66,7 +66,7 @@ fn main() {
     let n = args
         .next()
         .expect("Missing Argument n")
-        .parse::<u64>()
+        .parse::<i64>()
         .expect("n must be a number");
     main_loop(iters, n)
 }

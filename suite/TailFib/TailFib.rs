@@ -1,4 +1,4 @@
-fn tfib(n: u64, a: u64, b: u64) -> u64 {
+fn tfib(n: i64, a: i64, b: i64) -> i64 {
     if n == 0 {
         a
     } else {
@@ -6,11 +6,11 @@ fn tfib(n: u64, a: u64, b: u64) -> u64 {
     }
 }
 
-fn fib(n: u64) -> u64 {
+fn fib(n: i64) -> i64 {
     tfib(n, 0, 1)
 }
 
-fn main_loop(iters: u64, n: u64) {
+fn main_loop(iters: u64, n: i64) {
     let res = fib(n);
     if iters == 1 {
         println!("{res}");
@@ -30,7 +30,7 @@ fn main() {
     let n = args
         .next()
         .expect("Missing Argument n")
-        .parse::<u64>()
+        .parse::<i64>()
         .expect("n must be a number");
     main_loop(iters, n)
 }

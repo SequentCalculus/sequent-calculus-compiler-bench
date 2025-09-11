@@ -9,7 +9,6 @@ def tfib(n: Int, a: Int, b: Int): Int =
 
 def fib(n: Int): Int = tfib(n, 0, 1)
 
-
 def main_loop(iters: Int, n: Int): Unit = {
   val res = fib(n)
   if (iters == 1) {

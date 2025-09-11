@@ -7,10 +7,10 @@ enum List<A> {
 }
 
 impl<A> List<A> {
-    fn len(&self) -> usize {
+    fn len(&self) -> i64 {
         match self {
             List::Nil => 0,
-            List::Cons(_, as_) => 1 + (*as_).len(),
+            List::Cons(_, as_) => 1 + as_.len(),
         }
     }
 
@@ -67,7 +67,7 @@ fn gen(n: i64, nq: i64) -> List<List<i64>> {
     }
 }
 
-fn nsoln(n: i64) -> usize {
+fn nsoln(n: i64) -> i64 {
     gen(n, n).len()
 }
 

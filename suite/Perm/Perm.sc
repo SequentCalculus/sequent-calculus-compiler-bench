@@ -4,6 +4,13 @@ data List[A] { Nil, Cons(a: A, as: List[A]) }
 data Pair[A, B] { Tup(a: A, b: B) }
 codata Fun[A, B] { apply(a: A): B }
 
+def factorial(n: i64): i64 {
+  if n == 1 {
+    1
+  } else {
+    n * factorial(n - 1)
+  }
+}
 
 def tail_i(l: List[i64]): List[i64] {
   l.case[i64] {
@@ -19,6 +26,12 @@ def head_i(l: List[i64]): i64 {
   }
 }
 
+def head_l(l: List[List[i64]]): List[i64] {
+  l.case[List[i64]] {
+    Nil => Nil, //should give a runtime error
+    Cons(is, iss) => is
+  }
+}
 
 def len(l: List[i64]): i64 {
   l.case[i64]{
@@ -27,61 +40,11 @@ def len(l: List[i64]): i64 {
   }
 }
 
-def head_l(l: List[List[i64]]): List[i64] {
-  l.case[List[i64]] {
-    Nil => Nil, //should give a runtime error
-    Cons(is, iss) => is
-  }
-}
-
-def loop_p(j: i64, perms: List[List[i64]], x: List[i64], n: i64): Pair[List[List[i64]], List[i64]] {
-  if j == 0 {
-    p(n - 1, perms, x)
-  } else {
-    let pair_perms_x: Pair[List[List[i64]], List[i64]] = p(n - 1, perms, x);
-    pair_perms_x.case[List[List[i64]], List[i64]] {
-      Tup(perms, x) =>
-        let pair_perms_x: Pair[List[List[i64]], List[i64]] = f(n, perms, x);
-        pair_perms_x.case[List[List[i64]], List[i64]] {
-          Tup(perms, x) => loop_p(j - 1, perms, x, n)
-        }
-    }
-  }
-}
-
-def p(n: i64, perms: List[List[i64]], x: List[i64]): Pair[List[List[i64]], List[i64]] {
-  if 1 < n {
-    loop_p(n - 1, perms, x, n)
-  } else {
-    Tup(perms, x)
-  }
-}
-
-def f(n: i64, perms: List[List[i64]], x: List[i64]): Pair[List[List[i64]], List[i64]] {
-  let x: List[i64] = rev_loop(x, n, list_tail(x, n));
-  let perms: List[List[i64]] = Cons(x, perms);
-  Tup(perms, x)
-}
-
 def rev_loop(x: List[i64], n: i64, y: List[i64]): List[i64] {
   if n == 0 {
     y
   } else {
     rev_loop(tail_i(x), n - 1, Cons(head_i(x), y))
-  }
-}
-
-def list_tail(x: List[i64], n: i64): List[i64] {
-  if n == 0 {
-    x
-  } else {
-    list_tail(tail_i(x), n - 1)
-  }
-}
-
-def permutations(x0: List[i64]): List[List[i64]] {
-  p(len(x0), Cons(x0, Nil), x0).case[List[List[i64]], List[i64]] {
-    Tup(final_perms, x) => final_perms
   }
 }
 
@@ -111,11 +74,46 @@ def one2n(n: i64): List[i64] {
   loop_one2n(n, Nil)
 }
 
-def factorial(n: i64): i64 {
-  if n == 1 {
-    1
+def list_tail(x: List[i64], n: i64): List[i64] {
+  if n == 0 {
+    x
   } else {
-    n * factorial(n - 1)
+    list_tail(tail_i(x), n - 1)
+  }
+}
+
+def f(n: i64, perms: List[List[i64]], x: List[i64]): Pair[List[List[i64]], List[i64]] {
+  let x: List[i64] = rev_loop(x, n, list_tail(x, n));
+  let perms: List[List[i64]] = Cons(x, perms);
+  Tup(perms, x)
+}
+
+def loop_p(j: i64, perms: List[List[i64]], x: List[i64], n: i64): Pair[List[List[i64]], List[i64]] {
+  if j == 0 {
+    p(n - 1, perms, x)
+  } else {
+    let pair_perms_x: Pair[List[List[i64]], List[i64]] = p(n - 1, perms, x);
+    pair_perms_x.case[List[List[i64]], List[i64]] {
+      Tup(perms, x) =>
+        let pair_perms_x: Pair[List[List[i64]], List[i64]] = f(n, perms, x);
+        pair_perms_x.case[List[List[i64]], List[i64]] {
+          Tup(perms, x) => loop_p(j - 1, perms, x, n)
+        }
+    }
+  }
+}
+
+def p(n: i64, perms: List[List[i64]], x: List[i64]): Pair[List[List[i64]], List[i64]] {
+  if 1 < n {
+    loop_p(n - 1, perms, x, n)
+  } else {
+    Tup(perms, x)
+  }
+}
+
+def permutations(x0: List[i64]): List[List[i64]] {
+  p(len(x0), Cons(x0, Nil), x0).case[List[List[i64]], List[i64]] {
+    Tup(final_perms, x) => final_perms
   }
 }
 

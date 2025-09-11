@@ -1,4 +1,12 @@
-use std::{ops::Add, rc::Rc};
+use std::rc::Rc;
+
+fn factorial(n: i64) -> i64 {
+    if n == 1 {
+        1
+    } else {
+        n * factorial(n - 1)
+    }
+}
 
 #[derive(Clone)]
 enum List<A> {
@@ -7,13 +15,13 @@ enum List<A> {
 }
 
 impl<A> List<A> {
-    fn tail(self) -> List<A>
+    fn tail(&self) -> List<A>
     where
         A: Clone,
     {
         match self {
             List::Nil => panic!("Cannot take tail of empty list"),
-            List::Cons(_, as_) => Rc::unwrap_or_clone(as_),
+            List::Cons(_, as_) => Rc::unwrap_or_clone(as_.clone()),
         }
     }
 
@@ -24,36 +32,26 @@ impl<A> List<A> {
         }
     }
 
-    fn len(&self) -> usize {
+    fn len(&self) -> i64 {
         match self {
             List::Nil => 0,
             List::Cons(_, as_) => 1 + as_.len(),
         }
     }
 
-    fn rev_loop(self, n: u64, y: List<A>) -> List<A>
+    fn rev_loop(self, n: i64, y: List<A>) -> List<A>
     where
         A: Clone,
     {
         if n == 0 {
             y
         } else {
-            let (hd, tl) = self.split_head();
-            tl.rev_loop(n - 1, List::Cons(hd, Rc::new(y)))
+            self.tail()
+                .rev_loop(n - 1, List::Cons(self.head(), Rc::new(y)))
         }
     }
 
-    fn split_head(self) -> (A, List<A>)
-    where
-        A: Clone,
-    {
-        match self {
-            List::Nil => panic!("Cannot take head of empty list"),
-            List::Cons(a, as_) => (a, Rc::unwrap_or_clone(as_)),
-        }
-    }
-
-    fn tail_n(self, n: u64) -> List<A>
+    fn tail_n(self, n: i64) -> List<A>
     where
         A: Clone,
     {
@@ -65,21 +63,41 @@ impl<A> List<A> {
     }
 }
 
-impl List<u64> {
-    fn one2n(n: u64) -> List<u64> {
-        List::loop_one2n(n, List::Nil)
+fn loop_sum(y: List<i64>) -> i64 {
+    match y {
+        List::Nil => 0,
+        List::Cons(i, is_) => i + loop_sum(Rc::unwrap_or_clone(is_)),
     }
+}
 
-    fn loop_one2n(n: u64, p: List<u64>) -> List<u64> {
+fn sumlists(x: List<List<i64>>) -> i64 {
+    match x {
+        List::Nil => 0,
+        List::Cons(is_, iss) => loop_sum(is_) + sumlists(Rc::unwrap_or_clone(iss)),
+    }
+}
+
+impl List<i64> {
+    fn loop_one2n(n: i64, p: List<i64>) -> List<i64> {
         if n == 0 {
             p
         } else {
             List::loop_one2n(n - 1, List::Cons(n, Rc::new(p)))
         }
     }
+
+    fn one2n(n: i64) -> List<i64> {
+        List::loop_one2n(n, List::Nil)
+    }
 }
 
-fn loop_p(j: u64, perms: List<List<u64>>, x: List<u64>, n: u64) -> (List<List<u64>>, List<u64>) {
+fn f(n: i64, perms: List<List<i64>>, x: List<i64>) -> (List<List<i64>>, List<i64>) {
+    let x = x.clone().rev_loop(n, x.tail_n(n));
+    let perms = List::Cons(x.clone(), Rc::new(perms));
+    (perms, x)
+}
+
+fn loop_p(j: i64, perms: List<List<i64>>, x: List<i64>, n: i64) -> (List<List<i64>>, List<i64>) {
     let (mut perms, mut x) = p(n - 1, perms, x);
     for _ in 0..j {
         (perms, x) = p(n - 1, perms, x);
@@ -88,7 +106,7 @@ fn loop_p(j: u64, perms: List<List<u64>>, x: List<u64>, n: u64) -> (List<List<u6
     (perms, x)
 }
 
-fn p(n: u64, perms: List<List<u64>>, x: List<u64>) -> (List<List<u64>>, List<u64>) {
+fn p(n: i64, perms: List<List<i64>>, x: List<i64>) -> (List<List<i64>>, List<i64>) {
     if 1 < n {
         loop_p(n - 1, perms, x, n)
     } else {
@@ -96,64 +114,32 @@ fn p(n: u64, perms: List<List<u64>>, x: List<u64>) -> (List<List<u64>>, List<u64
     }
 }
 
-fn f(n: u64, perms: List<List<u64>>, x: List<u64>) -> (List<List<u64>>, List<u64>) {
-    let x = x.clone().rev_loop(n, x.tail_n(n));
-    let perms = List::Cons(x.clone(), Rc::new(perms));
-    (perms, x)
-}
-
-fn permutations(x0: List<u64>) -> List<List<u64>> {
-    let (final_perms, _) = p(
-        x0.len() as u64,
-        List::Cons(x0.clone(), Rc::new(List::Nil)),
-        x0,
-    );
+fn permutations(x0: List<i64>) -> List<List<i64>> {
+    let (final_perms, _) = p(x0.len(), List::Cons(x0.clone(), Rc::new(List::Nil)), x0);
     final_perms
 }
 
-fn loop_sum(y: List<u64>) -> u64 {
-    match y {
-        List::Nil => 0,
-        List::Cons(i, is_) => i + loop_sum(Rc::unwrap_or_clone(is_)),
-    }
-}
-
-fn sumlists(x: List<List<u64>>) -> u64 {
-    match x {
-        List::Nil => 0,
-        List::Cons(is_, iss) => loop_sum(is_) + sumlists(Rc::unwrap_or_clone(iss)),
-    }
-}
-
-fn factorial(n: u64) -> u64 {
-    if n == 1 {
-        1
-    } else {
-        n * factorial(n - 1)
-    }
-}
-
-fn loop_work(m: u64, mut perms: List<List<u64>>) -> List<List<u64>> {
+fn loop_work(m: i64, mut perms: List<List<i64>>) -> List<List<i64>> {
     for _ in 0..m {
         perms = permutations(perms.head())
     }
     perms
 }
 fn run_benchmark(
-    work: &impl Fn() -> List<List<u64>>,
-    result: &impl Fn(List<List<u64>>) -> bool,
+    work: &impl Fn() -> List<List<i64>>,
+    result: &impl Fn(List<List<i64>>) -> bool,
 ) -> bool {
     result(work())
 }
 
-fn perm9(m: u64, n: u64) -> bool {
+fn perm9(m: i64, n: i64) -> bool {
     run_benchmark(
         &|| loop_work(m, permutations(List::one2n(n))),
-        &|result: List<List<u64>>| sumlists(result) == (n * (n + 1)) * (factorial(n) / 2),
+        &|result: List<List<i64>>| sumlists(result) == (n * (n + 1)) * (factorial(n) / 2),
     )
 }
 
-fn main_loop(iters: u64, m: u64, n: u64) {
+fn main_loop(iters: u64, m: i64, n: i64) {
     let res = perm9(m, n);
     if iters == 1 {
         if res {
@@ -177,12 +163,12 @@ fn main() {
     let m = args
         .next()
         .expect("Missing Argument n")
-        .parse::<u64>()
+        .parse::<i64>()
         .expect("n must be a number");
     let n = args
         .next()
         .expect("Missing Argument n")
-        .parse::<u64>()
+        .parse::<i64>()
         .expect("m must be a number");
     main_loop(iters, m, n)
 }

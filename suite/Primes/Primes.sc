@@ -1,5 +1,12 @@
 data List[A] { Nil, Cons(a: A, as: List[A]) }
 
+def len(l: List[i64]): i64 {
+  l.case[i64] {
+    Nil => 0,
+    Cons(p,ps) => 1+len(ps)
+  }
+}
+
 def interval_list(m: i64, n: i64): List[i64] {
   if n < m {
     Nil
@@ -24,14 +31,6 @@ def sieve(l: List[i64]): List[i64] {
   l.case[i64] {
     Nil => Nil,
     Cons(x, xs) => Cons(x, sieve(remove_multiples(x, xs)))
-  }
-}
-
-
-def len(l: List[i64]): i64 {
-  l.case[i64] {
-    Nil => 0,
-    Cons(p,ps) => 1+len(ps)
   }
 }
 

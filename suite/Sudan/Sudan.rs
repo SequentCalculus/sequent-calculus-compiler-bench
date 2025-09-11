@@ -1,4 +1,4 @@
-fn sudan(n: u64, x: u64, y: u64) -> u64 {
+fn sudan(n: i64, x: i64, y: i64) -> i64 {
     if n == 0 {
         x + y
     } else if y == 0 {
@@ -9,7 +9,7 @@ fn sudan(n: u64, x: u64, y: u64) -> u64 {
     }
 }
 
-fn main_loop(iters: u64, n: u64, x: u64, y: u64) {
+fn main_loop(iters: u64, n: i64, x: i64, y: i64) {
     let res = sudan(n, x, y);
     if iters == 1 {
         println!("{res}");
@@ -29,17 +29,17 @@ fn main() {
     let n = args
         .next()
         .expect("Missing Argument n")
-        .parse::<u64>()
+        .parse::<i64>()
         .expect("n must be a number");
     let x = args
         .next()
         .expect("Missing Argument x")
-        .parse::<u64>()
+        .parse::<i64>()
         .expect("x must be a number");
     let y = args
         .next()
         .expect("Missing Argument y")
-        .parse::<u64>()
+        .parse::<i64>()
         .expect("y must be a number");
 
     main_loop(iters, n, x, y)

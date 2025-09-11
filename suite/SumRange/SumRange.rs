@@ -1,4 +1,4 @@
-use std::{ops::Add, rc::Rc};
+use std::rc::Rc;
 
 #[derive(Clone)]
 enum List<A> {
@@ -6,29 +6,24 @@ enum List<A> {
     Cons(A, Rc<List<A>>),
 }
 
-impl<A> List<A> {
-    fn sum(self) -> A
-    where
-        A: Add<Output = A> + Default + Clone,
-    {
-        match self {
-            List::Nil => A::default(),
-            List::Cons(a, as_) => a + Rc::unwrap_or_clone(as_).sum(),
-        }
-    }
-}
-
-impl List<u64> {
-    fn range(i: u64, n: u64) -> List<u64> {
+impl List<i64> {
+    fn range(i: i64, n: i64) -> List<i64> {
         if i < n {
             List::Cons(i, Rc::new(List::range(i + 1, n)))
         } else {
             List::Nil
         }
     }
+
+    fn sum(self) -> i64 {
+        match self {
+            List::Nil => 0,
+            List::Cons(a, as_) => a + Rc::unwrap_or_clone(as_).sum(),
+        }
+    }
 }
 
-fn main_loop(iters: u64, n: u64) {
+fn main_loop(iters: u64, n: i64) {
     let res = List::range(0, n).sum();
     if iters == 1 {
         println!("{res}");
@@ -48,7 +43,7 @@ fn main() {
     let n = args
         .next()
         .expect("Missing Argument n")
-        .parse::<u64>()
+        .parse::<i64>()
         .expect("n must be a number");
     main_loop(iters, n)
 }
