@@ -1,4 +1,4 @@
-fn odd_abs(n: u64) -> bool {
+fn odd_abs(n: i64) -> bool {
     if n == 0 {
         false
     } else {
@@ -6,7 +6,7 @@ fn odd_abs(n: u64) -> bool {
     }
 }
 
-fn even_abs(n: u64) -> bool {
+fn even_abs(n: i64) -> bool {
     if n == 0 {
         true
     } else {
@@ -15,11 +15,11 @@ fn even_abs(n: u64) -> bool {
 }
 
 fn odd(n: i64) -> bool {
-    odd_abs(n.abs() as u64)
+    odd_abs(n.abs())
 }
 
 fn even(n: i64) -> bool {
-    even_abs(n.abs() as u64)
+    even_abs(n.abs())
 }
 
 fn main_loop(iters: u64, n: i64) {

@@ -54,15 +54,14 @@ impl<A> List<A> {
         }
     }
 
-    fn from_iterator<T>(t: T) -> List<A>
+    fn map<B>(self, f: &impl Fn(A) -> B) -> List<B>
     where
-        T: Iterator<Item = A>,
+        A: Clone,
     {
-        let mut ls = List::Nil;
-        for it in t {
-            ls = List::Cons(it, Rc::new(ls));
+        match self {
+            List::Nil => List::Nil,
+            List::Cons(a, as_) => List::Cons(f(a), Rc::new(Rc::unwrap_or_clone(as_).map(f))),
         }
-        ls
     }
 }
 
@@ -156,11 +155,8 @@ fn permutations(ls: List<i64>) -> List<List<i64>> {
 }
 
 fn test_cryptarithm_nofib(n: i64) -> List<List<List<i64>>> {
-    List::from_iterator(
-        (1..=n).map(&|i| {
-            permutations(List::enum_from_to(0, 9 + i).take(10)).filter(&|l| condition(l))
-        }),
-    )
+    List::enum_from_to(1, n)
+        .map(&|i| permutations(List::enum_from_to(0, 9 + i).take(10)).filter(&|l| condition(l)))
 }
 
 fn main_loop(iters: u64, n: i64) {
