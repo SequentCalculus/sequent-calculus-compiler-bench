@@ -41,6 +41,12 @@ def drop(n: Int, ls: List[Int]): List[Int] =
     }
   }
 
+def is_nil[A](ls: List[A]): Bool =
+  ls match {
+    case Nil() => true
+    case _ => false
+  }
+
 def is_singleton[A](ls: List[A]): Option[A] =
   ls match {
     case Cons(x, Nil()) => Some(x)
@@ -112,9 +118,10 @@ def findk(k: Int, km: Int, m: Int, ls: List[(Int, Int)]): Int =
   }
 
 def algc(m: Int, n: Int, xs: List[Int], ys: List[Int]): List[Int] => List[Int] at {} =
-  ys match {
-    case Nil() => box { x => x }
-    case _ => is_singleton(xs) match {
+  if (ys.is_nil()) {
+    box { x => x }
+  } else {
+    is_singleton(xs) match {
       case Some(x) =>
         if (in_list(x, ys)) {
           box { t => Cons(x, t) }

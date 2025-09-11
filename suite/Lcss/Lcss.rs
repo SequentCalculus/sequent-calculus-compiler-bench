@@ -7,10 +7,54 @@ enum List<T> {
 }
 
 impl<T> List<T> {
-    fn len(&self) -> usize {
+    fn rev_loop(self, acc: List<T>) -> List<T>
+    where
+        T: Clone,
+    {
         match self {
-            List::Nil => 0,
-            List::Cons(_, tl) => 1 + tl.len(),
+            List::Nil => acc,
+            List::Cons(hd, tl) => Rc::unwrap_or_clone(tl).rev_loop(List::Cons(hd, Rc::new(acc))),
+        }
+    }
+
+    fn rev(self) -> List<T>
+    where
+        T: Clone,
+    {
+        self.rev_loop(List::Nil)
+    }
+
+    fn head(self) -> T {
+        match self {
+            List::Nil => panic!("Cannot take head of empty list"),
+            List::Cons(a, _) => a,
+        }
+    }
+
+    fn map<U>(self, f: &impl Fn(T) -> U) -> List<U>
+    where
+        T: Clone,
+        U: Clone,
+    {
+        match self {
+            List::Nil => List::Nil,
+            List::Cons(hd, tl) => List::Cons(f(hd), Rc::new(Rc::unwrap_or_clone(tl).map(f))),
+        }
+    }
+
+    fn split_at(self, n: usize) -> (List<T>, List<T>)
+    where
+        T: Clone,
+    {
+        if n == 0 {
+            return (List::Nil, self);
+        }
+        match self {
+            List::Nil => panic!("Cannot split empty list"),
+            List::Cons(hd, tl) => {
+                let (fst, snd) = Rc::unwrap_or_clone(tl).split_at(n - 1);
+                (List::Cons(hd, Rc::new(fst)), snd)
+            }
         }
     }
 
@@ -31,60 +75,11 @@ impl<T> List<T> {
         }
     }
 
-    fn contains(&self, t: &T) -> bool
-    where
-        T: PartialEq,
-    {
+    fn len(&self) -> usize {
         match self {
-            List::Nil => false,
-            List::Cons(t1, ts) => {
-                if *t == *t1 {
-                    true
-                } else {
-                    ts.contains(t)
-                }
-            }
+            List::Nil => 0,
+            List::Cons(_, tl) => 1 + tl.len(),
         }
-    }
-
-    fn head(self) -> T {
-        match self {
-            List::Nil => panic!("Cannot take head of empty list"),
-            List::Cons(a, _) => a,
-        }
-    }
-
-    fn split_at(self, n: usize) -> (List<T>, List<T>)
-    where
-        T: Clone,
-    {
-        if n == 0 {
-            return (List::Nil, self);
-        }
-        match self {
-            List::Nil => panic!("Cannot split empty list"),
-            List::Cons(hd, tl) => {
-                let (fst, snd) = Rc::unwrap_or_clone(tl).split_at(n - 1);
-                (List::Cons(hd, Rc::new(fst)), snd)
-            }
-        }
-    }
-
-    fn rev_loop(self, acc: List<T>) -> List<T>
-    where
-        T: Clone,
-    {
-        match self {
-            List::Nil => acc,
-            List::Cons(hd, tl) => Rc::unwrap_or_clone(tl).rev_loop(List::Cons(hd, Rc::new(acc))),
-        }
-    }
-
-    fn rev(self) -> List<T>
-    where
-        T: Clone,
-    {
-        self.rev_loop(List::Nil)
     }
 
     fn zip<U>(self, other: List<U>) -> List<(T, U)>
@@ -102,14 +97,19 @@ impl<T> List<T> {
         }
     }
 
-    fn map<U>(self, f: &impl Fn(T) -> U) -> List<U>
+    fn contains(&self, t: &T) -> bool
     where
-        T: Clone,
-        U: Clone,
+        T: PartialEq,
     {
         match self {
-            List::Nil => List::Nil,
-            List::Cons(hd, tl) => List::Cons(f(hd), Rc::new(Rc::unwrap_or_clone(tl).map(f))),
+            List::Nil => false,
+            List::Cons(t1, ts) => {
+                if *t == *t1 {
+                    true
+                } else {
+                    ts.contains(t)
+                }
+            }
         }
     }
 }
@@ -168,29 +168,27 @@ fn findk(k: usize, km: usize, m: i64, ls: List<(i64, i64)>) -> usize {
 
 fn algc(m: usize, n: usize, xs: List<i64>, ys: List<i64>) -> Box<dyn Fn(List<i64>) -> List<i64>> {
     if ys.is_nil() {
-        return Box::new(|x| x);
-    }
-
-    if let Some(x) = xs.is_singleton() {
+        Box::new(|x| x)
+    } else if let Some(x) = xs.is_singleton() {
         if ys.contains(x) {
             let x_ = *x;
-            return Box::new(move |t| List::Cons(x_, Rc::new(t)));
+            Box::new(move |t| List::Cons(x_, Rc::new(t)))
         } else {
-            return Box::new(|x| x);
+            Box::new(|x| x)
         }
+    } else {
+        let m2 = m / 2;
+        let (xs1, xs2) = xs.split_at(m2);
+        let l1 = algb(xs1.clone(), ys.clone());
+        let l2 = algb(xs2.clone().rev(), ys.clone().rev()).rev();
+        let k = findk(0, 0, -1, l1.zip(l2));
+        Box::new(move |x| {
+            let (ys_head, ys_tail) = ys.clone().split_at(k);
+            let f1 = algc(m - m2, n - k, xs2.clone(), ys_tail);
+            let f2 = algc(m2, k, xs1.clone(), ys_head);
+            f2(f1(x))
+        })
     }
-
-    let m2 = m / 2;
-    let (xs1, xs2) = xs.split_at(m2);
-    let l1 = algb(xs1.clone(), ys.clone());
-    let l2 = algb(xs2.clone().rev(), ys.clone().rev()).rev();
-    let k = findk(0, 0, -1, l1.zip(l2));
-    Box::new(move |x| {
-        let (ys_head, ys_tail) = ys.clone().split_at(k);
-        let f1 = algc(m - m2, n - k, xs2.clone(), ys_tail);
-        let f2 = algc(m2, k, xs1.clone(), ys_head);
-        f2(f1(x))
-    })
 }
 
 fn lcss(xs: List<i64>, ys: List<i64>) -> List<i64> {
