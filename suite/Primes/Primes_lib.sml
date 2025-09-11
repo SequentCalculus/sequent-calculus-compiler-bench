@@ -1,4 +1,9 @@
 structure Primes = struct 
+  fun len l =
+    case l of 
+         nil => 0
+       | _::xs => 1 + (len xs)
+
   fun interval_list m n = 
     if n<m then nil else m::(interval_list (m+1) n)
 
@@ -19,7 +24,7 @@ structure Primes = struct
   let val res = sieve (interval_list 2 n)
   in 
     if iters=1 then 
-      print ((Int.toString (length res)) ^ "\n")
+      print ((Int.toString (len res)) ^ "\n")
     else main_loop (iters-1) n
   end
 

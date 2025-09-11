@@ -1,3 +1,8 @@
+let rec len l = 
+  match l with
+    | [] -> 0
+    | _::xs -> 1 + (len xs)
+
 let rec interval_list m n = 
   if n<m then [] 
   else m::interval_list (m+1) n
@@ -18,7 +23,7 @@ let rec sieve l =
 let rec main_loop iters n = 
   let res = sieve (interval_list 2 n) in 
   if iters=1 then 
-    print_endline (string_of_int (List.length res))
+    print_endline (string_of_int (len res))
   else main_loop (iters-1) n
 
 let main = 

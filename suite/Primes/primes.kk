@@ -3,6 +3,12 @@ module primes
 import std/os/env
 import std/num/int64
 
+fun len<a>(l:list<a>): total int64{
+  match l
+    Nil -> 0.int64
+    Cons(_,xs) -> 1.int64 + len(xs)
+}
+
 fun interval_list(m:int64,n:int64): div list<int64>{
   if n < m then
     Nil
@@ -29,7 +35,7 @@ fun sieve(l:list<int64>): div list<int64>{
 fun main_loop(iters:int64,n:int64): <console,div> (){
   val x = sieve(interval_list(2.int64,n))
   if iters == 1.int64 then
-    println(length(x))
+    println(len(x))
   else 
     main_loop(iters - 1.int64,n)
 }
