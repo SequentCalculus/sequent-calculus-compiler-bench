@@ -176,6 +176,8 @@ def all(f: Fun[i64, Bool], l: List[i64]): Bool {
       True => all(f, is),
       False => False
     }
+  }
+}
 
 def all_board(l: List[Option[Player]], f: Fun[Option[Player], Bool]): Bool {
   l.case[Option[Player]] {
@@ -184,8 +186,6 @@ def all_board(l: List[Option[Player]], f: Fun[Option[Player], Bool]): Bool {
       True => all_board(ps, f),
       False => False
     }
-  }
-}
   }
 }
 
