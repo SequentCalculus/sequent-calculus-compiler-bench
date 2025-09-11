@@ -7,16 +7,6 @@ enum List<A> {
 }
 
 impl<A> List<A> {
-    fn append(self, other: List<A>) -> List<A>
-    where
-        A: Clone,
-    {
-        match self {
-            List::Nil => other,
-            List::Cons(a, as_) => List::Cons(a, Rc::new(Rc::unwrap_or_clone(as_).append(other))),
-        }
-    }
-
     fn map<B>(self, f: &impl Fn(A) -> B) -> List<B>
     where
         A: Clone,
@@ -24,6 +14,16 @@ impl<A> List<A> {
         match self {
             List::Nil => List::Nil,
             List::Cons(a, as_) => List::Cons(f(a), Rc::new(Rc::unwrap_or_clone(as_).map(f))),
+        }
+    }
+
+    fn append(self, other: List<A>) -> List<A>
+    where
+        A: Clone,
+    {
+        match self {
+            List::Nil => other,
+            List::Cons(a, as_) => List::Cons(a, Rc::new(Rc::unwrap_or_clone(as_).append(other))),
         }
     }
 }
