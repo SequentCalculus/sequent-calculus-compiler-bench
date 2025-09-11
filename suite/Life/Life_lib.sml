@@ -1,6 +1,8 @@
 structure Life = struct
   datatype gen = MkGen of ((int * int) list)
 
+  fun pair_eq (i,j) = i = j
+
   fun fold xs acc f = 
     case xs of 
          nil => acc
@@ -15,14 +17,34 @@ structure Life = struct
 
   fun collect l f  = collect_accum nil l f
 
+  fun append l1 l2 = 
+    case l1 of 
+         nil => l2 
+       | hd::tl => hd::append tl l2
+
+  fun map_list f l = 
+    case l of 
+         nil => nil
+       | hd::tl => (f hd) :: (map_list f tl)
+
   fun exists l f =
     case l of
          nil => false
        | p::ps => (f p) orelse (exists ps f)
 
-  fun member l p = exists l (fn p1 => p=p1)
+  fun len l = 
+    case l of 
+         nil => 0
+       | _::tl => 1 + (len tl)
 
-  fun diff x y = List.filter (fn p => not (member y p) ) x
+  fun member l p = exists l pair_eq
+
+  fun filter f l = 
+    case l of 
+         nil => nil
+       | hd::tl => if f hd then hd :: (filter f tl) else filter f tl
+
+  fun diff x y = filter (fn p => not (member y p) ) x
 
   fun alive (MkGen livecoords) = livecoords
 
@@ -53,12 +75,12 @@ structure Life = struct
   fun nextgen g =
   let val living= alive g
     val isalive= fn p => member living p
-    val liveneighbors = fn p => length (List.filter isalive (neighbors p))
-    val survivors = List.filter (fn p => twoorthree (liveneighbors(p))) living
-    val newbrnlist= collect living (fn p => List.filter (fn n => not (isalive n)) (neighbors p))
+    val liveneighbors = fn p => len (filter isalive (neighbors p))
+    val survivors = filter (fn p => twoorthree (liveneighbors(p))) living
+    val newbrnlist= collect living (fn p => filter (fn n => not (isalive n)) (neighbors p))
     val newborn = occurs3 newbrnlist
   in
-    MkGen (survivors @ newborn)
+    MkGen (append survivors newborn)
   end
 
   fun nthgen g i =
@@ -80,7 +102,7 @@ structure Life = struct
 
   fun at_pos coordlist (fst2,snd2) =
   let val move = fn (fst1,snd1) => (fst1+fst2,snd1+snd2)
-  in map move coordlist end
+  in map_list move coordlist end
 
   val center_line = 5
 
@@ -98,12 +120,10 @@ structure Life = struct
 
   fun non_steady () =
     MkGen (
-    at_pos (bail()) (1,center_line)
-    @
-    at_pos (bail()) (21,center_line)
-    @
-    at_pos (shuttle()) (6,(center_line - 2))
-    )
+    append (append 
+      (at_pos (bail()) (1,center_line)) 
+      (at_pos (bail()) (21,center_line)))
+    (at_pos (shuttle()) (6,(center_line - 2))))
 
   fun go_gun steps =
     nthgen (gun()) steps
@@ -114,7 +134,7 @@ structure Life = struct
   fun go_loop iters steps go =
     let val res = go steps
     in
-      if iters=1 then length (alive res)
+      if iters=1 then len (alive res)
       else
         go_loop (iters-1) steps go
     end

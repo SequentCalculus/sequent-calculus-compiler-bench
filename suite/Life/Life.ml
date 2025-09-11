@@ -1,6 +1,6 @@
 type gen = MkGen of (int*int) list
 
-let member l p = List.exists (fun p1 -> p=p1) l
+let pair_eq (i1,i2) = i1==i2
 
 let rec fold_list xs acc f = 
   match xs with
@@ -9,6 +9,7 @@ let rec fold_list xs acc f =
 
 let revonto x y = fold_list x y (fun t -> fun h -> h::t)
 
+
 let rec collect_accum sofar xs f =
   match xs with
     | [] -> sofar
@@ -16,7 +17,34 @@ let rec collect_accum sofar xs f =
 
 let collect l f = collect_accum [] l f
 
-let diff x y = List.filter (fun p -> not (member y p)) x
+let rec append l1 l2 = 
+  match l1 with 
+    | [] -> l2 
+    | hd::tl -> hd::append tl l2
+
+let rec map f l = 
+  match l with 
+    | [] -> []
+    | hd::tl -> (f hd) :: (map f tl)
+
+let rec exists f l = 
+  match l with
+    | [] -> false
+    | hd::tl -> if (f hd) then true else exists f tl
+
+let rec len l = 
+  match l with 
+    | [] -> 0
+    | _::tl -> 1 + (len tl)
+
+let member l p = exists pair_eq l
+
+let rec filter f l = 
+  match l with 
+    | [] -> []
+    | hd::tl -> if f hd then hd::(filter f tl) else filter f tl
+
+let diff x y = filter (fun p -> not (member y p)) x
 
 let alive (MkGen livecoords) = livecoords
 
@@ -46,11 +74,11 @@ let occurs3 l = collect_neighbors [] [] [] [] l
 let nextgen g =
   let living = alive g in
   let isalive = fun p -> member living p in
-  let liveneighbors = fun p -> List.length (List.filter isalive (neighbors p)) in
-  let survivors = List.filter (fun p -> twoorthree (liveneighbors p)) living in
-  let newbrnlist = collect living (fun p -> List.filter (fun n -> not (isalive n)) (neighbors p)) in
+  let liveneighbors = fun p -> len (filter isalive (neighbors p)) in
+  let survivors = filter (fun p -> twoorthree (liveneighbors p)) living in
+  let newbrnlist = collect living (fun p -> filter (fun n -> not (isalive n)) (neighbors p)) in
   let newborn = occurs3 newbrnlist in
-  MkGen (List.append survivors newborn)
+  MkGen (append survivors newborn)
 
 let rec nthgen g i =
   if i=0 then g
@@ -69,7 +97,7 @@ let gun =
 
 let at_pos coordlist (fst2,snd2) =
   let move = fun (fst1,snd1) -> (fst1+fst2,snd1+snd2)
-  in List.map move coordlist
+  in map move coordlist
 
 let center_line = 5
 
@@ -84,7 +112,7 @@ let shuttle =
   (0,3) :: r1
 
 let non_steady = MkGen (
-  List.append (List.append
+  append (append
     (at_pos bail (1,center_line))
     (at_pos bail (21,center_line)))
     (at_pos shuttle (6,(center_line - 2)))
@@ -98,7 +126,7 @@ let go_shuttle steps =
 
 let rec go_loop iters steps go =
   let res = go steps in
-  if iters=1 then List.length (alive res)
+  if iters=1 then len (alive res)
   else
     go_loop (iters-1) steps go
 
