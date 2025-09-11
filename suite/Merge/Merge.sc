@@ -1,6 +1,13 @@
 data List[A] { Nil, Cons(a: A, as: List[A]) }
 codata Fun[A, B] { apply(a: A): B }
 
+def head(l:List[i64]) : i64 {
+  l.case[i64]{
+    Nil => -1,
+    Cons(x,xs) => x
+  }
+}
+
 def rev_loop(l: List[i64], acc: List[i64]): List[i64] {
   l.case[i64] {
     Nil => acc,
@@ -40,13 +47,6 @@ def merge(l1: List[i64], l2: List[i64]): List[i64] {
           Cons(x2, merge(l1, xs2))
         }
     },
-  }
-}
-
-def head(l:List[i64]) : i64 {
-  l.case[i64]{
-    Nil => -1,
-    Cons(x,xs) => x
   }
 }
 

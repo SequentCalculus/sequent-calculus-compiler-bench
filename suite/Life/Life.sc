@@ -43,16 +43,8 @@ def fold(
   }
 }
 
-def accumulate(
-  a: List[Pair[i64, i64]],
-  xs: List[Pair[i64, i64]],
-  f: Fun2[List[Pair[i64, i64]], Pair[i64, i64], List[Pair[i64, i64]]]
-): List[Pair[i64, i64]] {
-  fold(a, xs, f)
-}
-
 def revonto(x: List[Pair[i64, i64]], y: List[Pair[i64, i64]]): List[Pair[i64, i64]] {
-  accumulate(x, y, new { apply2(t, h) => Cons(h, t) })
+  fold(x, y, new { apply2(t, h) => Cons(h, t) })
 }
 
 def collect_accum(sofar: List[Pair[i64, i64]], xs: List[Pair[i64, i64]], f: Fun[Pair[i64, i64], List[Pair[i64, i64]]]): List[Pair[i64, i64]] {

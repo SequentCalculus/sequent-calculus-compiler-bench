@@ -153,7 +153,8 @@ let rec all_moves_rec n board acc =
         | Some p -> all_moves_rec (n+1) more acc
         | None -> all_moves_rec (n+1) more (n::acc))
 
-let all_moves board = all_moves_rec 0 board [] 
+let all_moves board = all_moves_rec 0 board []
+
 let successors board p = 
   map (fun i -> move_to board p i) (all_moves board)
 

@@ -6,19 +6,26 @@ enum List<A> {
     Cons(A, Rc<List<A>>),
 }
 
-impl List<u64> {
-    fn rev_loop(self, acc: List<u64>) -> List<u64> {
+impl List<i64> {
+    fn head(self) -> i64 {
+        match self {
+            List::Nil => panic!("Cannot take head of empty list"),
+            List::Cons(x, _) => x,
+        }
+    }
+
+    fn rev_loop(self, acc: List<i64>) -> List<i64> {
         match self {
             List::Nil => acc,
             List::Cons(p, ps) => Rc::unwrap_or_clone(ps).rev_loop(List::Cons(p, Rc::new(acc))),
         }
     }
 
-    fn rev(self) -> List<u64> {
+    fn rev(self) -> List<i64> {
         self.rev_loop(List::Nil)
     }
 
-    fn tabulate_loop(n: u64, len: u64, acc: List<u64>, f: &impl Fn(u64) -> u64) -> List<u64> {
+    fn tabulate_loop(n: i64, len: i64, acc: List<i64>, f: &impl Fn(i64) -> i64) -> List<i64> {
         if n < len {
             List::tabulate_loop(n + 1, len, List::Cons(f(n), Rc::new(acc)), f)
         } else {
@@ -26,11 +33,11 @@ impl List<u64> {
         }
     }
 
-    fn tabulate(n: u64, f: &impl Fn(u64) -> u64) -> List<u64> {
+    fn tabulate(n: i64, f: &impl Fn(i64) -> i64) -> List<i64> {
         List::tabulate_loop(0, n, List::Nil, f)
     }
 
-    fn merge(self, other: List<u64>) -> List<u64> {
+    fn merge(self, other: List<i64>) -> List<i64> {
         match self {
             List::Nil => other,
             List::Cons(x1, xs1) => match other {
@@ -51,16 +58,9 @@ impl List<u64> {
             },
         }
     }
-
-    fn head(self) -> u64 {
-        match self {
-            List::Nil => panic!("Cannot take head of empty list"),
-            List::Cons(x, _) => x,
-        }
-    }
 }
 
-fn main_loop(iters: u64, l1: List<u64>, l2: List<u64>) {
+fn main_loop(iters: u64, l1: List<i64>, l2: List<i64>) {
     let res = l1.clone().merge(l2.clone());
     if iters == 1 {
         println!("{}", res.head());
@@ -80,7 +80,7 @@ fn main() {
     let n = args
         .next()
         .expect("Missing Argument n")
-        .parse::<u64>()
+        .parse::<i64>()
         .expect("n must be a number");
     let l1 = List::tabulate(n, &|x| 2 * x);
     let l2 = List::tabulate(n, &|x| (2 * x) + 1);

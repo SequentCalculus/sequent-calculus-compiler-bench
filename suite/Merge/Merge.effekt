@@ -6,7 +6,6 @@ def head(l: List[Int]): Int =
     case Cons(x, xs) => x
   }
 
-
 def rev_loop(l: List[Int], acc: List[Int]): List[Int] =
   l match {
     case Nil() => acc

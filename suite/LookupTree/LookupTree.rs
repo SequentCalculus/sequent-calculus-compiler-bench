@@ -10,9 +10,9 @@ enum Tree<A> {
 }
 
 impl<A> Tree<A> {
-    fn create(i: u64, n: u64) -> Tree<u64> {
+    fn create(i: i64, n: i64) -> Tree<i64> {
         if i < n {
-            let t = Rc::new(Tree::<u64>::create(i + 1, n));
+            let t = Rc::new(Tree::<i64>::create(i + 1, n));
             Tree::Node {
                 left: t.clone(),
                 _right: t,
@@ -33,8 +33,8 @@ impl<A> Tree<A> {
     }
 }
 
-fn main_loop(iters: u64, n: u64) {
-    let res = Tree::<u64>::create(0, n).lookup();
+fn main_loop(iters: u64, n: i64) {
+    let res = Tree::<i64>::create(0, n).lookup();
     if iters == 1 {
         println!("{res}");
     } else {
@@ -53,7 +53,7 @@ fn main() {
     let n = args
         .next()
         .expect("Missing Argument n")
-        .parse::<u64>()
+        .parse::<i64>()
         .expect("n must be a number");
     main_loop(iters, n)
 }

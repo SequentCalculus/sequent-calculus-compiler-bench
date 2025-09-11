@@ -74,7 +74,7 @@ impl<T> List<T> {
         }
     }
 
-    fn len(&self) -> usize {
+    fn len(&self) -> i64 {
         match self {
             List::Nil => 0,
             List::Cons(_, tl) => 1 + tl.len(),
@@ -115,6 +115,7 @@ impl<T> List<T> {
 struct Gen {
     coordslist: List<(i64, i64)>,
 }
+
 impl Gen {
     fn alive(self) -> List<(i64, i64)> {
         self.coordslist
@@ -138,19 +139,11 @@ impl Gen {
         }
     }
 
-    fn nth(self, i: u64) -> Gen {
+    fn nth(self, i: i64) -> Gen {
         if i == 0 {
             self
         } else {
             self.next().nth(i - 1)
-        }
-    }
-
-    fn non_steady() -> Gen {
-        Gen {
-            coordslist: at_pos(bail(), (1, CENTER_LINE))
-                .append(at_pos(bail(), (21, CENTER_LINE)))
-                .append(at_pos(shuttle(), (6, CENTER_LINE - 2))),
         }
     }
 }
@@ -180,7 +173,7 @@ fn neighbors((fst, snd): (i64, i64)) -> List<(i64, i64)> {
     )
 }
 
-fn twoorthree(n: usize) -> bool {
+fn twoorthree(n: i64) -> bool {
     n == 2 || n == 3
 }
 
@@ -394,15 +387,23 @@ fn shuttle() -> List<(i64, i64)> {
     List::Cons((0, 3), Rc::new(r1))
 }
 
-fn go_gun() -> Box<dyn Fn(u64) -> Gen> {
+fn non_steady() -> Gen {
+    Gen {
+        coordslist: at_pos(bail(), (1, CENTER_LINE))
+            .append(at_pos(bail(), (21, CENTER_LINE)))
+            .append(at_pos(shuttle(), (6, CENTER_LINE - 2))),
+    }
+}
+
+fn go_gun() -> Box<dyn Fn(i64) -> Gen> {
     Box::new(|steps| gun().nth(steps))
 }
 
-fn go_shuttle() -> Box<dyn Fn(u64) -> Gen> {
-    Box::new(|steps| Gen::non_steady().nth(steps))
+fn go_shuttle() -> Box<dyn Fn(i64) -> Gen> {
+    Box::new(|steps| non_steady().nth(steps))
 }
 
-fn go_loop(iters: u64, steps: u64, go: Box<dyn Fn(u64) -> Gen>) -> i64 {
+fn go_loop(iters: u64, steps: i64, go: Box<dyn Fn(i64) -> Gen>) -> i64 {
     let res = go(steps);
     if iters == 1 {
         res.alive().len() as i64
@@ -422,7 +423,7 @@ fn main() {
     let steps = args
         .next()
         .expect("Missing Argument steps")
-        .parse::<u64>()
+        .parse::<i64>()
         .expect("steps must be a number");
     let gun_res = go_loop(iters, steps, go_gun());
     let shuttle_res = go_loop(iters, steps, go_shuttle());

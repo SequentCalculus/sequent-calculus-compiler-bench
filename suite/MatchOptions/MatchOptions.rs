@@ -9,8 +9,8 @@ fn attempt(i: i64) -> Option<i64> {
     }
 }
 
-fn main_loop(iters: u64, n: u64) {
-    let res: i64 = match attempt(n as i64) {
+fn main_loop(iters: u64, n: i64) {
+    let res: i64 = match attempt(n) {
         None => -1,
         Some(x) => x,
     };
@@ -32,7 +32,7 @@ fn main() {
     let n = args
         .next()
         .expect("Missing Argument n")
-        .parse::<u64>()
+        .parse::<i64>()
         .expect("n must be a number");
     main_loop(iters, n)
 }

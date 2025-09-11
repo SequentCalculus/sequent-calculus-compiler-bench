@@ -122,6 +122,13 @@ def map_tree_i(
   }
 }
 
+def fold_i(f: Fun2[i64, i64, i64], start: i64, l: List[i64]): i64 {
+  l.case[i64] {
+    Nil => start,
+    Cons(i, is) => fold_i(f, f.apply2[i64, i64, i64](start, i), is)
+  }
+}
+
 def tabulate_loop(n: i64, len: i64, f: Fun[Unit, Option[Player]]): List[Option[Player]] {
   if n == len {
     Nil
@@ -135,13 +142,6 @@ def tabulate(len: i64, f: Fun[Unit, Option[Player]]): List[Option[Player]] {
     Nil // should raise a runtime error 
   } else {
     tabulate_loop(0, len, f)
-  }
-}
-
-def push(l: List[i64], i: i64): List[i64] {
-  l.case[i64]{
-    Nil => Cons(i, Nil),
-    Cons(i1, is) => Cons(i1, push(is, i))
   }
 }
 
@@ -169,21 +169,13 @@ def exists(f: Fun[List[i64], Bool], l: List[List[i64]]): Bool {
   }
 }
 
-def all_i(f: Fun[i64, Bool], l: List[i64]): Bool { 
+def all(f: Fun[i64, Bool], l: List[i64]): Bool { 
   l.case[i64] {
     Nil => True,
     Cons(i, is) => f.apply[i64, Bool](i).case {
-      True => all_i(f, is),
+      True => all(f, is),
       False => False
     }
-  }
-}
-
-// Actual functions
-
-def emptyBoard(): List[Option[Player]] {
-  tabulate(9, new { apply(u) => None })
-}
 
 def all_board(l: List[Option[Player]], f: Fun[Option[Player], Bool]): Bool {
   l.case[Option[Player]] {
@@ -194,41 +186,28 @@ def all_board(l: List[Option[Player]], f: Fun[Option[Player], Bool]): Bool {
     }
   }
 }
+  }
+}
+
+// Actual functions
+
+def emptyBoard(): List[Option[Player]] {
+  tabulate(9, new { apply(u) => None })
+}
 
 def is_full(board: List[Option[Player]]): Bool {
   all_board(board, new { apply(p) => is_some(p) })
 }
 
-def is_cat(board: List[Option[Player]]): Bool {
-  is_full(board).case {
-    True => not(is_win_for(board, X)).case {
-      True => not(is_win_for(board, O)),
-      False => False
-    },
-    False => False
+def player_occupies(p: Player, board: List[Option[Player]], i: i64): Bool { 
+  find(board, i).case[Player] {
+    Some(p0) => player_eq(p, p0),
+    None => False 
   }
 }
 
-def fold_i(f: Fun2[i64, i64, i64], start: i64, l: List[i64]): i64 {
-  l.case[i64] {
-    Nil => start,
-    Cons(i, is) => fold_i(f, f.apply2[i64, i64, i64](start, i), is)
-  }
-}
-
-def list_extreme(f: Fun2[i64, i64, i64], l: List[i64]): i64 {
-  l.case[i64] {
-    Nil => 0, // should give a runtime error 
-    Cons(i, is) => fold_i(f, i, is)
-  }
-}
-
-def listmax(l: List[i64]): i64 {
-  list_extreme(new { apply2(a, b) => if b < a { a } else { b } }, l)
-}
-
-def listmin(l: List[i64]): i64 { 
-  list_extreme(new { apply2(a, b) => if a < b { a } else { b } }, l)
+def has_trip(board: List[Option[Player]], p: Player, l: List[i64]): Bool {
+  all(new { apply(i) => player_occupies(p, board, i) }, l)
 }
 
 def rows(): List[List[i64]] {
@@ -249,19 +228,6 @@ def diags(): List[List[i64]] {
   Cons(Cons(0, Cons(4, Cons(8, Nil))), 
     Cons(Cons(2, Cons(4, Cons(6, Nil))),
       Nil))
-}
-
-def is_occupied(board: List[Option[Player]], i: i64): Bool { is_some(nth(board, i)) }
-
-def player_occupies(p: Player, board: List[Option[Player]], i: i64): Bool { 
-  find(board, i).case[Player] {
-    Some(p0) => player_eq(p, p0),
-    None => False 
-  }
-}
-
-def has_trip(board: List[Option[Player]], p: Player, l: List[i64]): Bool {
-  all_i(new { apply(i) => player_occupies(p, board, i) }, l)
 }
 
 def has_row(board: List[Option[Player]], p: Player): Bool {
@@ -285,6 +251,33 @@ def is_win_for(board: List[Option[Player]], p: Player): Bool {
     }
   }
 }
+
+def is_cat(board: List[Option[Player]]): Bool {
+  is_full(board).case {
+    True => not(is_win_for(board, X)).case {
+      True => not(is_win_for(board, O)),
+      False => False
+    },
+    False => False
+  }
+}
+
+def list_extreme(f: Fun2[i64, i64, i64], l: List[i64]): i64 {
+  l.case[i64] {
+    Nil => 0, // should give a runtime error 
+    Cons(i, is) => fold_i(f, i, is)
+  }
+}
+
+def listmax(l: List[i64]): i64 {
+  list_extreme(new { apply2(a, b) => if b < a { a } else { b } }, l)
+}
+
+def listmin(l: List[i64]): i64 { 
+  list_extreme(new { apply2(a, b) => if a < b { a } else { b } }, l)
+}
+
+def is_occupied(board: List[Option[Player]], i: i64): Bool { is_some(nth(board, i)) }
 
 def is_win(board: List[Option[Player]]): Bool {
   is_win_for(board, X).case {
