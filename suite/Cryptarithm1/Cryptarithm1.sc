@@ -10,8 +10,60 @@ def eq(i1: i64, i2: i64): Bool {
   }
 }
 
+def first(l: List[List[List[i64]]]): i64 {
+  l.case[List[List[i64]]] {
+    Nil => -1,
+    Cons(i, is) => i.case[List[i64]] {
+      Nil => -1,
+      Cons(i, is) => i.case[i64] {
+        Nil => -1,
+        Cons(i, is) => i
+      }
+    }
+  }
+}
+
+def append(l1:List[List[i64]],l2:List[List[i64]]): List[List[i64]]{
+  l1.case[List[i64]]{
+    Nil => l2,
+    Cons(l,ls) => Cons(l,append(ls,l2))
+  }
+}
+
+def take(n: i64, l: List[i64]): List[i64] {
+  l.case[i64] {
+    Nil => Nil,
+    Cons(i, is) => if n <= 0 { Nil } else { Cons(i, take(n - 1, is)) }
+  }
+}
+
+def filter(f: Fun[List[i64], Bool], l: List[List[i64]]): List[List[i64]] {
+  l.case[List[i64]] {
+    Nil => Nil,
+    Cons(l, ls) => f.apply[List[i64], Bool](l).case {
+      True => Cons(l, filter(f, ls)),
+      False => filter(f, ls)
+    }
+  }
+}
+
+def map(f: Fun[i64, List[List[i64]]], l: List[i64]): List[List[List[i64]]] {
+  l.case[i64] {
+    Nil => Nil,
+    Cons(i, is) => Cons(f.apply[i64, List[List[i64]]](i), map(f, is))
+  }
+}
+
 def expand(a: i64, b: i64, c: i64, d: i64, e: i64, f: i64): i64 {
   (((((f + (e * 10)) + (d * 100)) + (c * 1000)) + (b * 10000)) + (a * 100000))
+}
+
+def enum_from_to(from: i64, to: i64): List[i64] {
+  if to >= from {
+    Cons(from, enum_from_to(from + 1, to))
+  } else {
+    Nil
+  }
 }
 
 def condition(thirywelvn: List[i64]): Bool {
@@ -65,13 +117,6 @@ def addj(j: i64, ls: List[i64]): List[List[i64]] {
   }
 }
 
-def append(l1:List[List[i64]],l2:List[List[i64]]): List[List[i64]]{
-  l1.case[List[i64]]{
-    Nil => l2,
-    Cons(l,ls) => Cons(l,append(ls,l2))
-  }
-}
-
 def addj_ls(p1: List[List[i64]], j: i64): List[List[i64]] {
   p1.case[List[i64]] {
     Nil => Nil,
@@ -90,38 +135,6 @@ def permutations(ls: List[i64]): List[List[i64]] {
   }
 }
 
-def enum_from_to(from: i64, to: i64): List[i64] {
-  if to >= from {
-    Cons(from, enum_from_to(from + 1, to))
-  } else {
-    Nil
-  }
-}
-
-def take(n: i64, l: List[i64]): List[i64] {
-  l.case[i64] {
-    Nil => Nil,
-    Cons(i, is) => if n <= 0 { Nil } else { Cons(i, take(n - 1, is)) }
-  }
-}
-
-def filter(f: Fun[List[i64], Bool], l: List[List[i64]]): List[List[i64]] {
-  l.case[List[i64]] {
-    Nil => Nil,
-    Cons(l, ls) => f.apply[List[i64], Bool](l).case {
-      True => Cons(l, filter(f, ls)),
-      False => filter(f, ls)
-    }
-  }
-}
-
-def map(f: Fun[i64, List[List[i64]]], l: List[i64]): List[List[List[i64]]] {
-  l.case[i64] {
-    Nil => Nil,
-    Cons(i, is) => Cons(f.apply[i64, List[List[i64]]](i), map(f, is))
-  }
-}
-
 def test_cryptarithm_nofib(n: i64): List[List[List[i64]]] {
   map(
     new { apply(i) =>
@@ -130,19 +143,6 @@ def test_cryptarithm_nofib(n: i64): List[List[List[i64]]] {
     },
     enum_from_to(1, n)
   )
-}
-
-def first(l: List[List[List[i64]]]): i64 {
-  l.case[List[List[i64]]] {
-    Nil => -1,
-    Cons(i, is) => i.case[List[i64]] {
-      Nil => -1,
-      Cons(i, is) => i.case[i64] {
-        Nil => -1,
-        Cons(i, is) => i
-      }
-    }
-  }
 }
 
 def main_loop(iters: i64, n: i64): i64 {

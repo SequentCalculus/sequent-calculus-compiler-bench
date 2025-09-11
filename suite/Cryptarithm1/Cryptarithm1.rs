@@ -7,31 +7,10 @@ enum List<A> {
 }
 
 impl<A> List<A> {
-    fn len(&self) -> usize {
-        match self {
-            List::Nil => 0,
-            List::Cons(_, as_) => 1 + as_.len(),
-        }
-    }
-
     fn head(self) -> A {
         match self {
             List::Nil => panic!("Cannot take head of empty list"),
             List::Cons(a, _) => a,
-        }
-    }
-
-    fn take(self, n: usize) -> List<A>
-    where
-        A: Clone,
-    {
-        if n == 0 {
-            return List::Nil;
-        }
-
-        match self {
-            List::Nil => panic!("Cannot take from empty list"),
-            List::Cons(a, as_) => List::Cons(a, Rc::new(Rc::unwrap_or_clone(as_).take(n - 1))),
         }
     }
 
@@ -42,6 +21,20 @@ impl<A> List<A> {
         match self {
             List::Nil => other,
             List::Cons(a, as_) => List::Cons(a, Rc::new(Rc::unwrap_or_clone(as_).append(other))),
+        }
+    }
+
+    fn take(self, n: i64) -> List<A>
+    where
+        A: Clone,
+    {
+        if n == 0 {
+            return List::Nil;
+        }
+
+        match self {
+            List::Nil => panic!("Cannot take from empty list"),
+            List::Cons(a, as_) => List::Cons(a, Rc::new(Rc::unwrap_or_clone(as_).take(n - 1))),
         }
     }
 

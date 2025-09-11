@@ -118,6 +118,33 @@ def in_list(i: Int, ls: List[Int]): Bool =
 def not_elem(a: Int, ls: List[Int]): Bool =
   not(in_list(a, ls))
 
+def nub_by(ls: List[Int]) { f: (Int, Int) => Bool }: List[Int] =
+  ls match {
+    case Nil() => Nil()
+    case Cons(h, t) =>
+      Cons(h, nub_by(t.filter { y => not(f(h, y)) }) {f})
+  }
+
+def delete_by(x: Int, ys: List[Int]) { f: (Int, Int) => Bool }: List[Int] =
+  ys match {
+    case Nil() => Nil()
+    case Cons(y, ys) =>
+      if (f(x, y)) {
+        ys
+      } else {
+        Cons(y, delete_by(x, ys) {f})
+      }
+  }
+
+def union_by(l1: List[Int], l2: List[Int]) { f: (Int, Int) => Bool }: List[Int] =
+  append(
+    l1,
+    nub_by(l2){f}.foldl(l1) { (acc, y) => delete_by(y, acc){f} }
+  )
+
+def union(l1:List[Int], l2:List[Int]): List[Int] =
+  union_by(l1, l2) { (x, y) => x == y }
+
 def map_tree[A, B](t: Node[A]) { f: A => B }: Node[B] =
   t match {
     case Node(l, ls) => Node(f(l), ls.map_list { x => x.map_tree {f} })
@@ -150,32 +177,6 @@ def max_level(ls: List[Assign]): Int =
 def complete(csp: CSP, s: List[Assign]): Bool =
   max_level(s) == csp.vars
 
-def delete_by(x: Int, ys: List[Int]) { f: (Int, Int) => Bool }: List[Int] =
-  ys match {
-    case Nil() => Nil()
-    case Cons(y, ys) =>
-      if (f(x, y)) {
-        ys
-      } else {
-        Cons(y, delete_by(x, ys) {f})
-      }
-  }
-
-def nub_by(ls: List[Int]) { f: (Int, Int) => Bool }: List[Int] =
-  ls match {
-    case Nil() => Nil()
-    case Cons(h, t) =>
-      Cons(h, nub_by(t.filter { y => not(f(h, y)) }) {f})
-  }
-
-def union_by(l1: List[Int], l2: List[Int]) { f: (Int, Int) => Bool }: List[Int] =
-  append(
-    l1,
-    nub_by(l2){f}.foldl(l1) { (acc, y) => delete_by(y, acc){f} }
-  )
-
-def union(l1:List[Int], l2:List[Int]): List[Int] =
-  union_by(l1, l2) { (x, y) => x == y }
 
 def combine(ls: List[(List[Assign], ConflictSet)], acc: List[Int]): List[Int] =
   ls match {
@@ -188,7 +189,6 @@ def combine(ls: List[(List[Assign], ConflictSet)], acc: List[Int]): List[Int] =
       }
     case Cons((s, Unknown()), css) => acc
   }
-
 
 def init_tree(x:List[Assign]) { f:List[Assign] => List[List[Assign]] }: Node[List[Assign]] =
   Node(x, f(x).map_list { y => init_tree(y) {f} })
@@ -239,23 +239,20 @@ def filter_known(ls: List[List[ConflictSet]]): List[List[ConflictSet]] =
   }
 
 def domain_wipeout(csp: CSP, t: Node[((List[Assign], ConflictSet), List[List[ConflictSet]])]): Node[(List[Assign], ConflictSet)] = {
-  csp match {
-    case CSP(vars, vals, rel) =>
-      t.map_tree { case ((as_, cs), tbl) =>
+  t.map_tree { case ((as_, cs), tbl) =>
 
-          val wiped_domains = filter_known(tbl) // filter(tbl) { x => all(x) { known_conflict } }
+      val wiped_domains = filter(tbl) { x => all(x) { known_conflict } }
 
-          val cs_ = if (is_empty(wiped_domains)) {
-            cs
-          } else {
-            Known(collect(head(wiped_domains)))
-          }
-          (as_,cs_)
+      val cs_ = if (is_empty(wiped_domains)) {
+        cs
+      } else {
+        Known(collect(head(wiped_domains)))
       }
+      (as_,cs_)
   }
 }
 
-def check_complete(csp:CSP,s:List[Assign]): ConflictSet =
+def check_complete(csp: CSP, s: List[Assign]): ConflictSet =
   if (complete(csp, s)) {
     Known(Nil())
   } else {
@@ -265,7 +262,7 @@ def check_complete(csp:CSP,s:List[Assign]): ConflictSet =
 def earliest_inconsistency(csp: CSP, aas: List[Assign]): Option[(Int, Int)] =
   (csp, aas) match {
     case (_, Nil()) => None()
-    case (CSP(vars, vals, rel), Cons(a, as)) =>
+    case (CSP(_, _, rel), Cons(a, as)) =>
       reverse(as).filter { x => not(rel(a, x)) } match  {
         case Nil() => None()
         case Cons(b, _) => Some((level(a), level(b)))
@@ -302,11 +299,10 @@ def n_pairs(ls: List[Int], n: Int) : List[List[(Int, Int)]] =
     case Cons(varrr, t1) => Cons(to_pairs(enum_from_to(1, n), varrr), n_pairs(t1, n))
   }
 
-
 def fill_table(s: List[Assign], csp: CSP, tbl: List[List[ConflictSet]]): List[List[ConflictSet]] =
   s match {
     case Nil() => tbl
-    case Cons(Assign(var_, val_), as_) =>
+    case Cons(Assign(var_, val_), _) =>
       csp match {
         case CSP(vars, vals, rel) =>
           def f4(cs: ConflictSet, varval: (Int, Int)): ConflictSet =

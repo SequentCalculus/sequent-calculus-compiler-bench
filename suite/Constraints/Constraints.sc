@@ -25,15 +25,30 @@ def not(b: Bool): Bool {
   }
 }
 
-def reverse_loop(ls: List[Assign], acc: List[Assign]): List[Assign] {
+def head(l: List[i64]): i64 {
+  l.case[i64] {
+    Nil => -1,
+    Cons(x, xs) => x
+  }
+}
+
+def rev_loop(ls: List[Assign], acc: List[Assign]): List[Assign] {
   ls.case[Assign] {
     Nil => acc,
-    Cons(a, as) => reverse_loop(as, Cons(a, acc))
+    Cons(a, as) => rev_loop(as, Cons(a, acc))
   }
 }
 
 def reverse(ls: List[Assign]): List[Assign] {
-  reverse_loop(ls, Nil)
+  rev_loop(ls, Nil)
+}
+
+def enum_from_to(from: i64, to_: i64): List[i64] {
+  if from <= to_{
+    Cons(from, enum_from_to(from + 1, to_))
+  } else {
+    Nil
+  }
 }
 
 def level(a: Assign): i64 {
@@ -60,14 +75,6 @@ def max_level(ls: List[Assign]): i64 {
 def complete(csp: CSP, s: List[Assign]): Bool {
   csp.case {
     CSP(v, vals, rel) => eq(max_level(s), v)
-  }
-}
-
-def enum_from_to(from: i64, to_: i64): List[i64] {
-  if from <= to_{
-    Cons(from, enum_from_to(from + 1, to_))
-  } else {
-    Nil
   }
 }
 
@@ -756,7 +763,7 @@ def filter_known(f: Fun[List[ConflictSet], Bool], ls: List[List[ConflictSet]]): 
   }
 }
 
-def wipe_null_(ls: List[List[ConflictSet]]): Bool {
+def wipe_is_empty(ls: List[List[ConflictSet]]): Bool {
   ls.case[List[ConflictSet]] {
     Nil => True,
     Cons(l, ls) => False
@@ -793,23 +800,20 @@ def wipe_map_tree(
 }
 
 def domain_wipeout(csp: CSP, t: Node[Pair[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]]]): Node[Pair[List[Assign], ConflictSet]] {
-  csp.case {
-    CSP(vars, vals, rel) =>
-      let f8: Fun[Pair[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]], Pair[List[Assign], ConflictSet]] =
-        new { apply(tp2) =>
-          tp2.case[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]] {
-            Tup(p, tbl) => p.case[List[Assign], ConflictSet] {
-              Tup(as_, cs) =>
-                let wiped_domains: List[List[ConflictSet]]= filter_known(new { apply(vs) => wipe_all(new { apply(x) => known_conflict(x)}, vs) }, tbl);
-                let cs_: ConflictSet = wipe_null_(wiped_domains).case {
-                  True => cs,
-                  False => Known(collect(wipe_head(wiped_domains)))
-                };
-                Tup(as_, cs_)
-          }}
-        };
-        wipe_map_tree(f8, t)
-  }
+  let f8: Fun[Pair[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]], Pair[List[Assign], ConflictSet]] =
+    new { apply(tp2) =>
+      tp2.case[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]] {
+        Tup(p, tbl) => p.case[List[Assign], ConflictSet] {
+          Tup(as_, cs) =>
+            let wiped_domains: List[List[ConflictSet]]= filter_known(new { apply(vs) => wipe_all(new { apply(x) => known_conflict(x)}, vs) }, tbl);
+            let cs_: ConflictSet = wipe_is_empty(wiped_domains).case {
+              True => cs,
+              False => Known(collect(wipe_head(wiped_domains)))
+            };
+            Tup(as_, cs_)
+      }}
+    };
+  wipe_map_tree(f8, t)
 }
 
 def fc(csp: CSP, t: Node[List[Assign]]): Node[Pair[List[Assign], ConflictSet]] {
@@ -845,13 +849,6 @@ def test_constraints_nofib(n: i64): List[i64] {
           Cons(new { apply2(csp, n) => bjbt_(csp, n) },
             Cons(new { apply2(csp, n) => fc(csp, n) },
               Nil))))))
-}
-
-def head(l: List[i64]): i64 {
-  l.case[i64] {
-    Nil => -1,
-    Cons(x, xs) => x
-  }
 }
 
 def main_loop(iters: i64, n: i64): i64 {
