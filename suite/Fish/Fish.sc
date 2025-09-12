@@ -26,6 +26,60 @@ def scale_vec2(v: Vec, a: i64, b: i64): Vec {
   }
 }
 
+def min(i1: i64, i2: i64): i64 {
+  if i1 < i2 {
+    i1
+  } else {
+    i2
+  }
+}
+
+def nil(a: Vec, b: Vec, c: Vec): List[Vec4] { Nil }
+
+def tup2(a_b: Vec, c_d: Vec): Vec4 {
+  a_b.case {
+    Vec(a, b) => c_d.case {
+      Vec(c, d) => Vec4(a, b, c, d)
+    }
+  }
+}
+
+def append(l1: List[Vec4], l2: List[Vec4]): List[Vec4] {
+  l1.case[Vec4] {
+    Nil => l2,
+    Cons(is, iss) => Cons(is, append(iss, l2))
+  }
+}
+
+def map(f: Fun[i64, List[Vec4]], l: List[i64]): List[List[Vec4]] {
+  l.case[i64]{
+    Nil => Nil,
+    Cons(i, is) => Cons(f.apply[i64, List[Vec4]](i), map(f, is))
+  }
+}
+
+def length(l: List[Vec4]): i64 {
+  l.case[Vec4] {
+    Nil => 0,
+    Cons(x, xs) => 1 + length(xs)
+  }
+}
+
+def head(l: List[List[Vec4]]): List[Vec4] {
+  l.case[List[Vec4]] {
+    Nil => Nil,
+    Cons(l, ls) => l
+  }
+}
+
+def enum_from_to(from: i64, t: i64): List[i64] {
+  if from <= t {
+    Cons(from, enum_from_to(from + 1, t))
+  } else {
+    Nil
+  }
+}
+
 def p_tile(): List[Vec4] {
   let p5: List[Vec4] = Cons(Vec4(10, 4, 13, 5), Cons(Vec4(13, 5, 16, 4), Cons(Vec4(11, 0, 14, 2), Cons(Vec4(14, 2, 16, 2), Nil))));
   let p4: List[Vec4] = Cons(Vec4(8, 12, 16, 10), Cons(Vec4(8, 8, 12, 9), Cons(Vec4(12, 9, 16, 8), Cons(Vec4(9, 6, 12, 7), Cons(Vec4(12, 7, 16, 6), p5)))));
@@ -35,7 +89,6 @@ def p_tile(): List[Vec4] {
   let p: List[Vec4] = Cons(Vec4(0, 3, 3, 4), Cons(Vec4(3, 4, 0, 8), Cons(Vec4(0, 8, 0, 3), Cons(Vec4(6, 0, 4, 4), Cons(Vec4(4, 5, 4, 10), p1)))));
   p
 }
-
 
 def q_tile(): List[Vec4] {
   let q7: List[Vec4] = Cons(Vec4(0, 0, 0, 8), Cons(Vec4(0, 12, 0, 16), Nil));
@@ -68,16 +121,6 @@ def s_tile(): List[Vec4] {
   s
 }
 
-def nil(a: Vec, b: Vec, c: Vec): List[Vec4] { Nil }
-
-def tup2(a_b: Vec, c_d: Vec): Vec4 {
-  a_b.case {
-    Vec(a, b) => c_d.case {
-      Vec(c, d) => Vec4(a, b, c, d)
-    }
-  }
-}
-
 
 def grid(m: i64, n: i64, segments: List[Vec4], a: Vec, b: Vec, c: Vec): List[Vec4] {
   segments.case[Vec4] {
@@ -91,30 +134,6 @@ def grid(m: i64, n: i64, segments: List[Vec4], a: Vec, b: Vec, c: Vec): List[Vec
           grid(m, n, t, a, b, c))
     }
   }
-}
-
-def rot(p: Fun3[Vec, Vec, Vec, List[Vec4]], a: Vec, b: Vec, c: Vec): List[Vec4] {
-  p.apply3[Vec, Vec, Vec, List[Vec4]](vec_add(a, b), c, vec_sub(Vec(0, 0), b))
-}
-
-def append(l1: List[Vec4], l2: List[Vec4]): List[Vec4] {
-  l1.case[Vec4] {
-    Nil => l2,
-    Cons(is, iss) => Cons(is,append(iss,l2))
-  }
-}
-
-def beside(m: i64, n: i64, p: Fun3[Vec, Vec, Vec, List[Vec4]], q: Fun3[Vec, Vec, Vec, List[Vec4]], a: Vec, b: Vec, c: Vec): List[Vec4] {
-  append(
-    p.apply3[Vec, Vec, Vec, List[Vec4]](a, scale_vec2(b, m, m + n), c),
-    q.apply3[Vec, Vec, Vec, List[Vec4]](vec_add(a, scale_vec2(b, m, m + n)), scale_vec2(b, n, n + m), c))
-}
-
-
-def above(m: i64, n: i64, p: Fun3[Vec, Vec, Vec, List[Vec4]], q: Fun3[Vec, Vec, Vec, List[Vec4]], a: Vec, b: Vec, c: Vec): List[Vec4] {
-  append(
-    p.apply3[Vec, Vec, Vec, List[Vec4]](vec_add(a, scale_vec2(c, n, m + n)), b, scale_vec2(c, m, n + m)),
-    q.apply3[Vec, Vec, Vec, List[Vec4]](a, b, scale_vec2(c, n, m + n)))
 }
 
 def tile_to_grid(arg: List[Vec4], arg2: Vec, arg3: Vec, arg4: Vec): List[Vec4] {
@@ -137,6 +156,23 @@ def s(arg: Vec, q6: Vec, q7: Vec): List[Vec4] {
   tile_to_grid(s_tile(), arg, q6, q7)
 }
 
+def rot(p: Fun3[Vec, Vec, Vec, List[Vec4]], a: Vec, b: Vec, c: Vec): List[Vec4] {
+  p.apply3[Vec, Vec, Vec, List[Vec4]](vec_add(a, b), c, vec_sub(Vec(0, 0), b))
+}
+
+def beside(m: i64, n: i64, p: Fun3[Vec, Vec, Vec, List[Vec4]], q: Fun3[Vec, Vec, Vec, List[Vec4]], a: Vec, b: Vec, c: Vec): List[Vec4] {
+  append(
+    p.apply3[Vec, Vec, Vec, List[Vec4]](a, scale_vec2(b, m, m + n), c),
+    q.apply3[Vec, Vec, Vec, List[Vec4]](vec_add(a, scale_vec2(b, m, m + n)), scale_vec2(b, n, n + m), c))
+}
+
+
+def above(m: i64, n: i64, p: Fun3[Vec, Vec, Vec, List[Vec4]], q: Fun3[Vec, Vec, Vec, List[Vec4]], a: Vec, b: Vec, c: Vec): List[Vec4] {
+  append(
+    p.apply3[Vec, Vec, Vec, List[Vec4]](vec_add(a, scale_vec2(c, n, m + n)), b, scale_vec2(c, m, n + m)),
+    q.apply3[Vec, Vec, Vec, List[Vec4]](a, b, scale_vec2(c, n, m + n)))
+}
+
 def quartet(
   a: Fun3[Vec, Vec, Vec, List[Vec4]],
   b: Fun3[Vec, Vec, Vec, List[Vec4]],
@@ -157,7 +193,6 @@ def t(arg: Vec, q6: Vec, q7: Vec): List[Vec4] {
     new { apply3(a, b, c) => s(a, b, c) },
     arg, q6, q7)
 }
-
 
 def cycle_(p1: Fun3[Vec, Vec, Vec, List[Vec4]], arg: Vec, p3: Vec, p4: Vec): List[Vec4] {
   quartet(
@@ -192,7 +227,6 @@ def side1(arg: Vec, q6: Vec, q7: Vec): List[Vec4] {
     new { apply3(a, b, c) => t(a, b, c) },
     arg, q6, q7)
 }
-
 
 def side2(arg: Vec, q6: Vec, q7: Vec): List[Vec4] {
   quartet(
@@ -234,29 +268,6 @@ def pseudolimit(arg: Vec, p2: Vec, p3: Vec): List[Vec4] {
   cycle_(new { apply3(a, b, c) => pseudocorner(a, b, c) }, arg, p2, p3)
 }
 
-def enum_from_to(from: i64, t: i64): List[i64] {
-  if from <= t {
-    Cons(from, enum_from_to(from + 1, t))
-  } else {
-    Nil
-  }
-}
-
-def min(i1: i64, i2: i64): i64 {
-  if i1 < i2 {
-    i1
-  } else {
-    i2
-  }
-}
-
-def map(f: Fun[i64, List[Vec4]], l: List[i64]): List[List[Vec4]] {
-  l.case[i64]{
-    Nil => Nil,
-    Cons(i,is) => Cons(f.apply[i64,List[Vec4]](i),map(f,is))
-  }
-}
-
 def test_fish_nofib(n: i64): List[List[Vec4]] {
   map(
     new { apply(i) =>
@@ -264,20 +275,6 @@ def test_fish_nofib(n: i64): List[List[Vec4]] {
       pseudolimit(Vec(0, 0), Vec(640 + n, 0), Vec(0, 640 + n))
     },
     enum_from_to(1, n))
-}
-
-def length(l: List[Vec4]): i64 {
-  l.case[Vec4] {
-    Nil => 0,
-    Cons(x, xs) => 1 + length(xs)
-  }
-}
-
-def head(l: List[List[Vec4]]): List[Vec4] {
-  l.case[List[Vec4]] {
-    Nil => Nil,
-    Cons(l, ls) => l
-  }
 }
 
 def main(n: i64): i64 {

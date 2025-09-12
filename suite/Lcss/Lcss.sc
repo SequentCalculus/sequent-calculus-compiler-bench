@@ -29,17 +29,17 @@ def rev(l: List[i64]): List[i64] {
   rev_loop(l, Nil)
 }
 
+def map(f: Fun[Pair[i64, i64], i64], l: List[Pair[i64, i64]]): List[i64] {
+  l.case[Pair[i64, i64]] {
+    Nil => Nil,
+    Cons(p, ps) => Cons(f.apply[Pair[i64, i64], i64](p), map(f, ps))
+  }
+}
+
 def head(l: List[i64]): i64 {
   l.case[i64] {
     Nil => -1,
     Cons(i, is) => i
-  }
-}
-
-def map(f: Fun[Pair[i64, i64], i64], l: List[Pair[i64, i64]]): List[i64] {
-  l.case[Pair[i64, i64]] {
-    Nil => Nil,
-    Cons(p, ps) => Cons(f.apply[Pair[i64, i64], i64](p), map(f,ps))
   }
 }
 

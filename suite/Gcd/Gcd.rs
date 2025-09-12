@@ -75,19 +75,19 @@ fn gcd_e(x: i64, y: i64) -> (i64, i64, i64) {
     }
 }
 
+fn to_pair(i: i64, l: List<i64>) -> List<(i64, i64)> {
+    match l {
+        List::Nil => List::Nil,
+        List::Cons(j, js) => List::Cons((i, j), Rc::new(to_pair(i, Rc::unwrap_or_clone(js)))),
+    }
+}
+
 fn cartesian_product(p1: List<i64>, m1: List<i64>) -> List<(i64, i64)> {
     match p1 {
         List::Nil => List::Nil,
         List::Cons(h1, t1) => {
             to_pair(h1, m1.clone()).append(cartesian_product(Rc::unwrap_or_clone(t1), m1))
         }
-    }
-}
-
-fn to_pair(i: i64, l: List<i64>) -> List<(i64, i64)> {
-    match l {
-        List::Nil => List::Nil,
-        List::Cons(j, js) => List::Cons((i, j), Rc::new(to_pair(i, Rc::unwrap_or_clone(js)))),
     }
 }
 

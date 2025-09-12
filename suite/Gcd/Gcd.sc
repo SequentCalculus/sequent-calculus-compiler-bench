@@ -15,9 +15,9 @@ def map_pairs(
   f: Fun[Pair[i64, i64], Triple[i64, i64, Triple[i64, i64, i64]]],
   l: List[Pair[i64, i64]]
 ): List[Triple[i64, i64, Triple[i64, i64, i64]]] {
-  l.case[Pair[i64,i64]]{
+  l.case[Pair[i64, i64]]{
     Nil => Nil,
-    Cons(p,ps) => Cons(f.apply[Pair[i64,i64],Triple[i64,i64,Triple[i64,i64,i64]]](p),map_pairs(f,ps))
+    Cons(p, ps) => Cons(f.apply[Pair[i64, i64], Triple[i64, i64, Triple[i64, i64, i64]]](p), map_pairs(f, ps))
   }
 }
 
@@ -25,16 +25,16 @@ def map_triples(
   f: Fun[Triple[i64, i64, Triple[i64, i64, i64]], i64],
   l: List[Triple[i64, i64, Triple[i64, i64, i64]]]
 ): List[i64] {
-  l.case[Triple[i64,i64,Triple[i64,i64,i64]]]{
+  l.case[Triple[i64, i64, Triple[i64, i64, i64]]]{
     Nil => Nil,
-    Cons(p,ps) => Cons(f.apply[Triple[i64,i64,Triple[i64,i64,i64]],i64](p),map_triples(f,ps))
+    Cons(p, ps) => Cons(f.apply[Triple[i64, i64, Triple[i64, i64, i64]], i64](p), map_triples(f, ps))
   }
 }
 
-def append(l1:List[Pair[i64,i64]],l2:List[Pair[i64,i64]]): List[Pair[i64,i64]] {
-  l1.case[Pair[i64,i64]]{
+def append(l1: List[Pair[i64, i64]], l2: List[Pair[i64, i64]]): List[Pair[i64, i64]] {
+  l1.case[Pair[i64, i64]]{
     Nil => l2,
-    Cons(p,ps) => Cons(p,append(ps,l2))
+    Cons(p, ps) => Cons(p, append(ps, l2))
   }
 }
 
@@ -83,17 +83,17 @@ def gcd_e(x: i64, y: i64): Triple[i64, i64, i64] {
   }
 }
 
-def cartesian_product(p1: List[i64], ms: List[i64]): List[Pair[i64, i64]] {
-  p1.case[i64] {
+def to_pair(i: i64, l: List[i64]): List[Pair[i64, i64]]{
+  l.case[i64]{
     Nil => Nil,
-    Cons(h1, t1) => append(to_pair(h1,ms),cartesian_product(t1,ms))
+    Cons(j, js) => Cons(Pair(i, j), to_pair(i, js))
   }
 }
 
-def to_pair(i:i64,l:List[i64]): List[Pair[i64,i64]]{
-  l.case[i64]{
+def cartesian_product(p1: List[i64], ms: List[i64]): List[Pair[i64, i64]] {
+  p1.case[i64] {
     Nil => Nil,
-    Cons(j,js) => Cons(Pair(i,j),to_pair(i,js))
+    Cons(h1, t1) => append(to_pair(h1, ms), cartesian_product(t1, ms))
   }
 }
 

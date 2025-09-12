@@ -11,6 +11,11 @@ def head(l: List[Either[Int, Bool]]): Either[Int, Bool] =
     case Cons(e, es) => e
   }
 
+def append[A](l1: List[A], l2: List[A]): List[A] = l1 match {
+  case Nil() => l2
+  case Cons(a, as) => Cons(a, as.append(l2))
+}
+
 def enum_from_then_to(from: Int, then: Int, to: Int): List[Int] =
   if (from <= to) {
     Cons(from, enum_from_then_to(then, (2 * then) - from, to))

@@ -24,13 +24,6 @@ impl<T> List<T> {
         self.rev_loop(List::Nil)
     }
 
-    fn head(self) -> T {
-        match self {
-            List::Nil => panic!("Cannot take head of empty list"),
-            List::Cons(a, _) => a,
-        }
-    }
-
     fn map<U>(self, f: &impl Fn(T) -> U) -> List<U>
     where
         T: Clone,
@@ -39,6 +32,13 @@ impl<T> List<T> {
         match self {
             List::Nil => List::Nil,
             List::Cons(hd, tl) => List::Cons(f(hd), Rc::new(Rc::unwrap_or_clone(tl).map(f))),
+        }
+    }
+
+    fn head(self) -> T {
+        match self {
+            List::Nil => panic!("Cannot take head of empty list"),
+            List::Cons(a, _) => a,
         }
     }
 
@@ -136,6 +136,13 @@ fn enum_from_then_to(from: i64, then: i64, t: i64) -> List<i64> {
     }
 }
 
+fn add_zero(ls: List<i64>) -> List<(i64, i64)> {
+    match ls {
+        List::Nil => List::Nil,
+        List::Cons(h, t) => List::Cons((h, 0), Rc::new(add_zero(Rc::unwrap_or_clone(t)))),
+    }
+}
+
 fn algb2(x: i64, k0j1: i64, k1j1: i64, yss: List<(i64, i64)>) -> List<(i64, i64)> {
     match yss {
         List::Nil => List::Nil,
@@ -153,13 +160,6 @@ fn algb1(xss: List<i64>, yss: List<(i64, i64)>) -> List<i64> {
     match xss {
         List::Nil => yss.map(&|(_, x)| x),
         List::Cons(x, xs) => algb1(Rc::unwrap_or_clone(xs), algb2(x, 0, 0, yss)),
-    }
-}
-
-fn add_zero(ls: List<i64>) -> List<(i64, i64)> {
-    match ls {
-        List::Nil => List::Nil,
-        List::Cons(h, t) => List::Cons((h, 0), Rc::new(add_zero(Rc::unwrap_or_clone(t)))),
     }
 }
 

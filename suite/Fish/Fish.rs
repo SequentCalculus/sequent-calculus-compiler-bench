@@ -3,56 +3,6 @@ use std::{
     rc::Rc,
 };
 
-#[derive(Clone)]
-enum List<A> {
-    Nil,
-    Cons(A, Rc<List<A>>),
-}
-
-impl<A> List<A> {
-    fn append(self, other: List<A>) -> List<A>
-    where
-        A: Clone,
-    {
-        match self {
-            List::Nil => other,
-            List::Cons(a, as_) => List::Cons(a, Rc::new(Rc::unwrap_or_clone(as_).append(other))),
-        }
-    }
-
-    fn map<B>(self, f: &impl Fn(A) -> B) -> List<B>
-    where
-        A: Clone,
-    {
-        match self {
-            List::Nil => List::Nil,
-            List::Cons(a, as_) => List::Cons(f(a), Rc::new(Rc::unwrap_or_clone(as_).map(f))),
-        }
-    }
-
-    fn len(&self) -> i64 {
-        match self {
-            List::Nil => 0,
-            List::Cons(_, as_) => 1 + as_.len(),
-        }
-    }
-
-    fn head(self) -> A {
-        match self {
-            List::Nil => panic!("Cannot take head of empty list"),
-            List::Cons(a, _) => a,
-        }
-    }
-}
-
-fn enum_from_to(from: i64, to: i64) -> List<i64> {
-    if from <= to {
-        List::Cons(from, Rc::new(enum_from_to(from + 1, to)))
-    } else {
-        List::Nil
-    }
-}
-
 #[derive(Debug, Clone)]
 struct Vec4 {
     x: i64,
@@ -102,6 +52,60 @@ impl Sub for Vec2 {
             x: self.x - other.x,
             y: self.y - other.y,
         }
+    }
+}
+
+#[derive(Clone)]
+enum List<A> {
+    Nil,
+    Cons(A, Rc<List<A>>),
+}
+
+fn nil(_: Vec2, _: Vec2, _: Vec2) -> List<Vec4> {
+    List::Nil
+}
+
+impl<A> List<A> {
+    fn append(self, other: List<A>) -> List<A>
+    where
+        A: Clone,
+    {
+        match self {
+            List::Nil => other,
+            List::Cons(a, as_) => List::Cons(a, Rc::new(Rc::unwrap_or_clone(as_).append(other))),
+        }
+    }
+
+    fn map<B>(self, f: &impl Fn(A) -> B) -> List<B>
+    where
+        A: Clone,
+    {
+        match self {
+            List::Nil => List::Nil,
+            List::Cons(a, as_) => List::Cons(f(a), Rc::new(Rc::unwrap_or_clone(as_).map(f))),
+        }
+    }
+
+    fn len(&self) -> i64 {
+        match self {
+            List::Nil => 0,
+            List::Cons(_, as_) => 1 + as_.len(),
+        }
+    }
+
+    fn head(self) -> A {
+        match self {
+            List::Nil => panic!("Cannot take head of empty list"),
+            List::Cons(a, _) => a,
+        }
+    }
+}
+
+fn enum_from_to(from: i64, to: i64) -> List<i64> {
+    if from <= to {
+        List::Cons(from, Rc::new(enum_from_to(from + 1, to)))
+    } else {
+        List::Nil
     }
 }
 
@@ -1108,10 +1112,6 @@ fn s_tile() -> List<Vec4> {
     s
 }
 
-fn nil(_: Vec2, _: Vec2, _: Vec2) -> List<Vec4> {
-    List::Nil
-}
-
 fn grid(m: i64, n: i64, segments: List<Vec4>, a: Vec2, b: Vec2, c: Vec2) -> List<Vec4> {
     match segments {
         List::Nil => List::Nil,
@@ -1120,6 +1120,26 @@ fn grid(m: i64, n: i64, segments: List<Vec4>, a: Vec2, b: Vec2, c: Vec2) -> List
             grid(m, n, Rc::unwrap_or_clone(t), a, b, c).into(),
         ),
     }
+}
+
+fn tile_to_grid(arg: List<Vec4>, arg2: Vec2, arg3: Vec2, arg4: Vec2) -> List<Vec4> {
+    grid(16, 16, arg, arg2, arg3, arg4)
+}
+
+fn p(arg: Vec2, q6: Vec2, q7: Vec2) -> List<Vec4> {
+    tile_to_grid(p_tile(), arg, q6, q7)
+}
+
+fn q(arg: Vec2, q6: Vec2, q7: Vec2) -> List<Vec4> {
+    tile_to_grid(q_tile(), arg, q6, q7)
+}
+
+fn r(arg: Vec2, q6: Vec2, q7: Vec2) -> List<Vec4> {
+    tile_to_grid(r_tile(), arg, q6, q7)
+}
+
+fn s(arg: Vec2, q6: Vec2, q7: Vec2) -> List<Vec4> {
+    tile_to_grid(s_tile(), arg, q6, q7)
 }
 
 fn rot(p: &impl Fn(Vec2, Vec2, Vec2) -> List<Vec4>, a: Vec2, b: Vec2, c: Vec2) -> List<Vec4> {
@@ -1150,26 +1170,6 @@ fn above(
 ) -> List<Vec4> {
     let res = p(a + c.scale(n, m + n), b, c.scale(m, n + m));
     res.append(q(a, b, c.scale(n, m + n)))
-}
-
-fn tile_to_grid(arg: List<Vec4>, arg2: Vec2, arg3: Vec2, arg4: Vec2) -> List<Vec4> {
-    grid(16, 16, arg, arg2, arg3, arg4)
-}
-
-fn p(arg: Vec2, q6: Vec2, q7: Vec2) -> List<Vec4> {
-    tile_to_grid(p_tile(), arg, q6, q7)
-}
-
-fn q(arg: Vec2, q6: Vec2, q7: Vec2) -> List<Vec4> {
-    tile_to_grid(q_tile(), arg, q6, q7)
-}
-
-fn r(arg: Vec2, q6: Vec2, q7: Vec2) -> List<Vec4> {
-    tile_to_grid(r_tile(), arg, q6, q7)
-}
-
-fn s(arg: Vec2, q6: Vec2, q7: Vec2) -> List<Vec4> {
-    tile_to_grid(s_tile(), arg, q6, q7)
 }
 
 fn quartet(

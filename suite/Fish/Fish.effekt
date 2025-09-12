@@ -180,7 +180,6 @@ def test_fish_nofib(n: Int): List[List[Vec4]] =
     pseudolimit(Vec(0, 0), Vec(640 + n, 0), Vec(0, 640 + n))
   }
 
-
 def main() =
   commandLineArgs() match {
     case Cons(n_str, Nil()) =>

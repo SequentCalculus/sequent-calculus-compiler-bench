@@ -14,16 +14,16 @@ def rev_loop(l1: List[Int], l2: List[Int]): List[Int] =
 def rev(l: List[Int]): List[Int] =
   rev_loop(l, Nil())
 
+def map[A, B](l: List[A]) { f: A => B }: List[B] = l match {
+  case Nil() => Nil()
+  case Cons(a, as) => Cons(f(a), as.map {f})
+}
+
 def head(l: List[Int]): Int =
   l match {
     case Nil() => -1
     case Cons(hd, tl) => hd
   }
-
-def map[A, B](l: List[A]) { f: A => B }: List[B] = l match {
-  case Nil() => Nil()
-  case Cons(a, as) => Cons(f(a), as.map {f})
-}
 
 def take(n: Int, ls: List[Int]): List[Int] =
   ls match {
@@ -73,7 +73,6 @@ def in_list(a: Int, ls: List[Int]): Bool =
     case Nil() => false
     case Cons(a_, as) => if (a == a_) true else in_list(a, as)
   }
-
 
 def enum_from_then_to(from: Int, then: Int, to: Int): List[Int] =
   if (from <= to) {

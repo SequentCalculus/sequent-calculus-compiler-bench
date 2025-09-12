@@ -1,7 +1,7 @@
 data List[A] { Nil, Cons(a: A, as: List[A]) }
 data Bool { True, False }
 data Either[A, B] { Left(a: A), Right(b: B) }
-codata Fun2[A, B, C] { apply2(a: A,b: B): C }
+codata Fun2[A, B, C] { apply2(a: A, b: B): C }
 
 def eq(i1: i64, i2: i64): Bool {
   if i1 == i2 {
@@ -35,10 +35,17 @@ def geq(i1: i64, i2: i64): Bool {
   leq(i2, i1)
 }
 
-def head(l: List[Either[i64, Bool]]): Either[i64,Bool] {
+def head(l: List[Either[i64, Bool]]): Either[i64, Bool] {
   l.case[Either[i64, Bool]] {
     Nil => Left(-1),
     Cons(e, es) => e
+  }
+}
+
+def append(l1: List[Either[i64, Bool]], l2: List[Either[i64, Bool]]): List[Either[i64, Bool]]{
+  l1.case[Either[i64, Bool]] {
+    Nil => l2,
+    Cons(e, es) => Cons(e, append(es, l2))
   }
 }
 
@@ -49,14 +56,6 @@ def enum_from_then_to(from: i64, then: i64, t: i64): List[i64] {
     Nil
   }
 }
-
-def append(l1:List[Either[i64,Bool]],l2:List[Either[i64,Bool]]) : List[Either[i64,Bool]]{
-  l1.case[Either[i64,Bool]] {
-    Nil => l2,
-    Cons(e,es) => Cons(e,append(es,l2))
-  }
-}
-
 
 def apply_op_inner(
   ls: List[i64], a: i64,
@@ -76,10 +75,10 @@ def apply_op(
 ): List[Either[i64, Bool]] {
   ls.case[i64] {
     Nil => Nil,
-    Cons(a, t1) => 
+    Cons(a, t1) =>
       append(
         apply_op_inner(enum_from_then_to(astart, astart + astep, alim), a, op),
-        apply_op(t1,astart,astep,alim,op)
+        apply_op(t1, astart, astep, alim, op)
       )
   }
 }
@@ -90,7 +89,6 @@ def integerbench(
 ): List[Either[i64, Bool]] {
   apply_op(enum_from_then_to(astart, astart + astep, alim), astart, astep, alim, op)
 }
-
 
 def runbench(
   jop: Fun2[i64, i64, Either[i64, Bool]],
@@ -128,10 +126,10 @@ def test_integer_nofib(n: i64): List[Either[i64, Bool]] {
   runalltests(-2100000000, n, 2100000000)
 }
 
-def print_either(e:Either[i64,Bool]) : i64 {
-  e.case[i64,Bool] {
+def print_either(e: Either[i64, Bool]): i64 {
+  e.case[i64, Bool] {
     Left(i) => println_i64(i); 0,
-    Right(b) => b.case{
+    Right(b) => b.case {
       True => print_i64(1);
       println_i64(1);
       0,
