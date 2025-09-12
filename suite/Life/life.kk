@@ -35,31 +35,30 @@ fun collect<t>(l:list<t>,f:t -> list<t>): total list<t>{
   collect_accum(Nil,l,f)
 }
 
-fun list_append<a>(l1:list<a>,l2:list<a>): total list<a>{
-  match l2 {
+fun append_list<t>(l1:list<t>,l2:list<t>): total list<t>{
+  match l1{
     Nil -> l2
-    Cons(hd,tl) -> Cons(hd,append(tl,l2))
+    Cons(x,xs) -> Cons(x,append_list(xs,l2))
   }
 }
 
 fun map_list<a,b>(l:list<a>,f: a -> b): total list<b>{
-  match l {
+  match l{
     Nil -> Nil
-    Cons(hd,tl) -> Cons(f(hd),map_list(tl,f))
+    Cons(x,xs) -> Cons(f(x),map_list(xs,f))
   }
 }
 
 fun exists_l<t>(l:list<t>,f:t -> bool): total bool{
-  match l{
+  match l
     Nil -> False
-    Cons(p,ps) -> if f(p) then True else exists_l(ps,f)
-  }
+    Cons(p,ps) -> f(p) || exists_l(ps,f)
 }
 
-fun len<a>(l:list<a>): total int64{
+fun len<t>(l:list<t>): total int64{
   match l{
     Nil -> 0.int64
-    Cons(_,tl) -> 1.int64 + len(tl)
+    Cons(_,xs) -> 1.int64 + len(xs)
   }
 }
 
@@ -67,10 +66,10 @@ fun member(l:list<(int64,int64)>,p:(int64,int64)): total bool{
   exists_l(l, fn(p1) pair_eq(p, p1))
 }
 
-fun filter_list<a>(l:list<a>,f: a -> bool): total list<a>{
+fun filter_list<t>(l:list<t>,f:t -> bool): total list<t>{
   match l{
     Nil -> Nil
-    Cons(hd,tl) -> if f(hd) then Cons(hd,filter_list(tl,f)) else filter_list(tl,f)
+    Cons(x,xs) -> if f(x) then Cons(x,filter_list(xs,f)) else filter_list(xs,f)
   }
 }
 
@@ -134,7 +133,7 @@ fun nextgen(gen:gen) : total gen{
   val survivors = filter_list(living,fn((x,y)) twoorthree(liveneighbours(x,y)))
   val newbrnlist: list<(int64,int64)> = collect(living,fn(p) filter_list(neighbours(p),fn(n) not(isalive(n))))
   val newborn = occurs3(newbrnlist)
-  Gen(list_append(survivors,newborn))
+  Gen(append_list(survivors,newborn))
 }
 
 fun nthgen(g:gen,i:int64): div gen {
@@ -187,7 +186,7 @@ fun shuttle(): total list<(int64,int64)>{
 }
 
 fun non_steady(): total gen {
-  Gen(list_append(list_append(
+  Gen(append_list(append_list(
     at_pos(bail(),(1.int64, center_line())),
     at_pos(bail(),(21.int64,center_line()))),
     at_pos(shuttle(),(6.int64, center_line() - 2.int64))  ))
