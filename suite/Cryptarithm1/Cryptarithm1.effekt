@@ -50,7 +50,7 @@ def condition(thirywelvn: List[Int]): Bool =
     case _ => false
   }
 
-def push_k(p1: List[List[Int]], k:Int): List[List[Int]] =
+def push_k(p1: List[List[Int]], k: Int): List[List[Int]] =
   p1 match {
     case Nil() => Nil()
     case Cons(h1, t1) => Cons(Cons(k, h1), push_k(t1, k))

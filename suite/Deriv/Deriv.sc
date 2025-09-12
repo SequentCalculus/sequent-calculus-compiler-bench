@@ -15,7 +15,7 @@ data Expr {
 def map_list(f: Fun[Expr, Expr], l: List[Expr]): List[Expr] {
   l.case[Expr] {
     Nil => Nil,
-    Cons(x, xs) => Cons(f.apply[Expr, Expr](x), map_list(f,xs))
+    Cons(x, xs) => Cons(f.apply[Expr, Expr](x), map_list(f, xs))
   }
 }
 
@@ -136,7 +136,6 @@ def mk_exp(a: Expr, b: Expr): Expr {
           Mul(Cons(b, Cons(X(), Nil))),
           Cons(Num(5), Nil)))))
 }
-
 
 def mk_ans(a: Expr, b: Expr): Expr {
   Add(

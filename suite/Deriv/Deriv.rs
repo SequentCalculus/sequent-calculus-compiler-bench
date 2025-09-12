@@ -34,6 +34,15 @@ fn deriv(e: Expr) -> Expr {
     }
 }
 
+fn mk_exp(a: Expr, b: Expr) -> Expr {
+    Expr::Add(vec![
+        Expr::Mul(vec![Expr::Num(3), Expr::X, Expr::X]),
+        Expr::Mul(vec![a, Expr::X, Expr::X]),
+        Expr::Mul(vec![b, Expr::X]),
+        Expr::Num(5),
+    ])
+}
+
 fn mk_ans(a: Expr, b: Expr) -> Expr {
     Expr::Add(vec![
         Expr::Mul(vec![
@@ -60,15 +69,6 @@ fn mk_ans(a: Expr, b: Expr) -> Expr {
             ]),
         ]),
         Expr::Num(0),
-    ])
-}
-
-fn mk_exp(a: Expr, b: Expr) -> Expr {
-    Expr::Add(vec![
-        Expr::Mul(vec![Expr::Num(3), Expr::X, Expr::X]),
-        Expr::Mul(vec![a, Expr::X, Expr::X]),
-        Expr::Mul(vec![b, Expr::X]),
-        Expr::Num(5),
     ])
 }
 

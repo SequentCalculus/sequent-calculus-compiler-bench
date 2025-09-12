@@ -1,6 +1,6 @@
 exception Return of bool
 
-let abs_int i = 
+let abs_int i =
   if i < 0 then -i else i
 
 let rec even_abs i =

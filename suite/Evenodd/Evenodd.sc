@@ -19,12 +19,12 @@ def odd_abs(n: i64): Bool {
   if n == 0 { False } else { even_abs(n - 1) }
 }
 
-def even(n: i64): Bool {
-  even_abs(abs_i(n))
-}
-
 def odd(n: i64): Bool {
   odd_abs(abs_i(n))
+}
+
+def even(n: i64): Bool {
+  even_abs(abs_i(n))
 }
 
 def main_loop(iters: i64, n: i64): i64 {

@@ -1,6 +1,6 @@
 $(SML_LIB)/basis/basis.mlb
 local
   Divrec_lib.sml
-in 
+in
   Divrec_mlton.sml
 end

@@ -23,10 +23,10 @@ def first(l: List[List[List[i64]]]): i64 {
   }
 }
 
-def append(l1:List[List[i64]],l2:List[List[i64]]): List[List[i64]]{
+def append(l1: List[List[i64]],l2: List[List[i64]]): List[List[i64]]{
   l1.case[List[i64]]{
     Nil => l2,
-    Cons(l,ls) => Cons(l,append(ls,l2))
+    Cons(l, ls) => Cons(l, append(ls, l2))
   }
 }
 
@@ -120,10 +120,10 @@ def addj(j: i64, ls: List[i64]): List[List[i64]] {
 def addj_ls(p1: List[List[i64]], j: i64): List[List[i64]] {
   p1.case[List[i64]] {
     Nil => Nil,
-    Cons(pjs, t1) => 
+    Cons(pjs, t1) =>
       append(
         addj(j, pjs),
-        addj_ls(t1,j)
+        addj_ls(t1, j)
       )
   }
 }

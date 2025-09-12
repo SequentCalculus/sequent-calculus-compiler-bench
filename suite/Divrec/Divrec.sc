@@ -5,7 +5,7 @@ def create_n(n: i64): List[Unit] {
   if n == 0 {
     Nil
   } else {
-    Cons(Unit,create_n(n - 1))
+    Cons(Unit, create_n(n - 1))
   }
 }
 

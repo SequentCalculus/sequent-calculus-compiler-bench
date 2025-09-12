@@ -14,12 +14,12 @@ fn even_abs(n: i64) -> bool {
     }
 }
 
-fn odd(n: i64) -> bool {
-    odd_abs(n.abs())
-}
-
 fn even(n: i64) -> bool {
     even_abs(n.abs())
+}
+
+fn odd(n: i64) -> bool {
+    odd_abs(n.abs())
 }
 
 fn main_loop(iters: u64, n: i64) {

@@ -1,6 +1,6 @@
 $(SML_LIB)/basis/basis.mlb
 local
   Evenodd_lib.sml
-in 
+in
   Evenodd_mlton.sml
 end

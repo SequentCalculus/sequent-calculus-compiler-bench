@@ -3,11 +3,11 @@ import args
 def abs_i(n: Int): Int =
   if (n < 0) -1 * n else n
 
-def even_abs(n: Int): Bool =
-  if (n == 0) true else odd_abs(n - 1)
-
 def odd_abs(n: Int): Bool =
   if (n == 0) false else even_abs(n - 1)
+
+def even_abs(n: Int): Bool =
+  if (n == 0) true else odd_abs(n - 1)
 
 def even(n: Int): Bool =
   even_abs(abs_i(n))
