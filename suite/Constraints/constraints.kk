@@ -1,4 +1,4 @@
-module constraints
+module constraints 
 
 import std/os/env
 import std/num/int64
@@ -28,26 +28,25 @@ fun label(n:node<a>) : total a{
   match n 
     Node(l,_) -> l
 }
-
-fun map_list<a,b>(ls: list<a>,f: a -> <div,exn> b): <div,exn> list<b>{
+fun map_list<a,b>(ls:list<a>,f: a -> <div,exn> b): <div,exn> list<b>{
   match ls
     Nil -> Nil
-    Cons(h,tl) -> Cons(f(h),map_list(tl,f)) 
+    Cons(x,xs) -> Cons(f(x),map_list(xs,f))
 }
 
-fun all_list<a>(ls: list<a>, f: a -> bool): total bool{
+fun all_list<a>(ls:list<a>, f: a -> bool): total bool{
   match ls
     Nil -> True
-    Cons(h,t) -> f(h) && all_list(t,f)
+    Cons(x,xs) -> if f(x) then all_list(xs,f) else False
 }
 
-fun filter_list<a>(ls: list<a>, f: a -> exn bool): exn list<a>{
+fun filter_list<a>(ls:list<a>,f: a -> <div,exn> bool): <div,exn> list<a>{
   match ls
     Nil -> Nil
-    Cons(h,t) -> if f(h) then Cons(h,filter_list(t,f)) else filter_list(t,f)
+    Cons(x,xs) -> if f(x) then Cons(x,filter_list(xs,f)) else filter_list(xs,f)
 }
 
-fun is_empty<a>(ls:list<a>) : total bool{
+fun is_empty<a>(ls:list<a>): total bool{
   match ls
     Nil -> True
     Cons(_,_) -> False
@@ -60,16 +59,8 @@ fun enum_from_to(from:int64,to:int64): div list<int64>{
     Nil 
 }
 
-fun zip_with<a,b,c>(x:list<a>, y:list<b>,f : (a,b) -> <div,exn> c): <div,exn> list<c> {
-  match (x,y){
-    (Nil,_) -> Nil
-    (_,Nil) -> Nil
-    (Cons(c,cs),Cons(p,ps)) -> Cons(f(c,p),zip_with(cs,ps,f))
-  }
-}
-
-fun len<a>(ls:list<a>) : total int64{
-  match ls {
+fun len<a>(ls:list<a>): total int64{
+  match ls{
     Nil -> 0.int64
     Cons(_,xs) -> 1.int64 + len(xs)
   }
@@ -81,10 +72,10 @@ fun list_head<a>(ls:list<a>): exn a{
     Cons(h,_) -> h
 }
 
-fun list_tail<a>(ls:list<a>) : exn list<a>{
+fun list_tail<a>(ls:list<a>): exn list<a>{
   match ls
     Nil -> throw("Empty List")
-    Cons(_,t) -> t
+    Cons(_,tl) -> tl
 }
 
 fun at_index(ind:int64,ls:list<conflictset>) : exn conflictset{
@@ -97,36 +88,37 @@ fun at_index(ind:int64,ls:list<conflictset>) : exn conflictset{
         at_index(ind - 1.int64,cs)
 }
 
+
+
 fun rev_loop<a>(ls:list<a>,acc:list<a>): total list<a>{
-  match ls{
+  match ls
     Nil -> acc
-    Cons(p,ps) -> rev_loop(ps,Cons(p,ps))
-  }
+    Cons(x,xs) -> rev_loop(xs,Cons(x,acc))
 }
 
-fun list_reverse<a>(ls:list<a>): total list<a>{
+fun rev<a>(ls:list<a>): total list<a>{
   rev_loop(ls,Nil)
 }
 
-fun concat_loop<a>(ls:list<list<a>>, acc:list<a>) : total list<a>{
+fun concat_loop<a>(ls:list<list<a>>,acc:list<a>): list<a>{
   match ls{
-    Nil -> acc
+    Nil -> rev_loop(acc,Nil)
     Cons(l,ls) -> concat_loop(ls,rev_loop(l,acc))
   }
 }
 
-fun concat_list<a>(lss:list<list<a>>): total list<a> {
+fun concat_list<a>(lss:list<list<a>>): total list<a>{
   concat_loop(lss,Nil)
 }
 
 fun append_list<a>(l1:list<a>,l2:list<a>): total list<a>{
   match l1{
     Nil -> l2
-    Cons(a,as_) -> Cons(a,append_list(as_,l2))
+    Cons(x,xs) -> Cons(x,append_list(xs,l2))
   }
 }
 
-fun fold_list<a>(xs:list<a>,acc:list<a>,f: (list<a>,a) -> list<a>): total list<a>{
+fun fold_list<a>(xs:list<a>,acc:list<a>,f:(list<a>,a) -> list<a>): total list<a>{
   match xs{
     Nil -> acc
     Cons(h,t) -> fold_list(t,f(acc,h),f)
@@ -144,13 +136,37 @@ fun not_elem(i:int64,ls:list<int64>): total bool {
   not(in_list(i,ls))
 }
 
+fun nub_by(f:(int64,int64) -> bool,ls:list<int64>) : <div,exn> list<int64>{
+  match ls
+    Nil -> Nil
+    Cons(h,t) -> Cons(h,nub_by(f,filter_list(t,fn(y) not(f(h,y)))))
+}
+
+fun delete_by(f:(int64,int64) -> bool,x:int64,ys:list<int64>): list<int64>{
+  match ys 
+    Nil -> Nil
+    Cons(y,ys) -> 
+      if f(x,y) then
+        ys
+      else
+        Cons(y,delete_by(f,x,ys))
+}
+
+fun union_by(f:(int64,int64) -> bool,l1:list<int64>,l2:list<int64>): <div,exn> list<int64>{
+  append_list(l1,fold_list(nub_by(f,l2),l1,fn(acc,y) -> delete_by(f,y,acc)))
+}
+
+fun union(l1:list<int64>,l2:list<int64>): <div,exn> list<int64>{
+  union_by(fn(x,y) -> x==y,l1,l2)
+}
+
 fun map_tree(f:a -> <div,exn> b,t:node<a>): <div,exn> node<b> {
   match t 
     Node(l,ls) -> Node(f(l),map_list(ls,fn(x) map_tree(f,x)))
 }
 
 fun fold_tree(f:(a,list<node<b>>) -> <div,exn> node<b> ,t:node<a>) : <div,exn> node<b> {
-  match t 
+  match t
     Node(l,c) -> f(l,map_list(c, fn(x) fold_tree(f,x)))
 }
 
@@ -178,31 +194,6 @@ fun max_level(ls:list<assign>): total int64{
 fun complete(csp:csp, s:list<assign>) : total bool {
   match csp
     Csp(v,_,_) -> max_level(s) == v
-}
-
-fun delete_by(f:(int64,int64) -> bool,x:int64,ys:list<int64>): list<int64>{
-  match ys 
-    Nil -> Nil
-    Cons(y,ys) -> 
-      if f(x,y) then
-        ys
-      else
-        Cons(y,delete_by(f,x,ys))
-}
-
-fun nub_by(f:(int64,int64) -> bool,ls:list<int64>) : <div,exn> list<int64>{
-  match ls
-    Nil -> Nil
-    Cons(h,t) -> Cons(h,nub_by(f,filter_list(t,fn(y) not(f(h,y)))))
-  
-}
-
-fun union_by(f:(int64,int64) -> bool,l1:list<int64>,l2:list<int64>): <div,exn> list<int64>{
-  append_list(l1,fold_list(nub_by(f,l2),l1,fn(acc,y) -> delete_by(f,y,acc)))
-}
-
-fun union(l1:list<int64>,l2:list<int64>): <div,exn> list<int64>{
-  union_by(fn(x,y) -> x==y,l1,l2)
 }
 
 fun combine(ls:list<(list<assign>,conflictset)>,acc:list<int64>) : <div,exn> list<int64>{
@@ -258,13 +249,14 @@ fun known_conflict(c:conflictset): total bool{
     Unknown -> False
 }
 
-fun filter_known(ls: list<list<conflictset>>) : total list<list<conflictset>> {
+fun filter_known(ls:list<list<conflictset>>): total list<list<conflictset>>{
   match ls{
     Nil -> Nil
-    Cons(vs,t1) -> if all_list(vs,known_conflict) then
-      Cons(vs,filter_known(t1)) 
-    else 
-      filter_known(t1)
+    Cons(vs,t1) -> 
+      if all_list(vs,known_conflict) then
+        Cons(vs,filter_known(t1))
+      else
+        filter_known(t1)
   }
 }
 
@@ -287,11 +279,11 @@ fun check_complete(csp:csp,s:list<assign>) : conflictset{
     Unknown
 }
 
-fun earliest_inconsistency(csp:csp,aas:list<assign>): exn maybe<(int64,int64)> {
+fun earliest_inconsistency(csp:csp,aas:list<assign>): <div,exn> maybe<(int64,int64)> {
   match(csp,aas)
     (_,Nil) -> Nothing
     (Csp(_,_,rel),Cons(a,as_)) ->
-      match filter_list(list_reverse(as_),fn(x) not(rel(a,x)))
+      match filter_list(rev(as_),fn(x) not(rel(a,x)))
         Nil -> Nothing
         Cons(b,_) -> Just((level(a),level(b)))
 }
@@ -301,7 +293,7 @@ fun lookup_cache(csp:csp,t:node<(list<assign>,list<list<conflictset>>)>) : <div,
     match ls
       Nil -> ((Nil,Unknown),tbl)
       Cons(a,as_) -> 
-        val table_entry = at_index(value(a) - 1.int64, list_head(tbl))
+        val table_entry = at_index(value(a) - 1.int64, head(tbl, Nil))
         val cs = match table_entry
           Unknown  -> check_complete(csp_,Cons(a,as_))
           Known(_) -> table_entry
@@ -312,7 +304,7 @@ fun lookup_cache(csp:csp,t:node<(list<assign>,list<list<conflictset>>)>) : <div,
 fun to_pairs(ls:list<int64>,varrr:int64): total list<(int64,int64)> {
   match ls 
     Nil -> Nil
-    Cons(valll,t2) -> Cons((varrr,valll),to_pairs(t2,varrr))
+    Cons(vall_listl,t2) -> Cons((varrr,vall_listl),to_pairs(t2,varrr))
 }
 
 fun n_pairs(ls:list<int64>,vals:int64) : div list<list<(int64,int64)>>{
@@ -327,15 +319,15 @@ fun fill_table(s:list<assign>,csp:csp,tbl:list<list<conflictset>>) : <div,exn> l
     Cons(Assign(var_,val_),_) -> 
       match csp
         Csp(vars,vals,rel) ->
-          val f4 = fn(cs,(varr,vall))
+          val f4 = fn(cs,(varr,vall_list))
             match cs
               Known(_) -> cs
               Unknown -> 
-                if not(rel(Assign(var_,val_),Assign(varr,vall))) then
+                if not(rel(Assign(var_,val_),Assign(varr,vall_list))) then
                   Known(Cons(var_,Cons(varr,Nil)))
                 else
                   cs
-          zip_with(tbl,n_pairs(enum_from_to(var_ + 1.int64,vars),vals),fn(x,y) -> zip_with(x,y,f4))
+          zipwith(tbl,n_pairs(enum_from_to(var_ + 1.int64,vars),vals),fn(x,y) -> zipwith(x,y,f4))
 }
 
 fun cache_checks(csp:csp,tbl:list<list<conflictset>>,n:node<list<assign>>): <div,exn> node<(list<assign>,list<list<conflictset>>)>{
@@ -451,6 +443,6 @@ fun main_loop(iters:int64,n:int64) : <div,exn,console> (){
 pub fun main() : <div,console,exn,ndet> () {
   val args = get-args()
   val iters = unjust(parse-int(unjust(head(args)))).int64
-  val n = unjust(parse-int(unjust(head(tail(args))))).int64
+  val n = unjust(parse-int(unjust(head(list_tail(args))))).int64
   main_loop(iters,n)
 }

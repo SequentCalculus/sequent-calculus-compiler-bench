@@ -241,7 +241,7 @@ def filter_known(ls: List[List[ConflictSet]]): List[List[ConflictSet]] =
 def domain_wipeout(csp: CSP, t: Node[((List[Assign], ConflictSet), List[List[ConflictSet]])]): Node[(List[Assign], ConflictSet)] = {
   t.map_tree { case ((as_, cs), tbl) =>
 
-      val wiped_domains = filter(tbl) { x => all(x) { known_conflict } }
+      val wiped_domains = filter_known(tbl)
 
       val cs_ = if (is_empty(wiped_domains)) {
         cs
