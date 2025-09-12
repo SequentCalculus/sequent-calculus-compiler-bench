@@ -1,82 +1,16 @@
-# Languages
-
-| Benchmark            | Sc | Rust | SML | OCaml | Effekt | Koka | Args | Refactored | Notes                             |
-| -------------------- | -- | ---- | --- | ----- | ------ | ---- | ---- | ---------- | --------------------------------- |
-| Ack                  | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         |                                   |
-| Fib                  | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         | identical to FibonacciRecursive   |
-| MotzkinGoto          | ✔️ | N/A  | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         |                                   |
-| AckGoto              | ✔️ | N/A  | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         |                                   |
-| Nqueens              | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         |                                   |
-| Boyer                | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         |                                   |
-| Fish                 | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         |                                   |
-| Perm                 | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         | Rust version significantly faster |
-| Gcd                  | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         |                                   |
-| Primes               | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         |                                   |
-| Constraints          | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         |                                   |
-| Integer              | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | X    | ✔️   | ✔️         |                                   |
-| Sudan                | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         |                                   |
-| Cpstak               | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         |                                   |
-| IterateIncrement     | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         |                                   |
-| SudanGoto            | ✔️ | N/A  | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         |                                   |
-| Cryptarithm1         | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         |                                   |
-| Lcss                 | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         |                                   |
-| SumRange             | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         |                                   |
-| Deriv                | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         | Rust version significantly slower |
-| Life                 | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         |                                   |
-| TailFib              | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         |                                   |
-| Divrec               | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         |                                   |
-| LookupTree           | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         | Rust version about 10x slower     |
-| Tak                  | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         |                                   |
-| EraseUnused          | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         |                                   |
-| MatchOptions         | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         | Rust version significantly faster |
-| TakGoto              | ✔️ | N/A  | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         |                                   |
-| Evenodd              | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         |                                   |
-| EvenoddGoto          | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         |                                   |
-| Merge                | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         | Rust version about 10x slower     |
-| Takl                 | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         |                                   |
-| Minimax              | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         |                                   |
-| FactorialAccumulator | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         |                                   |
-| Motzkin              | ✔️ | ✔️   | ✔️  | ✔️    | ✔️     | ✔️   | ✔️   | ✔️         |                                   |
-
-## Slow Benchmaks
-
-These should be checked on Kamino before running the suite. They might need to
-be disabled and manually ran later
-
-### Koka
-
-- MotzkinGoto
-- AckGoto
-- SudanGoto
-- Lcss
-- SumRange
-- Constraints
-
-### Rust
-
-- Deriv
-
-### Effekt
-
-- TakGoto
-
-### MLton
-
-- EvenoddGoto
-
 # Nofib
 
 ## Progress
 
-| Dir         | Benchmark    | Impl | MLScript | Test | Args | Notes                                               |
-| ----------- | ------------ | ---- | -------- | ---- | ---- | --------------------------------------------------- |
-| gc/spectral | constraints  | X    | X        | X    | X    |                                                     |
-| spectral    | fish         | X    | X        | -    | X    | different output bc of int div for negative numbers |
-| spectral    | cryptarithm1 | X    | X        | X    | X    |                                                     |
-| spectral    | gcd          | X    | X        | X    | X    |                                                     |
-| spectral    | lcss         | X    | X        | X    | X    |                                                     |
-| spectral    | integer      | X    | X        | X    | X    |                                                     |
-| spectral    | boyer        | X    | X        | X    | X    |                                                     |
+| Dir         | Benchmark    | Impl | MLScript | Test | Args | Notes                                                    |
+| ----------- | ------------ | ---- | -------- | ---- | ---- | -------------------------------------------------------- |
+| gc/spectral | constraints  | X    | X        | X    | X    |                                                          |
+| spectral    | fish         | X    | X        | -    | X    | different output bc of int division for negative numbers |
+| spectral    | cryptarithm1 | X    | X        | X    | X    |                                                          |
+| spectral    | gcd          | X    | X        | X    | X    |                                                          |
+| spectral    | lcss         | X    | X        | X    | X    |                                                          |
+| spectral    | integer      | X    | X        | X    | X    |                                                          |
+| spectral    | boyer        | X    | X        | X    | X    |                                                          |
 
 ## Not implemented
 
@@ -293,45 +227,3 @@ So far, the following benchmarks are missing
 - `minimax` uses two different versions of minimax, `minimax` and
   `minimax_trans` regular `minimax` is implemented, but `minimax_trans` uses
   array functions, so we leave the latter out
-
-## Benchmarks progress
-
-| Benchmark            | Compiles | matches Manticore | Tested | Args | Notes                          |
-| -------------------- | -------- | ----------------- | ------ | ---- | ------------------------------ |
-| Ack                  | X        | X                 | X      | X    |                                |
-| AckGoto              | X        | X                 | X      | X    |                                |
-| Cpstak               | X        | X                 | X      | X    |                                |
-| Evenodd              | X        | X                 | X      | X    | args differ from evenoddGoto   |
-| EvenoddGoto          | X        | X                 | X      | X    |                                |
-| Fib                  | X        | X                 | X      | X    |                                |
-| Life                 | X        | X                 | X      | X    |                                |
-| Motzkin              | X        | X                 | X      | X    |                                |
-| MotzkinGoto          | X        | X                 | X      | X    |                                |
-| Primes               | X        | X                 | X      | X    |                                |
-| Sudan                | X        | X                 | X      | X    |                                |
-| SudanGoto            | X        | X                 | X      | X    |                                |
-| TailFib              | X        | X                 | X      | X    |                                |
-| Tak                  | X        | X                 | X      | X    |                                |
-| TakGoto              | X        | X                 | X      | X    |                                |
-| Takl                 | X        | X                 | X      | X    | runtime errors, long runtime   |
-| Merge                | X        | -                 | X      | X    | runtime errors                 |
-| Deriv                | X        | -                 | X      | X    | runtime errors                 |
-| Divrec               | X        | -                 | X      | X    | runtime errors                 |
-| Perm                 | X        | X                 | X      | X    | requires 105MB heap            |
-| Nqueens              | X        | X                 | X      | X    | requires 347MB heap            |
-| Minimax              | X        | X                 | X      | X    | requires 450MB heap, no arrays |
-| EraseUnused          | X        | N/A               | X      | X    | added iters                    |
-| SumRange             | X        | N/A               | X      | X    | added iters                    |
-| FactorialAccumulator | X        | N/A               | X      | X    | added iters                    |
-| FibonacciRecursive   | X        | N/A               | X      | X    | added iters                    |
-| IterateIncrement     | X        | N/A               | X      | X    | added iters                    |
-| LookupTree           | X        | N/A               | X      | X    | added iters                    |
-
-## WIP
-
-| Benchmark  | Compiles | matches Manticore | Tested | Args | Notes                      |
-| ---------- | -------- | ----------------- | ------ | ---- | -------------------------- |
-| Quicksort  | -        | -                 | -      | -    | requires ropes             |
-| Mandelbrot | -        | -                 | -      | -    | requires floats and arrays |
-| Mazefun    | -        | -                 | -      | -    | requires strings           |
-| Mcray      | -        | -                 | -      | -    | requires floats and rng    |

@@ -6,6 +6,19 @@ enum List<A> {
     Cons(A, Rc<List<A>>),
 }
 
+impl<T, A> From<T> for List<A>
+where
+    T: Iterator<Item = A>,
+{
+    fn from(it: T) -> List<A> {
+        let mut ls = List::Nil;
+        for a in it {
+            ls = List::Cons(a, Rc::new(ls));
+        }
+        ls
+    }
+}
+
 #[derive(Clone)]
 struct Assign {
     varr: i64,
@@ -72,6 +85,23 @@ impl<A> List<A> {
 
     fn is_empty(&self) -> bool {
         matches!(self, List::Nil)
+    }
+
+    fn zip_with<B, C>(self, other: List<B>, f: &impl Fn(A, B) -> C) -> List<C>
+    where
+        A: Clone,
+        B: Clone,
+    {
+        match self {
+            List::Nil => List::Nil,
+            List::Cons(a, as_) => match other {
+                List::Nil => List::Nil,
+                List::Cons(b, bs_) => List::Cons(
+                    f(a, b),
+                    Rc::new(Rc::unwrap_or_clone(as_).zip_with(Rc::unwrap_or_clone(bs_), f)),
+                ),
+            },
+        }
     }
 
     fn len(&self) -> i64 {
@@ -224,22 +254,13 @@ impl<A> List<A> {
     {
         self.union_by(other, &|(x, y)| x == y)
     }
+}
 
-    fn zip_with<B, C>(self, other: List<B>, f: &impl Fn(A, B) -> C) -> List<C>
-    where
-        A: Clone,
-        B: Clone,
-    {
-        match self {
-            List::Nil => List::Nil,
-            List::Cons(a, as_) => match other {
-                List::Nil => List::Nil,
-                List::Cons(b, bs_) => List::Cons(
-                    f(a, b),
-                    Rc::new(Rc::unwrap_or_clone(as_).zip_with(Rc::unwrap_or_clone(bs_), f)),
-                ),
-            },
-        }
+fn enum_from_to(from: i64, to: i64) -> List<i64> {
+    if from <= to {
+        List::Cons(from, Rc::new(enum_from_to(from + 1, to)))
+    } else {
+        List::Nil
     }
 }
 
@@ -256,27 +277,6 @@ where
 
     fn concat(self) -> List<A> {
         self.concat_loop(List::Nil)
-    }
-}
-
-fn enum_from_to(from: i64, to: i64) -> List<i64> {
-    if from <= to {
-        List::Cons(from, Rc::new(enum_from_to(from + 1, to)))
-    } else {
-        List::Nil
-    }
-}
-
-impl<T, A> From<T> for List<A>
-where
-    T: Iterator<Item = A>,
-{
-    fn from(it: T) -> List<A> {
-        let mut ls = List::Nil;
-        for a in it {
-            ls = List::Cons(a, Rc::new(ls));
-        }
-        ls
     }
 }
 
@@ -395,13 +395,40 @@ fn mk_tree(csp: &CSP) -> Node<List<Assign>> {
     init_tree(&next, List::Nil)
 }
 
-fn collect_conflict(ls: List<ConflictSet>) -> List<i64> {
+fn collect(ls: List<ConflictSet>) -> List<i64> {
     match ls {
         List::Nil => List::Nil,
-        List::Cons(ConflictSet::Known(cs), css) => {
-            cs.union(collect_conflict(Rc::unwrap_or_clone(css)))
-        }
+        List::Cons(ConflictSet::Known(cs), css) => cs.union(collect(Rc::unwrap_or_clone(css))),
         List::Cons(ConflictSet::Unknown, _) => List::Nil,
+    }
+}
+
+fn known_solution(c: &ConflictSet) -> bool {
+    match c {
+        ConflictSet::Known(List::Nil) => true,
+        ConflictSet::Known(List::Cons(_, _)) => false,
+        ConflictSet::Unknown => false,
+    }
+}
+
+fn known_conflict(c: &ConflictSet) -> bool {
+    match c {
+        ConflictSet::Known(List::Nil) => false,
+        ConflictSet::Known(List::Cons(_, _)) => true,
+        ConflictSet::Unknown => false,
+    }
+}
+
+fn filter_known(ls: List<List<ConflictSet>>) -> List<List<ConflictSet>> {
+    match ls {
+        List::Nil => List::Nil,
+        List::Cons(vs, t1) => {
+            if vs.all(&known_conflict) {
+                List::Cons(vs, Rc::new(filter_known(Rc::unwrap_or_clone(t1))))
+            } else {
+                filter_known(Rc::unwrap_or_clone(t1))
+            }
+        }
     }
 }
 
@@ -410,12 +437,12 @@ fn domain_wipeout(
     t: Node<((List<Assign>, ConflictSet), List<List<ConflictSet>>)>,
 ) -> Node<(List<Assign>, ConflictSet)> {
     let f8 = |((as_, cs), tbl): ((_, _), List<_>)| {
-        let wiped_domains = tbl.filter(&|vs: &List<ConflictSet>| vs.all(&|x| known_conflict(x)));
+        let wiped_domains = filter_known(tbl);
         let cs_ = if wiped_domains.is_empty() {
             cs
         } else {
             let hd = wiped_domains.head();
-            ConflictSet::Known(collect_conflict(hd))
+            ConflictSet::Known(collect(hd))
         };
         (as_, cs_)
     };
@@ -456,40 +483,6 @@ fn lookup_cache(
         }
     };
     t.map(&|x| f5(csp, x))
-}
-
-fn cache_checks(
-    csp: &CSP,
-    tbl: List<List<ConflictSet>>,
-    n: Node<List<Assign>>,
-) -> Node<(List<Assign>, List<List<ConflictSet>>)> {
-    let s = n.lab.clone();
-    Node {
-        lab: (n.lab, tbl.clone()),
-        children: n.children.map(&|x| {
-            Rc::new(cache_checks(
-                csp,
-                fill_table(&s, csp, tbl.clone().tail()),
-                Rc::unwrap_or_clone(x),
-            ))
-        }),
-    }
-}
-
-fn known_solution(c: &ConflictSet) -> bool {
-    match c {
-        ConflictSet::Known(List::Nil) => true,
-        ConflictSet::Known(List::Cons(_, _)) => false,
-        ConflictSet::Unknown => false,
-    }
-}
-
-fn known_conflict(c: &ConflictSet) -> bool {
-    match c {
-        ConflictSet::Known(List::Nil) => false,
-        ConflictSet::Known(List::Cons(_, _)) => true,
-        ConflictSet::Unknown => false,
-    }
 }
 
 fn to_pairs(ls: List<i64>, varrr: i64) -> List<(i64, i64)> {
@@ -538,6 +531,24 @@ fn fill_table(
                 &|x, y| x.zip_with(y, &f4),
             )
         }
+    }
+}
+
+fn cache_checks(
+    csp: &CSP,
+    tbl: List<List<ConflictSet>>,
+    n: Node<List<Assign>>,
+) -> Node<(List<Assign>, List<List<ConflictSet>>)> {
+    let s = n.lab.clone();
+    Node {
+        lab: (n.lab, tbl.clone()),
+        children: n.children.map(&|x| {
+            Rc::new(cache_checks(
+                csp,
+                fill_table(&s, csp, tbl.clone().tail()),
+                Rc::unwrap_or_clone(x),
+            ))
+        }),
     }
 }
 

@@ -8,7 +8,7 @@ record CSP(vars: Int, vals: Int, rel: (Assign, Assign) => Bool at {})
 record Node[A](label: A, children: List[Node[A]])
 
 type ConflictSet {
-  Known(vs:List[Int])
+  Known(vs: List[Int])
   Unknown()
 }
 
@@ -48,11 +48,11 @@ def enum_from_to(from: Int, to: Int): List[Int] =
     Nil()
   }
 
-def zip_with[A,B,C](x:List[A],y:List[B]) { f: (A,B) => C}: List[C] = 
-  (x,y) match{
-    case (Nil(),_) => Nil()
-    case (_,Nil()) => Nil()
-    case (Cons(c,cs),Cons(p,ps)) => Cons(f(c,p),zip_with(cs,ps){f})
+def zip_with[A, B, C](x: List[A],y: List[B]) { f: (A, B) => C }: List[C] =
+  (x, y) match {
+    case (Nil(), _) => Nil()
+    case (_, Nil()) => Nil()
+    case (Cons(c, cs), Cons(p, ps)) => Cons(f(c, p), zip_with(cs, ps) {f})
   }
 
 def len[A](ls: List[A]): Int =
@@ -139,10 +139,10 @@ def delete_by(x: Int, ys: List[Int]) { f: (Int, Int) => Bool }: List[Int] =
 def union_by(l1: List[Int], l2: List[Int]) { f: (Int, Int) => Bool }: List[Int] =
   append(
     l1,
-    nub_by(l2){f}.foldl(l1) { (acc, y) => delete_by(y, acc){f} }
+    nub_by(l2) {f}.foldl(l1) { (acc, y) => delete_by(y, acc) {f} }
   )
 
-def union(l1:List[Int], l2:List[Int]): List[Int] =
+def union(l1: List[Int], l2: List[Int]): List[Int] =
   union_by(l1, l2) { (x, y) => x == y }
 
 def map_tree[A, B](t: Node[A]) { f: A => B }: Node[B] =
@@ -190,7 +190,7 @@ def combine(ls: List[(List[Assign], ConflictSet)], acc: List[Int]): List[Int] =
     case Cons((s, Unknown()), css) => acc
   }
 
-def init_tree(x:List[Assign]) { f:List[Assign] => List[List[Assign]] }: Node[List[Assign]] =
+def init_tree(x: List[Assign]) { f: List[Assign] => List[List[Assign]] }: Node[List[Assign]] =
   Node(x, f(x).map_list { y => init_tree(y) {f} })
 
 def to_assign(ls: List[Int], ss: List[Assign]): List[List[Assign]] =
@@ -214,8 +214,8 @@ def mk_tree(csp: CSP): Node[List[Assign]] =
 def collect(ls: List[ConflictSet]): List[Int] =
   ls match {
     case Nil() => Nil()
-    case Cons(Known(cs),css) => union(cs, collect(css))
-    case Cons(Unknown(),css) => Nil()
+    case Cons(Known(cs), css) => union(cs, collect(css))
+    case Cons(Unknown(), css) => Nil()
   }
 
 def known_solution(c: ConflictSet): Bool =
@@ -225,7 +225,7 @@ def known_solution(c: ConflictSet): Bool =
     case Unknown() => false
   }
 
-def known_conflict(c:ConflictSet): Bool =
+def known_conflict(c: ConflictSet): Bool =
   c match {
     case Known(Nil()) => false
     case Known(Cons(_, _)) => true
@@ -248,7 +248,7 @@ def domain_wipeout(csp: CSP, t: Node[((List[Assign], ConflictSet), List[List[Con
       } else {
         Known(collect(head(wiped_domains)))
       }
-      (as_,cs_)
+      (as_, cs_)
   }
 }
 
@@ -286,14 +286,14 @@ def lookup_cache(
     }
   }
 
-def to_pairs(ls:List[Int],varrr:Int) : List[(Int,Int)] =
+def to_pairs(ls: List[Int],varrr: Int): List[(Int, Int)] =
   ls match {
     case Nil() => Nil()
     case Cons(valll, t2) => Cons((varrr, valll), to_pairs(t2, varrr))
   }
 
 
-def n_pairs(ls: List[Int], n: Int) : List[List[(Int, Int)]] =
+def n_pairs(ls: List[Int], n: Int): List[List[(Int, Int)]] =
   ls match {
     case Nil() => Nil()
     case Cons(varrr, t1) => Cons(to_pairs(enum_from_to(1, n), varrr), n_pairs(t1, n))
@@ -329,7 +329,7 @@ def cache_checks(csp: CSP, tbl: List[List[ConflictSet]], n: Node[List[Assign]]):
       Node((s, tbl), cs.map_list { x => cache_checks(csp, fill_table(s, csp, tbl.tail), x) })
   }
 
-def to_unknown(ls:List[Int]) : List[ConflictSet] =
+def to_unknown(ls: List[Int]): List[ConflictSet] =
   ls match {
     case Nil() => Nil()
     case Cons(m, t2) => Cons(Unknown(), to_unknown(t2))
@@ -399,21 +399,21 @@ def bj_(csp: CSP, t: Node[(List[Assign], ConflictSet)]): Node[(List[Assign], Con
     }
   }
 
-def bjbt_(csp: CSP,t: Node[List[Assign]]): Node[(List[Assign], ConflictSet)] =
+def bjbt_(csp: CSP, t: Node[List[Assign]]): Node[(List[Assign], ConflictSet)] =
   bj_(csp, bt(csp, t))
 
 def fc(csp: CSP, t: Node[List[Assign]]): Node[(List[Assign], ConflictSet)] =
   csp.domain_wipeout(csp.lookup_cache(csp.cache_checks(csp.empty_table, t)))
 
 def try_(n: Int) { algorithm: (CSP, Node[List[Assign]]) => Node[(List[Assign], ConflictSet)] }: Int =
-  len(search(queens(n)){algorithm})
+  len(search(queens(n)) {algorithm})
 
 def test_constraints_nofib(n: Int): List[Int] = [
-  try_(n){bt},
-  try_(n){bm},
-  try_(n){bjbt},
-  try_(n){bjbt_},
-  try_(n){fc}
+  try_(n) {bt},
+  try_(n) {bm},
+  try_(n) {bjbt},
+  try_(n) {bjbt_},
+  try_(n) {fc}
 ]
 
 def main_loop(iters: Int, n: Int): Unit = {
