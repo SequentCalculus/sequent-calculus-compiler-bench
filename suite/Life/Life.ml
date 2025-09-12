@@ -1,6 +1,6 @@
 type gen = MkGen of (int*int) list
 
-let pair_eq (i1,i2) = i1==i2
+let pair_eq (fst1,snd1) (fst2,snd2) = fst1 == fst2 && snd1 == snd2
 
 let rec fold_list xs acc f = 
   match xs with
@@ -9,7 +9,6 @@ let rec fold_list xs acc f =
 
 let revonto x y = fold_list x y (fun t -> fun h -> h::t)
 
-
 let rec collect_accum sofar xs f =
   match xs with
     | [] -> sofar
@@ -17,34 +16,34 @@ let rec collect_accum sofar xs f =
 
 let collect l f = collect_accum [] l f
 
-let rec append l1 l2 = 
-  match l1 with 
+let rec append_list l1 l2 = 
+  match l1 with
     | [] -> l2 
-    | hd::tl -> hd::append tl l2
+    | x::xs -> x::append_list xs l2
 
-let rec map f l = 
+let rec map_list f l = 
   match l with 
     | [] -> []
-    | hd::tl -> (f hd) :: (map f tl)
+    | x::xs -> (f x)::(map_list f xs)
 
-let rec exists f l = 
+let rec exists_list f l =
   match l with
     | [] -> false
-    | hd::tl -> if (f hd) then true else exists f tl
+    | x::xs -> if f x then true else exists_list f xs
 
 let rec len l = 
-  match l with 
+  match l with
     | [] -> 0
-    | _::tl -> 1 + (len tl)
+    | _::xs -> 1 + (len xs)
 
-let member l p = exists pair_eq l
+let member l p = exists_list (fun p1 -> pair_eq p p1) l
 
-let rec filter f l = 
+let rec filter_list f l = 
   match l with 
     | [] -> []
-    | hd::tl -> if f hd then hd::(filter f tl) else filter f tl
+    | x::xs -> if (f x) then x::(filter_list f xs) else filter_list f xs
 
-let diff x y = filter (fun p -> not (member y p)) x
+let diff x y = filter_list (fun p -> not (member y p)) x
 
 let alive (MkGen livecoords) = livecoords
 
@@ -74,11 +73,11 @@ let occurs3 l = collect_neighbors [] [] [] [] l
 let nextgen g =
   let living = alive g in
   let isalive = fun p -> member living p in
-  let liveneighbors = fun p -> len (filter isalive (neighbors p)) in
-  let survivors = filter (fun p -> twoorthree (liveneighbors p)) living in
-  let newbrnlist = collect living (fun p -> filter (fun n -> not (isalive n)) (neighbors p)) in
+  let liveneighbors = fun p -> len (filter_list isalive (neighbors p)) in
+  let survivors = filter_list (fun p -> twoorthree (liveneighbors p)) living in
+  let newbrnlist = collect living (fun p -> filter_list (fun n -> not (isalive n)) (neighbors p)) in
   let newborn = occurs3 newbrnlist in
-  MkGen (append survivors newborn)
+  MkGen (append_list survivors newborn)
 
 let rec nthgen g i =
   if i=0 then g
@@ -97,7 +96,7 @@ let gun =
 
 let at_pos coordlist (fst2,snd2) =
   let move = fun (fst1,snd1) -> (fst1+fst2,snd1+snd2)
-  in map move coordlist
+  in map_list move coordlist
 
 let center_line = 5
 
@@ -112,7 +111,7 @@ let shuttle =
   (0,3) :: r1
 
 let non_steady = MkGen (
-  append (append
+  append_list (append_list
     (at_pos bail (1,center_line))
     (at_pos bail (21,center_line)))
     (at_pos shuttle (6,(center_line - 2)))
