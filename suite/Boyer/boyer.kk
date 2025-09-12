@@ -639,7 +639,7 @@ fun test_boyer_nofib(n: int64): <div, exn> bool {
 
 fun main_loop(iters: int64, n: int64): <div, console, exn> () {
   val res = test_boyer_nofib(n)
-  if iters==1.int64 then
+  if iters == 1.int64 then
     if res then
       println("1")
     else

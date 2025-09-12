@@ -4,9 +4,9 @@ import std/os/env
 import std/num/int64
 
 fun ack(m: int64, n: int64): div int64 {
-  if m==0.int64 then
+  if m == 0.int64 then
     n + 1.int64
-  else if n==0.int64 then
+  else if n == 0.int64 then
     ack(m - 1.int64, 1.int64)
   else
     ack(m - 1.int64, ack(m, n - 1.int64))
@@ -14,7 +14,7 @@ fun ack(m: int64, n: int64): div int64 {
 
 fun main_loop(iters: int64, m: int64, n: int64): <console, div> () {
   val res = ack(m, n)
-  if iters==1.int64 then
+  if iters == 1.int64 then
     println(res)
   else
     main_loop(iters - 1.int64, m, n)
