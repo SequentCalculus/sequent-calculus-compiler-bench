@@ -55,7 +55,7 @@ pub fn generate_plot(res: BenchResult, y_min: f64, y_max: f64) -> Result<(), Err
         .margin_top(MARGIN_TOP)
         .caption(caption, ("sans-serif", CAPTION_SIZE).into_font())
         .x_label_area_size(LABEL_SIZE)
-        .y_label_area_size(LABEL_SIZE)
+        .y_label_area_size(2.5 * LABEL_SIZE as f64)
         .margin_right(0)
         .build_cartesian_2d(x_min..x_max, y_min..y_max)
         .map_err(|err| Error::plotters(&res.benchmark, "build coordinates", err))?;
@@ -65,7 +65,8 @@ pub fn generate_plot(res: BenchResult, y_min: f64, y_max: f64) -> Result<(), Err
         .disable_x_mesh()
         .y_max_light_lines(0)
         .y_label_formatter(&|ind| {
-            if res.benchmark.contains("Mean") {
+            format!("10^{ind:.1}")
+            /*if res.benchmark.contains("Mean") {
                 ((10_f64.powf(*ind) * 100.0).round() / 100.0).to_string()
             } else {
                 if ind.round() == *ind {
@@ -73,7 +74,7 @@ pub fn generate_plot(res: BenchResult, y_min: f64, y_max: f64) -> Result<(), Err
                 } else {
                     "".to_owned()
                 }
-            }
+            }*/
         })
         .x_label_formatter(&|ind| {
             if ind.round() == *ind && *ind >= 1.0 {
