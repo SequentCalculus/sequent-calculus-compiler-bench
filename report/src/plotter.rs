@@ -65,16 +65,16 @@ pub fn generate_plot(res: BenchResult, y_min: f64, y_max: f64) -> Result<(), Err
         .disable_x_mesh()
         .y_max_light_lines(0)
         .y_label_formatter(&|ind| {
-            format!("10^{ind:.1}")
-            /*if res.benchmark.contains("Mean") {
-                ((10_f64.powf(*ind) * 100.0).round() / 100.0).to_string()
+            if res.benchmark.contains("Mean") {
+                format!("10^{ind:.1}")
+                //((10_f64.powf(*ind) * 100.0).round() / 100.0).to_string()
             } else {
                 if ind.round() == *ind {
                     10_f64.powf(*ind).to_string()
                 } else {
                     "".to_owned()
                 }
-            }*/
+            }
         })
         .x_label_formatter(&|ind| {
             if ind.round() == *ind && *ind >= 1.0 {
