@@ -1,26 +1,26 @@
-structure MatchOptions = struct 
-  fun attempt i = 
+structure MatchOptions = struct
+  fun attempt i =
     if i = 0 then SOME i
-    else 
-      case attempt (i-1) of 
+    else
+      case attempt (i - 1) of
            NONE => NONE
-         | SOME x => SOME (x+1)
+         | SOME x => SOME (x + 1)
 
-  fun main_loop iters n = 
-  let val res = 
-  (case attempt n of 
+  fun main_loop iters n =
+  let val res =
+  (case attempt n of
         NONE => ~1
       | SOME x => x)
-  in 
-    if iters=1 then 
+  in
+    if iters = 1 then
       print ((Int.toString res) ^ "\n")
-    else main_loop (iters-1) n
+    else main_loop (iters - 1) n
   end
 
-  fun run args =   
+  fun run args =
     let val iters = valOf (Int.fromString (hd args))
     val n = valOf (Int.fromString (hd (tl args)))
-  in 
-    main_loop iters n 
+  in
+    main_loop iters n
   end
 end

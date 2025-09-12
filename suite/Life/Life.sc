@@ -61,14 +61,14 @@ def collect(l: List[Pair[i64, i64]], f: Fun[Pair[i64, i64], List[Pair[i64, i64]]
 def append(l1: List[Pair[i64, i64]], l2: List[Pair[i64, i64]]): List[Pair[i64, i64]] {
   l1.case[Pair[i64, i64]] {
     Nil => l2,
-    Cons(is, iss) => Cons(is,append(iss,l2))
+    Cons(is, iss) => Cons(is, append(iss, l2))
   }
 }
 
 def map(l: List[Pair[i64, i64]], f: Fun[Pair[i64, i64], Pair[i64, i64]]): List[Pair[i64, i64]] {
   l.case[Pair[i64, i64]] {
     Nil => Nil,
-    Cons(p, ps) => Cons(f.apply[Pair[i64, i64], Pair[i64, i64]](p), map(ps,f))
+    Cons(p, ps) => Cons(f.apply[Pair[i64, i64], Pair[i64, i64]](p), map(ps, f))
   }
 
 }
@@ -97,9 +97,9 @@ def member(l: List[Pair[i64, i64]], p: Pair[i64, i64]): Bool {
 def filter(l: List[Pair[i64, i64]], f: Fun[Pair[i64, i64], Bool]): List[Pair[i64, i64]] {
   l.case[Pair[i64, i64]] {
     Nil => Nil,
-    Cons(p,ps) => f.apply[Pair[i64, i64], Bool](p).case {
-        True => Cons(p, filter(ps,f)),
-        False => filter(ps,f)
+    Cons(p, ps) => f.apply[Pair[i64, i64], Bool](p).case {
+        True => Cons(p, filter(ps, f)),
+        False => filter(ps, f)
       }
   }
 }

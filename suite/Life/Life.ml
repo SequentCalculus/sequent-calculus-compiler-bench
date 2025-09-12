@@ -1,72 +1,72 @@
 type gen = MkGen of (int*int) list
 
-let pair_eq (fst1,snd1) (fst2,snd2) = fst1 == fst2 && snd1 == snd2
+let pair_eq (fst1, snd1) (fst2, snd2) = fst1 == fst2 && snd1 == snd2
 
-let rec fold_list xs acc f = 
+let rec fold_list xs acc f =
   match xs with
     | [] -> acc
-    | h::t -> fold_list t (f acc h) f
+    | h :: t -> fold_list t (f acc h) f
 
-let revonto x y = fold_list x y (fun t -> fun h -> h::t)
+let revonto x y = fold_list x y (fun t -> fun h -> h :: t)
 
 let rec collect_accum sofar xs f =
   match xs with
     | [] -> sofar
-    | p::xs -> collect_accum (revonto sofar (f p)) xs f
+    | p :: xs -> collect_accum (revonto sofar (f p)) xs f
 
 let collect l f = collect_accum [] l f
 
-let rec append_list l1 l2 = 
+let rec append_list l1 l2 =
   match l1 with
-    | [] -> l2 
-    | x::xs -> x::append_list xs l2
+    | [] -> l2
+    | x :: xs -> x :: append_list xs l2
 
-let rec map_list f l = 
-  match l with 
+let rec map_list f l =
+  match l with
     | [] -> []
-    | x::xs -> (f x)::(map_list f xs)
+    | x :: xs -> (f x) :: (map_list f xs)
 
 let rec exists_list f l =
   match l with
     | [] -> false
-    | x::xs -> if f x then true else exists_list f xs
+    | x :: xs -> if f x then true else exists_list f xs
 
-let rec len l = 
+let rec len l =
   match l with
     | [] -> 0
-    | _::xs -> 1 + (len xs)
+    | _ :: xs -> 1 + (len xs)
 
 let member l p = exists_list (fun p1 -> pair_eq p p1) l
 
-let rec filter_list f l = 
-  match l with 
+let rec filter_list f l =
+  match l with
     | [] -> []
-    | x::xs -> if (f x) then x::(filter_list f xs) else filter_list f xs
+    | x :: xs -> if (f x) then x :: (filter_list f xs) else filter_list f xs
 
 let diff x y = filter_list (fun p -> not (member y p)) x
 
 let alive (MkGen livecoords) = livecoords
 
-let neighbors (fst,snd) =
-  (fst-1,snd-1) :: (fst-1,snd) :: (fst-1,snd+1)
-  :: (fst,snd-1) :: (fst,snd+1)
-  :: (fst+1,snd-1) :: (fst+1,snd) :: (fst+1,snd+1) :: []
+let neighbors (fst, snd) =
+  (fst - 1, snd - 1) :: (fst - 1, snd) :: (fst - 1, snd + 1)
+  :: (fst, snd - 1) :: (fst, snd + 1)
+  :: (fst + 1, snd - 1) :: (fst + 1, snd) :: (fst + 1, snd + 1) :: []
 
-let twoorthree n = n=2 || n=3
+let twoorthree n = n = 2 || n = 3
 
 let rec collect_neighbors xover x3 x2 x1 xs =
   match xs with
     | [] -> diff x3 xover
-    | a::x ->
+    | a :: x ->
         if member xover a
         then collect_neighbors xover x3 x2 x1 x
         else if member x3 a
-        then collect_neighbors (a::xover) x3 x2 x1 x
+        then collect_neighbors (a :: xover) x3 x2 x1 x
         else if member x2 a
-        then collect_neighbors xover (a::x3) x2 x1 x
+        then collect_neighbors xover (a :: x3) x2 x1 x
         else if member x1 a
-        then collect_neighbors xover x3 (a::x2) x1 x
-        else collect_neighbors xover x3 x2 (a::x1) x
+        then collect_neighbors xover x3 (a :: x2) x1 x
+        else collect_neighbors xover x3 x2 (a :: x1) x
 
 let occurs3 l = collect_neighbors [] [] [] [] l
 
@@ -80,41 +80,41 @@ let nextgen g =
   MkGen (append_list survivors newborn)
 
 let rec nthgen g i =
-  if i=0 then g
-  else nthgen (nextgen g) (i-1)
+  if i = 0 then g
+  else nthgen (nextgen g) (i - 1)
 
 let gun =
-  let r9 = (9,29) :: (9,30) :: (9,31) :: (9,32) :: [] in
-  let r8 = (8,20) :: (8,28) :: (8,29) :: (8,30) :: (8,31) :: (8,40) :: (8,41) :: r9 in
-  let r7 = (7,19) :: (7,21) :: (7,28) :: (7,31) :: (7,40) :: (7,41) :: r8 in
-  let r6 = (6,7) :: (6,8) :: (6,18) :: (6,22) :: (6,23) :: (6,28) :: (6,29) :: (6,30) :: (6,31) :: (6,36) :: r7 in
-  let r5 = (5,7) :: (5,8) :: (5,18) :: (5,22) :: (5,23) :: (5,29) :: (5,30) :: (5,31) :: (5,32) :: (5,36) :: r6 in
-  let r4 = (4,18) :: (4,22) :: (4,23) :: (4,32) :: r5 in
-  let r3 = (3,19) :: (3,21) :: r4 in
-  let r2 = (2,20) :: r3 in
+  let r9 = (9, 29) :: (9, 30) :: (9, 31) :: (9, 32) :: [] in
+  let r8 = (8, 20) :: (8, 28) :: (8, 29) :: (8, 30) :: (8, 31) :: (8, 40) :: (8, 41) :: r9 in
+  let r7 = (7, 19) :: (7, 21) :: (7, 28) :: (7, 31) :: (7, 40) :: (7, 41) :: r8 in
+  let r6 = (6, 7) :: (6, 8) :: (6, 18) :: (6, 22) :: (6, 23) :: (6, 28) :: (6, 29) :: (6, 30) :: (6, 31) :: (6, 36) :: r7 in
+  let r5 = (5, 7) :: (5, 8) :: (5, 18) :: (5, 22) :: (5, 23) :: (5, 29) :: (5, 30) :: (5, 31) :: (5, 32) :: (5, 36) :: r6 in
+  let r4 = (4, 18) :: (4, 22) :: (4, 23) :: (4, 32) :: r5 in
+  let r3 = (3, 19) :: (3, 21) :: r4 in
+  let r2 = (2, 20) :: r3 in
   MkGen r2
 
-let at_pos coordlist (fst2,snd2) =
-  let move = fun (fst1,snd1) -> (fst1+fst2,snd1+snd2)
+let at_pos coordlist (fst2, snd2) =
+  let move = fun (fst1, snd1) -> (fst1 + fst2, snd1 + snd2)
   in map_list move coordlist
 
 let center_line = 5
 
 let bail =
-  (0,0)::(0,1)::(1,0)::(1,1)::[]
+  (0, 0) :: (0, 1) :: (1, 0) :: (1, 1) :: []
 
 let shuttle =
-  let r4 = (4,1) :: (4,0) :: (4,5) :: (4,6) :: [] in
-  let r3 = (3,2)::(3,3)::(3,4)::r4 in
-  let r2 = (2,1)::(2,5)::r3 in
-  let r1 = (1,2) :: (1,4) :: r2 in
-  (0,3) :: r1
+  let r4 = (4, 1) :: (4, 0) :: (4, 5) :: (4, 6) :: [] in
+  let r3 = (3, 2) :: (3, 3) :: (3, 4) :: r4 in
+  let r2 = (2, 1) :: (2, 5) :: r3 in
+  let r1 = (1, 2) :: (1, 4) :: r2 in
+  (0, 3) :: r1
 
 let non_steady = MkGen (
   append_list (append_list
-    (at_pos bail (1,center_line))
-    (at_pos bail (21,center_line)))
-    (at_pos shuttle (6,(center_line - 2)))
+    (at_pos bail (1, center_line))
+    (at_pos bail (21, center_line)))
+    (at_pos shuttle (6, (center_line - 2)))
   )
 
 let go_gun steps =
@@ -125,9 +125,9 @@ let go_shuttle steps =
 
 let rec go_loop iters steps go =
   let res = go steps in
-  if iters=1 then len (alive res)
+  if iters = 1 then len (alive res)
   else
-    go_loop (iters-1) steps go
+    go_loop (iters - 1) steps go
 
 let main =
   let iters = int_of_string Sys.argv.(1) in
