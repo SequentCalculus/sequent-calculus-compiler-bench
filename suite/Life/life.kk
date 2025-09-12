@@ -38,21 +38,21 @@ fun collect<t>(l:list<t>,f:t -> list<t>): total list<t>{
 fun list_append<a>(l1:list<a>,l2:list<a>): total list<a>{
   match l2 {
     Nil -> l2
-    Cons(hd,tl) _> Cons(hd,append(tl,l2))
+    Cons(hd,tl) -> Cons(hd,append(tl,l2))
   }
 }
 
 fun map_list<a,b>(l:list<a>,f: a -> b): total list<b>{
   match l {
     Nil -> Nil
-    Cons(hd,tl) => Cons(f(hd),map_list(tl,f))
+    Cons(hd,tl) -> Cons(f(hd),map_list(tl,f))
   }
 }
 
 fun exists_l<t>(l:list<t>,f:t -> bool): total bool{
   match l{
     Nil -> False
-    Cons(p,ps) -> f(p) || exists_l(ps,f)
+    Cons(p,ps) -> if f(p) then True else exists_l(ps,f)
   }
 }
 
@@ -130,7 +130,7 @@ fun occurs3(l:list<(int64,int64)>): total list<(int64,int64)>{
 fun nextgen(gen:gen) : total gen{
   val living = alive(gen)
   val isalive = fn(p) member(living,p)
-  val liveneighbours = fn(x,y) len(filter_list(neighbours((x,y)),isalive)).int64
+  val liveneighbours = fn(x,y) len(filter_list(neighbours((x,y)),isalive))
   val survivors = filter_list(living,fn((x,y)) twoorthree(liveneighbours(x,y)))
   val newbrnlist: list<(int64,int64)> = collect(living,fn(p) filter_list(neighbours(p),fn(n) not(isalive(n))))
   val newborn = occurs3(newbrnlist)
@@ -204,7 +204,7 @@ fun go_shuttle(steps:int64): div gen {
 fun go_loop(iters:int64,steps:int64,go:int64 -> div gen): div int64{
   val res = go(steps)
   if iters == 1.int64 then
-    len(alive(res)).int64
+    len(alive(res))
   else
     go_loop(iters - 1.int64,steps,go)
 }
