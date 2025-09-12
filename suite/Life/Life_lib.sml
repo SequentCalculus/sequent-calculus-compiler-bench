@@ -1,7 +1,7 @@
 structure Life = struct
   datatype gen = MkGen of ((int * int) list)
 
-  fun pair_eq (i,j) = i = j
+  fun pair_eq (fst1,snd1) (fst2,snd2) = fst1 = fst2 andalso snd1=snd2
 
   fun fold xs acc f = 
     case xs of 
@@ -20,12 +20,12 @@ structure Life = struct
   fun append l1 l2 = 
     case l1 of 
          nil => l2 
-       | hd::tl => hd::append tl l2
+       | h::t => h::append t l2
 
-  fun map_list f l = 
+  fun map_list f l =
     case l of 
          nil => nil
-       | hd::tl => (f hd) :: (map_list f tl)
+       | h::t => (f h) :: (map_list f t)
 
   fun exists l f =
     case l of
@@ -35,16 +35,16 @@ structure Life = struct
   fun len l = 
     case l of 
          nil => 0
-       | _::tl => 1 + (len tl)
+       | h::t => 1 + (len t)
 
-  fun member l p = exists l pair_eq
+  fun member l p = exists l (fn p1 => pair_eq p1 p)
 
-  fun filter f l = 
+  fun filter_list f l =
     case l of 
          nil => nil
-       | hd::tl => if f hd then hd :: (filter f tl) else filter f tl
+       | h::t => if (f h) then h::filter_list f t else filter_list f t
 
-  fun diff x y = filter (fn p => not (member y p) ) x
+  fun diff x y = filter_list (fn p => not (member y p) ) x
 
   fun alive (MkGen livecoords) = livecoords
 
@@ -75,9 +75,9 @@ structure Life = struct
   fun nextgen g =
   let val living= alive g
     val isalive= fn p => member living p
-    val liveneighbors = fn p => len (filter isalive (neighbors p))
-    val survivors = filter (fn p => twoorthree (liveneighbors(p))) living
-    val newbrnlist= collect living (fn p => filter (fn n => not (isalive n)) (neighbors p))
+    val liveneighbors = fn p => len (filter_list isalive (neighbors p))
+    val survivors = filter_list (fn p => twoorthree (liveneighbors(p))) living
+    val newbrnlist= collect living (fn p => filter_list (fn n => not (isalive n)) (neighbors p))
     val newborn = occurs3 newbrnlist
   in
     MkGen (append survivors newborn)
@@ -120,10 +120,11 @@ structure Life = struct
 
   fun non_steady () =
     MkGen (
-    append (append 
-      (at_pos (bail()) (1,center_line)) 
-      (at_pos (bail()) (21,center_line)))
-    (at_pos (shuttle()) (6,(center_line - 2))))
+    append
+    (at_pos (bail()) (1,center_line))
+    (append (at_pos (bail()) (21,center_line))
+    (at_pos (shuttle()) (6,(center_line - 2)))
+    ))
 
   fun go_gun steps =
     nthgen (gun()) steps
