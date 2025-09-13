@@ -30,10 +30,10 @@ def len(l: List[i64]): i64 {
 }
 
 def list_n(n: i64): List[i64] {
-  if n == 0 { 
+  if n == 0 {
     Nil
   } else {
-    Cons(n,list_n(n - 1))
+    Cons(n, list_n(n - 1))
   }
 }
 

@@ -8,14 +8,14 @@ def neq_i(i1: i64, i2: i64): Bool {
 def length(l: List[List[i64]]): i64 {
   l.case[List[i64]]{
     Nil => 0,
-    Cons(i,ls) => 1+length(ls)
+    Cons(i, ls) => 1+length(ls)
   }
 }
 
 def append(l1: List[List[i64]], l2: List[List[i64]]): List[List[i64]] {
   l1.case[List[i64]] {
     Nil => l2,
-    Cons(is, iss) => Cons(is,append(iss,l2))
+    Cons(is, iss) => Cons(is, append(iss, l2))
   }
 }
 

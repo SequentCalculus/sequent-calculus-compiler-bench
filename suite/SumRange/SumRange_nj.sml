@@ -1,6 +1,6 @@
-structure Main = struct 
-  fun main (_,args) = 
+structure Main = struct
+  fun main (_,args) =
     let val _ = SumRange.run (tl args) in
       OS.Process.success
-    end 
+    end
 end

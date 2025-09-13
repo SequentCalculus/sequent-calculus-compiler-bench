@@ -36,7 +36,7 @@ def head_l(l: List[List[i64]]): List[i64] {
 def len(l: List[i64]): i64 {
   l.case[i64]{
     Nil => 0,
-    Cons(x,xs) => 1 + len(xs)
+    Cons(x, xs) => 1 + len(xs)
   }
 }
 
@@ -51,14 +51,14 @@ def rev_loop(x: List[i64], n: i64, y: List[i64]): List[i64] {
 def loop_sum(y: List[i64]): i64 {
   y.case[i64]{
     Nil => 0,
-    Cons(h,t) => h + loop_sum(t)
+    Cons(h, t) => h + loop_sum(t)
   }
 }
 
 def sumlists(x: List[List[i64]]): i64 {
   x.case[List[i64]]{
     Nil => 0,
-    Cons(h,t) => loop_sum(h) + sumlists(t)
+    Cons(h, t) => loop_sum(h) + sumlists(t)
   }
 }
 
@@ -133,7 +133,7 @@ def perm9(m: i64, n: i64): Bool {
   run_benchmark(
     new { apply(u) =>  loop_work(m, permutations(one2n(n))) },
     new { apply(result) =>
-      if sumlists(result) == (((n * (n + 1)) * factorial(n))/2) {
+      if sumlists(result) == (((n * (n + 1)) * factorial(n)) / 2) {
         True
       } else {
         False

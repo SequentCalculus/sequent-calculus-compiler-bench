@@ -4,7 +4,7 @@ def sum_loop(i: i64, tot: i64, stop: i64, f: Fun[i64, i64]): i64 {
   if stop < i {
     tot
   } else {
-    sum_loop(i + 1, (f.apply[i64,i64](i)) + tot, stop, f)
+    sum_loop(i + 1, (f.apply[i64, i64](i)) + tot, stop, f)
   }
 }
 

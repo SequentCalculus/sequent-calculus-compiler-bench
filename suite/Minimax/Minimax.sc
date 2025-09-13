@@ -1,4 +1,4 @@
-data Bool { True, False } 
+data Bool { True, False }
 data Unit { Unit }
 data Option[A] { None, Some(a: A) }
 data Pair[A, B] { Tup(a: A, b: B) }
@@ -20,7 +20,7 @@ def top(t: RoseTree[Pair[List[Option[Player]], i64]]): Pair[List[Option[Player]]
   }
 }
 
-// Tuple functions 
+// Tuple functions
 
 def snd(p: Pair[List[Option[Player]], i64]): i64  {
   p.case[List[Option[Player]], i64]{
@@ -43,7 +43,7 @@ def player_eq(p1: Player, p2: Player): Bool {
   }
 }
 
-def other(p: Player): Player { 
+def other(p: Player): Player {
   p.case {
     X => O,
     O => X
@@ -52,7 +52,7 @@ def other(p: Player): Player {
 
 // Boolean functions
 
-def not(b: Bool): Bool { 
+def not(b: Bool): Bool {
   b.case {
     True => False,
     False => True,
@@ -68,11 +68,11 @@ def is_some(p: Option[Player]): Bool {
   }
 }
 
-// List functions 
+// List functions
 
 def head(l: List[Option[Player]]): Option[Player] {
   l.case[Option[Player]] {
-    Nil => None, // should give a runtime error 
+    Nil => None, // should give a runtime error
     Cons(p, ps) => p
   }
 }
@@ -98,7 +98,7 @@ def rev(l: List[i64]): List[i64] {
 def map_i_board(l: List[i64], f: Fun[i64, List[Option[Player]]]): List[List[Option[Player]]] {
   l.case[i64] {
     Nil => Nil,
-    Cons(x, xs) => Cons(f.apply[i64, List[Option[Player]]](x), map_i_board(xs,f))
+    Cons(x, xs) => Cons(f.apply[i64, List[Option[Player]]](x), map_i_board(xs, f))
   }
 }
 
@@ -108,7 +108,7 @@ def map_board_tree(
 ): List[RoseTree[Pair[List[Option[Player]], i64]]] {
   l.case[List[Option[Player]]] {
     Nil => Nil,
-    Cons(x, xs) => Cons(f.apply[List[Option[Player]], RoseTree[Pair[List[Option[Player]], i64]]](x), map_board_tree(xs,f))
+    Cons(x, xs) => Cons(f.apply[List[Option[Player]], RoseTree[Pair[List[Option[Player]], i64]]](x), map_board_tree(xs, f))
   }
 }
 
@@ -118,7 +118,7 @@ def map_tree_i(
 ): List[i64] {
   l.case[RoseTree[Pair[List[Option[Player]], i64]]] {
     Nil => Nil,
-    Cons(x, xs) => Cons(f.apply[RoseTree[Pair[List[Option[Player]], i64]], i64](x), map_tree_i(xs,f))
+    Cons(x, xs) => Cons(f.apply[RoseTree[Pair[List[Option[Player]], i64]], i64](x), map_tree_i(xs, f))
   }
 }
 
@@ -139,15 +139,15 @@ def tabulate_loop(n: i64, len: i64, f: Fun[Unit, Option[Player]]): List[Option[P
 
 def tabulate(len: i64, f: Fun[Unit, Option[Player]]): List[Option[Player]] {
   if len < 0 {
-    Nil // should raise a runtime error 
+    Nil // should raise a runtime error
   } else {
     tabulate_loop(0, len, f)
   }
 }
 
-def nth(l: List[Option[Player]], i: i64): Option[Player] { 
+def nth(l: List[Option[Player]], i: i64): Option[Player] {
   l.case[Option[Player]] {
-    Nil => None, // should give a runtime error 
+    Nil => None, // should give a runtime error
     Cons(p, ps) => if i == 0 { p } else { nth(ps, i - 1) }
   }
 }
@@ -169,7 +169,7 @@ def exists(f: Fun[List[i64], Bool], l: List[List[i64]]): Bool {
   }
 }
 
-def all(f: Fun[i64, Bool], l: List[i64]): Bool { 
+def all(f: Fun[i64, Bool], l: List[i64]): Bool {
   l.case[i64] {
     Nil => True,
     Cons(i, is) => f.apply[i64, Bool](i).case {
@@ -199,10 +199,10 @@ def is_full(board: List[Option[Player]]): Bool {
   all_board(board, new { apply(p) => is_some(p) })
 }
 
-def player_occupies(p: Player, board: List[Option[Player]], i: i64): Bool { 
+def player_occupies(p: Player, board: List[Option[Player]], i: i64): Bool {
   find(board, i).case[Player] {
     Some(p0) => player_eq(p, p0),
-    None => False 
+    None => False
   }
 }
 
@@ -212,20 +212,20 @@ def has_trip(board: List[Option[Player]], p: Player, l: List[i64]): Bool {
 
 def rows(): List[List[i64]] {
   Cons(Cons(0, Cons(1, Cons(2, Nil))),
-    Cons(Cons(3, Cons(4, Cons(5, Nil))), 
-      Cons(Cons(6, Cons(7, Cons(8, Nil))), 
+    Cons(Cons(3, Cons(4, Cons(5, Nil))),
+      Cons(Cons(6, Cons(7, Cons(8, Nil))),
         Nil)))
 }
 
 def cols(): List[List[i64]] {
   Cons(Cons(0, Cons(3, Cons(6, Nil))),
     Cons(Cons(1, Cons(4, Cons(7, Nil))),
-      Cons(Cons(2, Cons(5, Cons(8, Nil))), 
+      Cons(Cons(2, Cons(5, Cons(8, Nil))),
         Nil)))
 }
 
 def diags(): List[List[i64]] {
-  Cons(Cons(0, Cons(4, Cons(8, Nil))), 
+  Cons(Cons(0, Cons(4, Cons(8, Nil))),
     Cons(Cons(2, Cons(4, Cons(6, Nil))),
       Nil))
 }
@@ -264,7 +264,7 @@ def is_cat(board: List[Option[Player]]): Bool {
 
 def list_extreme(f: Fun2[i64, i64, i64], l: List[i64]): i64 {
   l.case[i64] {
-    Nil => 0, // should give a runtime error 
+    Nil => 0, // should give a runtime error
     Cons(i, is) => fold_i(f, i, is)
   }
 }
@@ -273,7 +273,7 @@ def listmax(l: List[i64]): i64 {
   list_extreme(new { apply2(a, b) => if b < a { a } else { b } }, l)
 }
 
-def listmin(l: List[i64]): i64 { 
+def listmin(l: List[i64]): i64 {
   list_extreme(new { apply2(a, b) => if a < b { a } else { b } }, l)
 }
 
@@ -310,20 +310,20 @@ def put_at(x: Option[Player], xs: List[Option[Player]], i: i64): List[Option[Pla
     if i > 0 {
       Cons(head(xs), put_at(x, tail(xs), i - 1))
     } else {
-      Nil // should give a runtime error 
+      Nil // should give a runtime error
     }
   }
 }
 
 def move_to(board: List[Option[Player]], p: Player, i: i64): List[Option[Player]] {
-  is_occupied(board, i).case{
-    True => Nil, // should give a runtime error 
+  is_occupied(board, i).case {
+    True => Nil, // should give a runtime error
     False => put_at(Some(p), board, i)
   }
 }
 
-def all_moves_rec(n: i64, board: List[Option[Player]], acc: List[i64]): List[i64] { 
-  board.case[Option[Player]] { 
+def all_moves_rec(n: i64, board: List[Option[Player]], acc: List[i64]): List[i64] {
+  board.case[Option[Player]] {
     Nil => rev(acc),
     Cons(p, more) => p.case[Player] {
       Some(p) => all_moves_rec(n + 1, more, acc),
@@ -332,26 +332,26 @@ def all_moves_rec(n: i64, board: List[Option[Player]], acc: List[i64]): List[i64
   }
 }
 
-def all_moves(board: List[Option[Player]]): List[i64] { all_moves_rec(0, board, Nil) } 
+def all_moves(board: List[Option[Player]]): List[i64] { all_moves_rec(0, board, Nil) }
 
-def successors(board: List[Option[Player]], p: Player): List[List[Option[Player]]] { 
+def successors(board: List[Option[Player]], p: Player): List[List[Option[Player]]] {
   map_i_board(all_moves(board), new { apply(i) => move_to(board, p, i) })
 }
 
 def minimax(p: Player, board: List[Option[Player]]): RoseTree[Pair[List[Option[Player]], i64]] {
   game_over(board).case {
     True => mk_leaf(Tup(board, score(board))),
-    False => 
+    False =>
       let trees: List[RoseTree[Pair[List[Option[Player]], i64]]] = map_board_tree(successors(board, p), new { apply(b) => minimax(other(p), b) });
-      let scores: List[i64] = map_tree_i(trees, new{ apply(t) => snd(top(t)) });
-      p.case { 
+      let scores: List[i64] = map_tree_i(trees, new { apply(t) => snd(top(t)) });
+      p.case {
         X => Rose(Tup(board, listmax(scores)), trees),
         O => Rose(Tup(board, listmin(scores)), trees)
       }
   }
 }
 
-def main_loop(iters: i64): i64{
+def main_loop(iters: i64): i64 {
   let res: RoseTree[Pair[List[Option[Player]], i64]] = minimax(X, emptyBoard());
   if iters == 1 {
     println_i64(snd(top(res)));

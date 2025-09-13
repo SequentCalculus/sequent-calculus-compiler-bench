@@ -2,6 +2,6 @@ $(SML_LIB)/basis/basis.mlb
 $(SML_LIB)/basis/sml-nj.mlb
 local
   SudanGoto_lib.sml
-in 
+in
   SudanGoto_mlton.sml
 end

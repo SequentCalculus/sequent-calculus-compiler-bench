@@ -4,36 +4,36 @@ import std/os/env
 import std/num/int64
 
 effect ret
-  ctl ret(i:int64) : int64
+  ctl ret(i: int64) : int64
 
-fun handle_ret(action:()-> <div,ret> int64) : div int64 {
-  with ctl ret(i) i 
+fun handle_ret(action: ()-> <div, ret> int64) : div int64 {
+  with ctl ret(i) i
   action()
 }
 
-fun sudan(n:int64,x:int64,y:int64): <ret,div> int64{
+fun sudan(n: int64, x: int64, y: int64): <ret, div> int64 {
   if n == 0.int64 then
     ret(x + y)
   else if y == 0.int64 then
-    ret(x) 
-  else 
-    val inner = handle_ret(fn() sudan(n,x,y - 1.int64))
-    sudan(n - 1.int64,inner,inner + y)
+    ret(x)
+  else
+    val inner = handle_ret(fn() sudan(n, x, y - 1.int64))
+    sudan(n - 1.int64, inner, inner + y)
 }
 
-fun main_loop(iters:int64,n:int64,x:int64,y:int64): <console,div> () {
-  val res = handle_ret(fn() sudan(n,x,y))
+fun main_loop(iters: int64, n: int64, x: int64, y: int64): <console, div> () {
+  val res = handle_ret(fn() sudan(n, x, y))
   if iters == 1.int64 then
     println(res)
-  else 
-    main_loop(iters - 1.int64,n,x,y)
+  else
+    main_loop(iters - 1.int64, n, x, y)
 }
 
-fun main(): <ndet,exn,console,div> (){
+fun main(): <ndet, exn, console, div> () {
   val args = get-args()
   val iters = unjust(parse-int(unjust(head(args)))).int64
   val n = unjust(parse-int(unjust(head(tail(args))))).int64
   val x = unjust(parse-int(unjust(head(tail(tail(args)))))).int64
   val y = unjust(parse-int(unjust(head(tail(tail(tail(args))))))).int64
-  main_loop(iters,n,x,y)
+  main_loop(iters, n, x, y)
 }

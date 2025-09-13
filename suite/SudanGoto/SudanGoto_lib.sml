@@ -1,28 +1,28 @@
-structure SudanGoto = struct 
+structure SudanGoto = struct
   structure CC = SMLofNJ.Cont
 
-  fun sudan n x y k = 
-    if n=0 then CC.throw k (x+y)
-    else if y=0 then CC.throw k x 
-    else 
-      let val inner = CC.callcc (sudan n x (y-1))
-      in 
-        sudan (n-1) inner (inner+y) k
+  fun sudan n x y k =
+    if n = 0 then CC.throw k (x + y)
+    else if y = 0 then CC.throw k x
+    else
+      let val inner = CC.callcc (sudan n x (y - 1))
+      in
+        sudan (n - 1) inner (inner + y) k
       end
 
-  fun main_loop iters n x y = 
+  fun main_loop iters n x y =
   let val res = CC.callcc (sudan n x y)
-      in if iters=1
+      in if iters = 1
          then print ((Int.toString res) ^ "\n")
-         else main_loop (iters-1) n x y
+         else main_loop (iters - 1) n x y
       end
 
-  fun run args = 
+  fun run args =
     let val iters = valOf (Int.fromString (hd args))
     val n = valOf (Int.fromString (hd (tl args)))
     val x = valOf (Int.fromString (hd (tl (tl args))))
     val y = valOf (Int.fromString (hd (tl (tl (tl args)))))
-  in 
+  in
     main_loop iters n x y
   end
 end

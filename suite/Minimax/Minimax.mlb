@@ -1,6 +1,6 @@
 $(SML_LIB)/basis/basis.mlb
-local 
+local
   Minimax_lib.sml
-in 
+in
   Minimax_mlton.sml
 end

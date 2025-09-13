@@ -19,8 +19,8 @@ def head[A](ls: List[A]): A =
     case Cons(a, _) => a
   }
 
-def len(l: List[Int]): Int = 
-  l match{
+def len(l: List[Int]): Int =
+  l match {
     case Nil() => 0
     case Cons(_,xs) => 1 + len(xs)
   }

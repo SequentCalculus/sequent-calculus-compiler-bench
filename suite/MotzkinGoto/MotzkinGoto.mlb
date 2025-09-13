@@ -2,6 +2,6 @@ $(SML_LIB)/basis/basis.mlb
 $(SML_LIB)/basis/sml-nj.mlb
 local
   MotzkinGoto_lib.sml
-in 
+in
   MotzkinGoto_mlton.sml
 end

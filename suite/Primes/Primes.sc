@@ -3,7 +3,7 @@ data List[A] { Nil, Cons(a: A, as: List[A]) }
 def len(l: List[i64]): i64 {
   l.case[i64] {
     Nil => 0,
-    Cons(p,ps) => 1+len(ps)
+    Cons(p, ps) => 1 + len(ps)
   }
 }
 

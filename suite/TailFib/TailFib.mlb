@@ -1,6 +1,6 @@
 $(SML_LIB)/basis/basis.mlb
 local
   TailFib_lib.sml
-in 
+in
   TailFib_mlton.sml
 end
