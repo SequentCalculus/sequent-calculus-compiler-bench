@@ -1,10 +1,10 @@
 stack_size = 3584000
 
-.PHONY: test 
-test: 
+.PHONY: test
+test:
 ifeq ($(name),)
 	ulimit -s $(stack_size) && cargo test --all --no-fail-fast
-else 
+else
 	ulimit -s $(stack_size) && cargo test -p testsuite --test test-single -- $(name)
 endif
 
@@ -31,5 +31,6 @@ clean:
 	find -name "*.cmo" -delete
 	find -name "*.cmx" -delete
 	find -name "*.o" -delete
-	find -name ".cm" -type d | xargs rm -r 
-	find -name ".koka" -type d | xargs rm -r 
+	find -name ".cm" -type d | xargs -r rm -r
+	find -name ".koka" -type d | xargs -r rm -r
+	rm -rf target_scc
