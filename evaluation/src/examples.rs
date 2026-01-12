@@ -1,7 +1,7 @@
 #![allow(unused_imports)]
 use crate::{
-    BENCHMARK_PATH, BIN_OUT, EXAMPLES_AARCH, EXAMPLES_OUT, EXAMPLES_PATH, EXAMPLES_X86,
-    errors::Error, results::EvalResult,
+    BENCHMARK_PATH, BIN_OUT, EXAMPLES_AARCH, EXAMPLES_OUT, EXAMPLES_X86, errors::Error,
+    results::EvalResult,
 };
 use std::{
     collections::HashMap,
@@ -71,20 +71,6 @@ impl Example {
 
 pub fn load_examples() -> Result<Vec<Example>, Error> {
     let mut examples = vec![];
-
-    let examples_path = PathBuf::from(EXAMPLES_PATH);
-    for example_dir in
-        read_dir(&examples_path).map_err(|err| Error::read_dir(&examples_path, err))?
-    {
-        let dir_path = example_dir
-            .map_err(|err| Error::read_dir(&examples_path, err))?
-            .path();
-        if dir_path.is_file() {
-            continue;
-        }
-
-        examples.push(Example::from_dir(&dir_path)?);
-    }
 
     let bench_path = PathBuf::from(BENCHMARK_PATH);
     for benchmark_dir in read_dir(&bench_path).map_err(|err| Error::read_dir(&bench_path, err))? {

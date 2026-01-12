@@ -15,8 +15,7 @@ use results::write_csv;
 const CONFIG_PATH: &str = "evaluation/config.toml";
 const SCC_BIN: &str = "target/release/scc";
 const BIN_OUT: &str = "target_scc/versions";
-const EXAMPLES_PATH: &str = "examples";
-const BENCHMARK_PATH: &str = "benchmarks/suite";
+const BENCHMARK_PATH: &str = "suite";
 const EXAMPLES_OUT: &str = "target_scc/bin/";
 #[allow(unused)]
 const EXAMPLES_X86: &str = "x86_64";

@@ -10,7 +10,9 @@ pub fn compile_versions(versions: &HashMap<String, String>) -> Result<(), Error>
     let current_branch = get_current_branch()?;
 
     let bin_path = PathBuf::from(BIN_OUT);
-    remove_dir_all(&bin_path).map_err(|err| Error::remove_dir(&bin_path, err))?;
+    if bin_path.exists() {
+        remove_dir_all(&bin_path).map_err(|err| Error::remove_dir(&bin_path, err))?;
+    }
     create_dir_all(&bin_path).map_err(|err| Error::create_dir(&bin_path, err))?;
     let compiled_path = PathBuf::from(SCC_BIN);
 

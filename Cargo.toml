@@ -2,6 +2,7 @@
 members = [
     "runner",
     "report",
+    "evaluation",
     "testsuite",
     "lib"
 ]
