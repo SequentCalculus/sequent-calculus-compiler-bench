@@ -1,7 +1,6 @@
 #![allow(unused_imports)]
 use crate::{
-    BENCHMARK_PATH, BIN_OUT, EXAMPLES_AARCH, EXAMPLES_OUT, EXAMPLES_X86, errors::Error,
-    results::EvalResult,
+    BENCHMARK_PATH, EXAMPLES_AARCH, EXAMPLES_OUT, EXAMPLES_X86, errors::Error, results::EvalResult,
 };
 use std::{
     collections::HashMap,
@@ -89,27 +88,25 @@ pub fn load_examples() -> Result<Vec<Example>, Error> {
 
 pub fn compile_examples(
     examples: &[Example],
-    compiler_names: &[String],
+    compilers: &HashMap<String, PathBuf>,
+    stat_args: &HashMap<String, Vec<String>>,
     results: &mut Vec<EvalResult>,
 ) -> Result<(), Error> {
-    let compiler_bins: Vec<(&String, PathBuf)> = compiler_names
-        .iter()
-        .map(|name| (name, PathBuf::from(BIN_OUT).join(format!("scc_{name}"))))
-        .collect();
-
     #[cfg(target_arch = "x86_64")]
     let out_path = PathBuf::from(EXAMPLES_OUT).join(EXAMPLES_X86);
     #[cfg(target_arch = "aarch64")]
     let out_path = PathBuf::from(EXAMPLES_OUT).join(EXAMPLES_AARCH);
 
     for example in examples {
-        for (compiler_name, bin_path) in compiler_bins.iter() {
-            println!("Compiling {} with compiler {compiler_name}", example.name);
-            let mut compile_cmd = Command::new(bin_path);
-
-            if *compiler_name != "no_opt" {
-                compile_cmd.arg("--print-opt");
+        for (compiler_name, compiler_path) in compilers.iter() {
+            if !compiler_path.exists() {
+                panic!(
+                    "Could not find {}, please make sure all versions exist",
+                    compiler_path.display()
+                )
             }
+            println!("Compiling {} with compiler {compiler_name}", example.name);
+            let mut compile_cmd = Command::new(compiler_path);
             compile_cmd.arg("codegen").arg(&example.source_path);
 
             #[cfg(target_arch = "x86_64")]
@@ -123,7 +120,7 @@ pub fn compile_examples(
 
             let compile_res = compile_cmd.output().map_err(|err| {
                 Error::start_cmd(
-                    &format!("scc_{compiler_name}"),
+                    &compiler_path.display().to_string(),
                     &format!("Compile example {}", example.source_path.display()),
                     err,
                 )
@@ -142,9 +139,10 @@ pub fn compile_examples(
                 ));
             }
 
-            if *compiler_name != "no_opt" {
-                update_results(results, compile_stdout, &example.name);
+            if let Some(args) = stat_args.get(compiler_name) {
+                get_stats(compiler_path, args, example, results)?;
             }
+
             let example_from = out_path.join(&example.name);
             let example_to = example.compiled_path(compiler_name);
             rename(&example_from, &example_to)
@@ -165,10 +163,10 @@ fn update_results(results: &mut Vec<EvalResult>, stdout: String, example_name: &
             num_passes = Some(
                 line_parts
                     .next()
-                    .expect("Could not get number of passes")
+                    .expect("Could not get number of Passes")
                     .trim()
                     .parse::<u64>()
-                    .expect("Could not get Number of Passes"),
+                    .expect("Could not get number of Passes"),
             );
         }
 
@@ -181,7 +179,7 @@ fn update_results(results: &mut Vec<EvalResult>, stdout: String, example_name: &
                     .expect("Could not get number of Create Clauses")
                     .trim()
                     .parse::<u64>()
-                    .expect("Could not get number of create clauses"),
+                    .expect("Could not get number of Create Clauses"),
             );
         }
 
@@ -200,9 +198,45 @@ fn update_results(results: &mut Vec<EvalResult>, stdout: String, example_name: &
     }
     results.push(EvalResult {
         example: example_name.to_string(),
-        num_passes: num_passes.expect("Could not get number of passes"),
-        lifted_create: num_create.expect("Could not get number of lifted create clauses"),
-        lifted_switch: num_switch.expect("Could not get number of lifted switch clauses"),
+        num_passes: num_passes.expect("Could not get number of Passes"),
+        lifted_create: num_create.expect("Could not get number of lifted Create Clauses"),
+        lifted_switch: num_switch.expect("Could not get number of lifted Switch Clauses"),
         benchmark_times: HashMap::new(),
     });
+}
+
+fn get_stats(
+    compiler_path: &Path,
+    stat_args: &[String],
+    example: &Example,
+    results: &mut Vec<EvalResult>,
+) -> Result<(), Error> {
+    let mut cmd = Command::new(compiler_path);
+    for arg in stat_args {
+        cmd.arg(arg);
+    }
+    cmd.arg(&example.source_path);
+    let output = cmd.output().map_err(|err| {
+        Error::start_cmd(
+            &compiler_path.display().to_string(),
+            &format!("Compile example {}", example.source_path.display()),
+            err,
+        )
+    })?;
+    let stdout_str =
+        String::from_utf8(output.stdout).map_err(|err| Error::parse_out("scc", err))?;
+
+    if !output.status.success() {
+        let stderr_str =
+            String::from_utf8(output.stderr).map_err(|err| Error::parse_out("scc", err))?;
+        return Err(Error::run_cmd(
+            &compiler_path.display().to_string(),
+            output.status,
+            &stdout_str,
+            &stderr_str,
+        ));
+    }
+
+    update_results(results, stdout_str, &example.name);
+    Ok(())
 }

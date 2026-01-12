@@ -1,20 +1,16 @@
 mod benchmark;
-mod compile_scc;
 mod config;
 mod errors;
 mod examples;
 mod results;
 
 use benchmark::benchmark_examples;
-use compile_scc::compile_versions;
 use config::EvalConfig;
 use errors::Error;
 use examples::{compile_examples, load_examples};
 use results::write_csv;
 
 const CONFIG_PATH: &str = "evaluation/config.toml";
-const SCC_BIN: &str = "target/release/scc";
-const BIN_OUT: &str = "target_scc/versions";
 const BENCHMARK_PATH: &str = "suite";
 const EXAMPLES_OUT: &str = "target_scc/bin/";
 #[allow(unused)]
@@ -29,20 +25,13 @@ fn main() -> Result<(), Error> {
     println!("Loading examples...");
     let examples = load_examples()?;
     let mut results = Vec::with_capacity(examples.len());
-    println!("Compiling compiler versions...");
-    compile_versions(&config.version_git_hashes)?;
     println!("Compiling examples...");
-    let version_names: Vec<String> = config.version_git_hashes.keys().cloned().collect();
-    compile_examples(&examples, &version_names, &mut results)?;
+    compile_examples(&examples, &config.versions, &config.stat_args, &mut results)?;
     println!("Benchmarking examples...");
-    benchmark_examples(
-        &examples,
-        &version_names,
-        config.num_hyperfine,
-        &mut results,
-    )?;
+    let versions: Vec<String> = config.versions.keys().cloned().collect();
+    benchmark_examples(&examples, &versions, config.num_hyperfine, &mut results)?;
     println!("Writing results...");
-    write_csv(results, &version_names)?;
+    write_csv(results, &versions)?;
     println!("Done");
     Ok(())
 }
