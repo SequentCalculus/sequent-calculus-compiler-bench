@@ -1,0 +1,5 @@
+args = ["1", "600851475143"]
+test_args = ["1", "13195"]
+expected = "29"
+runs = 10
+suite = "Project Euler"
