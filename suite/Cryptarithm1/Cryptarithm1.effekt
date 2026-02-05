@@ -94,7 +94,7 @@ def main_loop(iters: Int, n: Int): Unit = {
 def main() =
   commandLineArgs() match {
     case Cons(iters_str, Cons(n_str, Nil())) =>
-      with on[WrongFormat].panic
+      with crash("Please provide Integer Arguments")
       val iters = string::toInt(iters_str)
       val n = string::toInt(n_str)
       main_loop(iters, n)

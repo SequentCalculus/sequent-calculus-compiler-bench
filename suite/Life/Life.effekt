@@ -209,7 +209,7 @@ def go_loop(iters: Int, steps: Int) { go: Int => Gen }: Int = {
 def main() =
   commandLineArgs() match {
     case Cons(iters_str, Cons(steps_str, Nil())) =>
-      with on[WrongFormat].panic
+      with crash("Please provide Integer Arguments")
       val iters = string::toInt(iters_str)
       val steps = string::toInt(steps_str)
       val gun_res = go_loop(iters, steps) { go_gun }
