@@ -27,7 +27,7 @@ def main_loop(iters: Int, x: Int, y: Int, z: Int): Unit = {
 def main() =
   commandLineArgs() match {
     case Cons(iters_str, Cons(x_str, Cons(y_str, Cons(z_str, Nil())))) =>
-      with on[WrongFormat].panic
+      with crash("Please provide Integer Arguments")
       val iters = string::toInt(iters_str)
       val x = string::toInt(x_str)
       val y = string::toInt(y_str)

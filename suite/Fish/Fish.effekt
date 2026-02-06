@@ -183,7 +183,7 @@ def test_fish_nofib(n: Int): List[List[Vec4]] =
 def main() =
   commandLineArgs() match {
     case Cons(n_str, Nil()) =>
-      with on[WrongFormat].panic
+      with crash("Please provide Integer Arguments")
       val n = string::toInt(n_str)
       val res = test_fish_nofib(n)
       println(length(head(res)))
