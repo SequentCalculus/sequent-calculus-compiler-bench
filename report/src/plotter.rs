@@ -67,7 +67,7 @@ pub fn generate_plot(res: BenchResult, y_min: f64, y_max: f64) -> Result<(), Err
         .y_label_formatter(&|ind| {
             if res.benchmark.contains("Mean") {
                 if (ind * 10.0).round() == 0.0 {
-                    "0".to_owned()
+                    "1".to_owned()
                 } else {
                     format!("10^{ind:.1}")
                 }

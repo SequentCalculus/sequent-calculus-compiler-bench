@@ -26,7 +26,7 @@ def main_loop(iters: Int, m: Int, n: Int): Unit = {
 def main() =
   commandLineArgs() match {
     case Cons(iters_str, Cons(m_str, Cons(n_str, Nil()))) =>
-      with crash("Please provide integer arguments") 
+      with crash("Please provide integer arguments")
       val iters = string::toInt(iters_str)
       val m = string::toInt(m_str)
       val n = string::toInt(n_str)
