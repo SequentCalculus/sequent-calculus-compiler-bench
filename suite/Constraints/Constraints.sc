@@ -38,21 +38,21 @@ def value(a: Assign): i64 {
 }
 
 def search_label(n: Node[Pair[List[Assign], ConflictSet]]): Pair[List[Assign], ConflictSet] {
-  n.case[Pair[List[Assign], ConflictSet]] {
+  n.case {
     Node(p, cs) => p
   }
 }
 
 def bj_label(n: Node[Pair[List[Assign], ConflictSet]]): Pair[List[Assign], ConflictSet] {
-  n.case[Pair[List[Assign], ConflictSet]] {
+  n.case {
     Node(l, cs) => l
   }
 }
 
 def mk_map(f: Fun[List[Assign], Node[List[Assign]]], l: List[List[Assign]]): List[Node[List[Assign]]] {
-  l.case[List[Assign]] {
+  l.case {
     Nil => Nil,
-    Cons(p, ps) => Cons(f.apply[List[Assign], Node[List[Assign]]](p), mk_map(f, ps))
+    Cons(p, ps) => Cons(f.apply(p), mk_map(f, ps))
   }
 }
 
@@ -60,9 +60,9 @@ def search_map(
   f: Fun[Node[Pair[List[Assign], ConflictSet]], Node[Pair[List[Assign], ConflictSet]]],
   l: List[Node[Pair[List[Assign], ConflictSet]]]
 ): List[Node[Pair[List[Assign], ConflictSet]]] {
-  l.case[Node[Pair[List[Assign], ConflictSet]]] {
+  l.case {
     Nil => Nil,
-    Cons(p, ps) => Cons(f.apply[Node[Pair[List[Assign], ConflictSet]], Node[Pair[List[Assign], ConflictSet]]](p), search_map(f, ps))
+    Cons(p, ps) => Cons(f.apply(p), search_map(f, ps))
   }
 }
 
@@ -72,7 +72,7 @@ def search_map2(
 ): List[List[Pair[List[Assign], ConflictSet]]] {
   l.case[Node[Pair[List[Assign], ConflictSet]]] {
     Nil => Nil,
-    Cons(p, ps) => Cons(f.apply[Node[Pair[List[Assign], ConflictSet]], List[Pair[List[Assign], ConflictSet]]](p), search_map2(f, ps))
+    Cons(p, ps) => Cons(f.apply(p), search_map2(f, ps))
   }
 }
 
@@ -80,9 +80,9 @@ def search_map3(
   f: Fun[Pair[List[Assign], ConflictSet], List[Assign]],
   l: List[Pair[List[Assign], ConflictSet]]
 ): List[List[Assign]] {
-  l.case[Pair[List[Assign], ConflictSet]] {
+  l.case {
     Nil => Nil,
-    Cons(p, ps) => Cons(f.apply[Pair[List[Assign], ConflictSet], List[Assign]](p), search_map3(f, ps))
+    Cons(p, ps) => Cons(f.apply(p), search_map3(f, ps))
   }
 }
 
@@ -90,9 +90,9 @@ def checks_map(
   f: Fun[Node[List[Assign]], Node[Pair[List[Assign], List[List[ConflictSet]]]]],
   l: List[Node[List[Assign]]]
 ): List[Node[Pair[List[Assign], List[List[ConflictSet]]]]] {
-  l.case[Node[List[Assign]]] {
+  l.case {
     Nil => Nil,
-    Cons(p, ps) =>  Cons(f.apply[Node[List[Assign]], Node[Pair[List[Assign], List[List[ConflictSet]]]]](p), checks_map(f, ps))
+    Cons(p, ps) =>  Cons(f.apply(p), checks_map(f, ps))
   }
 }
 
@@ -100,10 +100,10 @@ def lookup_map(
   f: Fun[Node[Pair[List[Assign], List[List[ConflictSet]]]], Node[Pair[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]]]],
   l: List[Node[Pair[List[Assign], List[List[ConflictSet]]]]]
 ): List[Node[Pair[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]]]] {
-  l.case[Node[Pair[List[Assign], List[List[ConflictSet]]]]] {
+  l.case {
     Nil => Nil,
     Cons(p, ps) =>
-      Cons(f.apply[Node[Pair[List[Assign], List[List[ConflictSet]]]], Node[Pair[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]]]](p), lookup_map(f, ps))
+      Cons(f.apply(p), lookup_map(f, ps))
   }
 }
 
@@ -111,9 +111,9 @@ def bt_map(
   f: Fun[Node[List[Assign]], Node[Pair[List[Assign], ConflictSet]]],
   l: List[Node[List[Assign]]]
 ): List[Node[Pair[List[Assign], ConflictSet]]] {
-  l.case[Node[List[Assign]]] {
+  l.case {
     Nil => Nil,
-    Cons(p, ps) => Cons(f.apply[Node[List[Assign]], Node[Pair[List[Assign], ConflictSet]]](p), bt_map(f, ps))
+    Cons(p, ps) => Cons(f.apply(p), bt_map(f, ps))
   }
 }
 
@@ -123,7 +123,7 @@ def bj_map(
 ): List[Pair[List[Assign], ConflictSet]] {
   l.case[Node[Pair[List[Assign], ConflictSet]]] {
     Nil => Nil,
-    Cons(p, ps) => Cons(f.apply[Node[Pair[List[Assign], ConflictSet]], Pair[List[Assign], ConflictSet]](p), bj_map(f, ps))
+    Cons(p, ps) => Cons(f.apply(p), bj_map(f, ps))
   }
 }
 
@@ -131,9 +131,9 @@ def bj_map2(
   f: Fun[Node[Pair[List[Assign], ConflictSet]], Node[Pair[List[Assign], ConflictSet]]],
   l: List[Node[Pair[List[Assign], ConflictSet]]]
 ): List[Node[Pair[List[Assign], ConflictSet]]] {
-  l.case[Node[Pair[List[Assign], ConflictSet]]] {
+  l.case {
     Nil => Nil,
-    Cons(p, ps) => Cons(f.apply[Node[Pair[List[Assign], ConflictSet]], Node[Pair[List[Assign], ConflictSet]]](p), bj_map2(f, ps))
+    Cons(p, ps) => Cons(f.apply(p), bj_map2(f, ps))
   }
 }
 
@@ -141,9 +141,9 @@ def bm_map(
   f: Fun[Node[Pair[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]]], Node[Pair[List[Assign], ConflictSet]]],
   l: List[Node[Pair[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]]]]
 ): List[Node[Pair[List[Assign], ConflictSet]]] {
-  l.case[Node[Pair[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]]]] {
+  l.case {
     Nil => Nil,
-    Cons(p, ps) => Cons(f.apply[Node[Pair[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]]], Node[Pair[List[Assign], ConflictSet]]](p), bm_map(f, ps))
+    Cons(p, ps) => Cons(f.apply(p), bm_map(f, ps))
   }
 }
 
@@ -151,9 +151,9 @@ def test_map(
   f: Fun[Fun2[CSP, Node[List[Assign]], Node[Pair[List[Assign], ConflictSet]]], i64],
   l: List[Fun2[CSP, Node[List[Assign]], Node[Pair[List[Assign], ConflictSet]]]]
 ): List[i64] {
-  l.case[Fun2[CSP, Node[List[Assign]], Node[Pair[List[Assign], ConflictSet]]]]{
+  l.case {
     Nil => Nil,
-    Cons(p, ps) => Cons(f.apply[Fun2[CSP, Node[List[Assign]], Node[Pair[List[Assign], ConflictSet]]], i64](p), test_map(f, ps))
+    Cons(p, ps) => Cons(f.apply(p), test_map(f, ps))
   }
 }
 
@@ -161,16 +161,16 @@ def wipe_map(
   f: Fun[Node[Pair[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]]], Node[Pair[List[Assign], ConflictSet]]],
   l: List[Node[Pair[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]]]]
 ): List[Node[Pair[List[Assign], ConflictSet]]] {
-  l.case[Node[Pair[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]]]] {
+  l.case {
     Nil => Nil,
-    Cons(p, ps) => Cons(f.apply[Node[Pair[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]]], Node[Pair[List[Assign], ConflictSet]]](p), wipe_map(f, ps))
+    Cons(p, ps) => Cons(f.apply(p), wipe_map(f, ps))
   }
 }
 
 def all(f: Fun[ConflictSet, Bool], ls: List[ConflictSet]): Bool {
-  ls.case[ConflictSet] {
+  ls.case {
     Nil => True,
-    Cons(c, cs) => f.apply[ConflictSet, Bool](c).case {
+    Cons(c, cs) => f.apply(c).case {
       True => all(f, cs),
       False => False
     }
@@ -178,9 +178,9 @@ def all(f: Fun[ConflictSet, Bool], ls: List[ConflictSet]): Bool {
 }
 
 def ear_inc_filter(f: Fun[Assign, Bool], ls: List[Assign]): List[Assign] {
-  ls.case[Assign] {
+  ls.case {
     Nil => Nil,
-    Cons(a, as) => f.apply[Assign, Bool](a).case {
+    Cons(a, as) => f.apply(a).case {
       True => Cons(a, ear_inc_filter(f, as)),
       False => ear_inc_filter(f, as)
     }
@@ -191,9 +191,9 @@ def search_filter(
   f: Fun[Node[Pair[List[Assign], ConflictSet]], Bool],
   l: List[Node[Pair[List[Assign], ConflictSet]]]
 ): List[Node[Pair[List[Assign], ConflictSet]]] {
-  l.case[Node[Pair[List[Assign], ConflictSet]]] {
+  l.case {
     Nil => Nil,
-    Cons(p, ps) => f.apply[Node[Pair[List[Assign], ConflictSet]], Bool](p).case {
+    Cons(p, ps) => f.apply(p).case {
       True => Cons(p, search_filter(f, ps)),
       False => search_filter(f, ps)
     }
@@ -204,9 +204,9 @@ def search_filter2(
   f: Fun[Pair[List[Assign], ConflictSet], Bool],
   l: List[Pair[List[Assign], ConflictSet]]
 ): List[Pair[List[Assign], ConflictSet]] {
-  l.case[Pair[List[Assign], ConflictSet]] {
+  l.case {
     Nil => Nil,
-    Cons(p, ps) => f.apply[Pair[List[Assign], ConflictSet], Bool](p).case {
+    Cons(p, ps) => f.apply(p).case {
       True => Cons(p, search_filter2(f, ps)),
       False => search_filter2(f, ps)
     }
@@ -214,9 +214,9 @@ def search_filter2(
 }
 
 def union_filter(f: Fun[i64, Bool], ls: List[i64]): List[i64] {
-  ls.case[i64] {
+  ls.case {
     Nil => Nil,
-    Cons(i, is) => f.apply[i64, Bool](i).case {
+    Cons(i, is) => f.apply(i).case {
       True => Cons(i, union_filter(f, is)),
       False => union_filter(f, is)
     }
@@ -224,7 +224,7 @@ def union_filter(f: Fun[i64, Bool], ls: List[i64]): List[i64] {
 }
 
 def is_empty(ls: List[List[ConflictSet]]): Bool {
-  ls.case[List[ConflictSet]] {
+  ls.case {
     Nil => True,
     Cons(l, ls) => False
   }
@@ -240,70 +240,70 @@ def enum_from_to(from: i64, to_: i64): List[i64] {
 
 def zip_with(f: Fun2[ConflictSet, Pair[i64, i64], ConflictSet], x: List[ConflictSet], y: List[Pair[i64, i64]]):
   List[ConflictSet] {
-  x.case[ConflictSet] {
+  x.case {
     Nil => Nil,
-    Cons(c, cs) => y.case[Pair[i64, i64]] {
+    Cons(c, cs) => y.case {
       Nil => Nil,
-      Cons(p, ps) => Cons(f.apply2[ConflictSet, Pair[i64, i64], ConflictSet](c, p), zip_with(f, cs, ps))
+      Cons(p, ps) => Cons(f.apply2(c, p), zip_with(f, cs, ps))
     }
   }
 }
 
 def zip_with2(f: Fun2[List[ConflictSet], List[Pair[i64, i64]], List[ConflictSet]], tbl: List[List[ConflictSet]],
     ls: List[List[Pair[i64, i64]]]): List[List[ConflictSet]] {
-      tbl.case[List[ConflictSet]] {
+      tbl.case {
         Nil => Nil,
-        Cons(cs, css) => ls.case[List[Pair[i64, i64]]] {
+        Cons(cs, css) => ls.case {
           Nil => Nil,
-          Cons(ps, pss) => Cons(f.apply2[List[ConflictSet], List[Pair[i64, i64]], List[ConflictSet]](cs, ps), zip_with2(f, css, pss))
+          Cons(ps, pss) => Cons(f.apply2(cs, ps), zip_with2(f, css, pss))
         }
       }
 }
 
 def len(l: List[List[Assign]]): i64 {
-  l.case[List[Assign]] {
+  l.case {
     Nil => 0,
     Cons(l, ls) => 1 + len(ls)
   }
 }
 
 def head(l: List[i64]): i64 {
-  l.case[i64] {
+  l.case {
     Nil => -1,
     Cons(x, xs) => x
   }
 }
 
 def wipe_head(ls: List[List[ConflictSet]]): List[ConflictSet] {
-  ls.case[List[ConflictSet]] {
+  ls.case {
     Nil => Nil, //runtime error
     Cons(l, ls)=>l
   }
 }
 
 def lookup_head(tbl: List[List[ConflictSet]]): List[ConflictSet] {
-  tbl.case[List[ConflictSet]] {
+  tbl.case {
     Nil => Nil, // runtime error
     Cons(cs, css) => cs
   }
 }
 
 def tail(ls: List[List[ConflictSet]]): List[List[ConflictSet]] {
-  ls.case[List[ConflictSet]] {
+  ls.case {
     Nil => Nil, // runtime error
     Cons(l, ls) => ls
   }
 }
 
 def at_index(ind: i64, ls: List[ConflictSet]): ConflictSet {
-  ls.case[ConflictSet] {
+  ls.case {
     Nil => Unknown, // runtime error,
     Cons(c, cs) => if ind == 0 { c } else { at_index(ind - 1, cs) }
   }
 }
 
 def rev_loop(ls: List[Assign], acc: List[Assign]): List[Assign] {
-  ls.case[Assign] {
+  ls.case {
     Nil => acc,
     Cons(a, as) => rev_loop(as, Cons(a, acc))
   }
@@ -317,7 +317,7 @@ def search_rev_loop(
   l1: List[Pair[List[Assign], ConflictSet]],
   l2: List[Pair[List[Assign], ConflictSet]]
 ): List[Pair[List[Assign], ConflictSet]] {
-  l1.case[Pair[List[Assign], ConflictSet]] {
+  l1.case {
     Nil => l2,
     Cons(p, ps) => search_rev_loop(ps, Cons(p, l2))
   }
@@ -331,7 +331,7 @@ def search_concat_loop(
   ls: List[List[Pair[List[Assign], ConflictSet]]],
   acc: List[Pair[List[Assign], ConflictSet]]
 ): List[Pair[List[Assign], ConflictSet]] {
-  ls.case[List[Pair[List[Assign], ConflictSet]]] {
+  ls.case {
     Nil => search_rev(acc),
     Cons(l, ls) => search_concat_loop(ls, search_rev_loop(l, acc))
   }
@@ -342,21 +342,21 @@ def search_concat(ls: List[List[Pair[List[Assign], ConflictSet]]]): List[Pair[Li
 }
 
 def append(l1: List[i64], l2: List[i64]): List[i64] {
-  l1.case[i64] {
+  l1.case {
     Nil => l2,
     Cons(is, iss) => Cons(is, append(iss, l2))
   }
 }
 
 def foldl(f: Fun[List[i64], Fun[i64, List[i64]]], a: List[i64], xs: List[i64]): List[i64] {
-  xs.case[i64] {
+  xs.case {
     Nil => a,
-    Cons(h, t) => foldl(f, f.apply[List[i64], Fun[i64, List[i64]]](a).apply[i64, List[i64]](h), t)
+    Cons(h, t) => foldl(f, f.apply(a).apply(h), t)
   }
 }
 
 def in_list(i: i64, ls: List[i64]): Bool {
-  ls.case[i64] {
+  ls.case {
     Nil => False,
     Cons(j, js) => if i == j { True } else { in_list(i, js) }
   }
@@ -367,16 +367,16 @@ def not_elem(i: i64, ls: List[i64]): Bool {
 }
 
 def nub_by(f: Fun[i64, Fun[i64, Bool]], ls: List[i64]): List[i64] {
-  ls.case[i64] {
+  ls.case {
     Nil => Nil,
-    Cons(h, t) => Cons(h, nub_by(f, union_filter(new { apply(y) => not(f.apply[i64, Fun[i64, Bool]](h).apply[i64, Bool](y)) }, t)))
+    Cons(h, t) => Cons(h, nub_by(f, union_filter(new { apply(y) => not(f.apply(h).apply(y)) }, t)))
   }
 }
 
 def delete_by(f: Fun[i64, Fun[i64, Bool]], x: i64, ys: List[i64]): List[i64] {
-  ys.case[i64] {
+  ys.case {
     Nil => Nil,
-    Cons(y, ys) => f.apply[i64, Fun[i64, Bool]](x).apply[i64, Bool](y).case {
+    Cons(y, ys) => f.apply(x).apply(y).case {
       True => ys,
       False => Cons(y, delete_by(f, x, ys))
     }
@@ -392,8 +392,8 @@ def union(l1: List[i64], l2: List[i64]): List[i64] {
 }
 
 def bt_map_tree(f: Fun[List[Assign], Pair[List[Assign], ConflictSet]], n: Node[List[Assign]]): Node[Pair[List[Assign], ConflictSet]] {
-  n.case[List[Assign]] {
-    Node(l, ls) => Node(f.apply[List[Assign], Pair[List[Assign], ConflictSet]](l),
+  n.case {
+    Node(l, ls) => Node(f.apply(l),
       bt_map(new { apply(x) => bt_map_tree(f, x) }, ls))
   }
 }
@@ -402,9 +402,9 @@ def lookup_map_tree(
   f: Fun[Pair[List[Assign], List[List[ConflictSet]]], Pair[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]]],
   t: Node[Pair[List[Assign], List[List[ConflictSet]]]]
 ): Node[Pair[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]]] {
-  t.case[Pair[List[Assign], List[List[ConflictSet]]]] {
+  t.case {
     Node(p, ps) =>
-      Node(f.apply[Pair[List[Assign], List[List[ConflictSet]]], Pair[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]]](p),
+      Node(f.apply(p),
         lookup_map(new { apply(x) => lookup_map_tree(f, x) }, ps))
   }
 }
@@ -413,9 +413,9 @@ def bm_map_tree(
   f: Fun[Pair[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]], Pair[List[Assign], ConflictSet]],
   t: Node[Pair[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]]]
 ): Node[Pair[List[Assign], ConflictSet]] {
-  t.case[Pair[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]]] {
+  t.case {
     Node(p, ps) =>
-      Node(f.apply[Pair[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]], Pair[List[Assign], ConflictSet]](p),
+      Node(f.apply(p),
         bm_map(new { apply(x) => bm_map_tree(f, x) }, ps))
   }
 }
@@ -424,9 +424,9 @@ def wipe_map_tree(
   f: Fun[Pair[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]], Pair[List[Assign], ConflictSet]],
   t: Node[Pair[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]]]
 ): Node[Pair[List[Assign], ConflictSet]] {
-  t.case[Pair[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]]] {
+  t.case {
     Node(l, c) =>
-      Node(f.apply[Pair[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]], Pair[List[Assign], ConflictSet]](l),
+      Node(f.apply(l),
         wipe_map(new { apply(x) => wipe_map_tree(f, x) }, c))
   }
 }
@@ -435,10 +435,9 @@ def search_fold_tree(
   f: Fun2[Pair[List[Assign], ConflictSet], List[Node[Pair[List[Assign], ConflictSet]]], Node[Pair[List[Assign], ConflictSet]]],
   n: Node[Pair[List[Assign], ConflictSet]]
 ): Node[Pair[List[Assign], ConflictSet]] {
-  n.case[Pair[List[Assign], ConflictSet]] {
+  n.case {
     Node(l, c) =>
-      f.apply2[Pair[List[Assign], ConflictSet], List[Node[Pair[List[Assign], ConflictSet]]], Node[Pair[List[Assign], ConflictSet]]]
-      (l, search_map(new { apply(x) => search_fold_tree(f, x)}, c))
+      f.apply2(l, search_map(new { apply(x) => search_fold_tree(f, x)}, c))
   }
 }
 
@@ -446,10 +445,9 @@ def bj_fold_tree(
   f: Fun2[Pair[List[Assign], ConflictSet], List[Node[Pair[List[Assign], ConflictSet]]], Node[Pair[List[Assign], ConflictSet]]],
   t: Node[Pair[List[Assign], ConflictSet]]
 ): Node[Pair[List[Assign], ConflictSet]] {
-  t.case[Pair[List[Assign], ConflictSet]] {
+  t.case {
     Node(l, c) =>
-      f.apply2[Pair[List[Assign], ConflictSet], List[Node[Pair[List[Assign], ConflictSet]]], Node[Pair[List[Assign], ConflictSet]]]
-      (l, bj_map2(new { apply(x) => bj_fold_tree(f, x)}, c))
+      f.apply2(l, bj_map2(new { apply(x) => bj_fold_tree(f, x)}, c))
   }
 }
 
@@ -457,7 +455,7 @@ def filter_tree(
   p: Fun[Pair[List[Assign], ConflictSet], Bool],
   n: Node[Pair[List[Assign], ConflictSet]]
 ): Node[Pair[List[Assign], ConflictSet]] {
-  let f: Fun2[Pair[List[Assign], ConflictSet], List[Node[Pair[List[Assign], ConflictSet]]], Node[Pair[List[Assign], ConflictSet]]] =
+  let f =
     new { apply2(a, cs) =>
       Node(a, search_filter(new { apply(x) => p.apply[Pair[List[Assign], ConflictSet], Bool](search_label(x)) }, cs))
     };
@@ -465,8 +463,8 @@ def filter_tree(
 }
 
 def leaves(n: Node[Pair[List[Assign], ConflictSet]]): List[Pair[List[Assign], ConflictSet]] {
-  n.case[Pair[List[Assign], ConflictSet]] {
-    Node(leaf, cs) => cs.case[Node[Pair[List[Assign], ConflictSet]]] {
+  n.case {
+    Node(leaf, cs) => cs.case {
       Nil => Cons(leaf, Nil),
       Cons(c, cs) => search_concat(search_map2(new { apply(x) => leaves(x) }, Cons(c, cs)))
     }
@@ -477,11 +475,11 @@ def prune(
   f: Fun[Pair[List[Assign], ConflictSet], Bool],
   n: Node[Pair[List[Assign], ConflictSet]]
 ): Node[Pair[List[Assign], ConflictSet]] {
-  filter_tree(new { apply(x) => not(f.apply[Pair[List[Assign], ConflictSet], Bool](x)) }, n)
+  filter_tree(new { apply(x) => not(f.apply(x)) }, n)
 }
 
 def max_level(ls: List[Assign]): i64 {
-  ls.case[Assign] {
+  ls.case {
     Nil => 0,
     Cons(a, t) => a.case {
       Assign(v, value) => v
@@ -496,9 +494,9 @@ def complete(csp: CSP, s: List[Assign]): Bool {
 }
 
 def combine(ls: List[Pair[List[Assign], ConflictSet]], acc: List[i64]): List[i64] {
-  ls.case[Pair[List[Assign], ConflictSet]] {
+  ls.case {
     Nil => acc,
-    Cons(p, css) => p.case[List[Assign], ConflictSet] {
+    Cons(p, css) => p.case {
       Tup(s, cs) => cs.case {
         Known(cs) => not_elem(max_level(s), cs).case {
           True => cs,
@@ -511,11 +509,11 @@ def combine(ls: List[Pair[List[Assign], ConflictSet]], acc: List[i64]): List[i64
 }
 
 def init_tree(f: Fun[List[Assign], List[List[Assign]]], x: List[Assign]): Node[List[Assign]] {
-  Node(x, mk_map(new { apply(y) => init_tree(f, y) }, f.apply[List[Assign], List[List[Assign]]](x)))
+  Node(x, mk_map(new { apply(y) => init_tree(f, y) }, f.apply(x)))
 }
 
 def to_assign(ls: List[i64], ss: List[Assign]): List[List[Assign]] {
-  ls.case[i64] {
+  ls.case {
     Nil => Nil,
     Cons(j, t1) => Cons(Cons(Assign(max_level(ss) + 1, j), ss), to_assign(t1, ss))
   }
@@ -524,7 +522,7 @@ def to_assign(ls: List[i64], ss: List[Assign]): List[List[Assign]] {
 def mk_tree(csp: CSP): Node[List[Assign]] {
   csp.case {
     CSP(vars, vals, rel) =>
-      let next: Fun[List[Assign], List[List[Assign]]] =
+      let next =
         new { apply(ss) =>
           if max_level(ss) < vars {
             to_assign(enum_from_to(1, vals), ss)
@@ -537,7 +535,7 @@ def mk_tree(csp: CSP): Node[List[Assign]] {
 }
 
 def collect(ls: List[ConflictSet]): List[i64] {
-  ls.case[ConflictSet] {
+  ls.case {
     Nil=>Nil,
     Cons(conf, css) => conf.case {
       Known(cs) => union(cs, collect(css)),
@@ -548,7 +546,7 @@ def collect(ls: List[ConflictSet]): List[i64] {
 
 def known_solution(c: ConflictSet): Bool {
   c.case {
-    Known(vs) => vs.case[i64] {
+    Known(vs) => vs.case {
       Nil => True,
       Cons(v, vs) => False
     },
@@ -558,7 +556,7 @@ def known_solution(c: ConflictSet): Bool {
 
 def known_conflict(c: ConflictSet): Bool {
   c.case {
-    Known(vs) => vs.case[i64] {
+    Known(vs) => vs.case {
       Nil => False,
       Cons(v, vs) => True
     },
@@ -567,7 +565,7 @@ def known_conflict(c: ConflictSet): Bool {
 }
 
 def filter_known(ls: List[List[ConflictSet]]): List[List[ConflictSet]] {
-  ls.case[List[ConflictSet]] {
+  ls.case {
     Nil => Nil,
     Cons(vs, t1) => all(new { apply(x) => known_conflict(x) }, vs).case {
       True => Cons(vs, filter_known(t1)),
@@ -577,13 +575,13 @@ def filter_known(ls: List[List[ConflictSet]]): List[List[ConflictSet]] {
 }
 
 def domain_wipeout(csp: CSP, t: Node[Pair[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]]]): Node[Pair[List[Assign], ConflictSet]] {
-  let f8: Fun[Pair[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]], Pair[List[Assign], ConflictSet]] =
+  let f8 =
     new { apply(tp2) =>
-      tp2.case[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]] {
-        Tup(p, tbl) => p.case[List[Assign], ConflictSet] {
+      tp2.case {
+        Tup(p, tbl) => p.case {
           Tup(as_, cs) =>
-            let wiped_domains: List[List[ConflictSet]]= filter_known(tbl);
-            let cs_: ConflictSet = is_empty(wiped_domains).case {
+            let wiped_domains = filter_known(tbl);
+            let cs_ = is_empty(wiped_domains).case {
               True => cs,
               False => Known(collect(wipe_head(wiped_domains)))
             };
@@ -602,11 +600,11 @@ def check_complete(csp: CSP, s: List[Assign]): ConflictSet {
 
 def earliest_inconsistency(csp: CSP, aas: List[Assign]): Option[Pair[i64, i64]] {
   csp.case {
-    CSP(vars, vals, rel) => aas.case[Assign] {
+    CSP(vars, vals, rel) => aas.case {
       Nil => None,
       Cons(a, as_) =>  ear_inc_filter(
         new { apply(x) => not(rel.apply2[Assign, Assign, Bool](a, x)) },
-        reverse(as_)).case[Assign] {
+        reverse(as_)).case {
           Nil => None,
           Cons(b, bs_) => Some(Tup(level(a), level(b)))
         }
@@ -618,10 +616,10 @@ def lookup_cache(
   csp: CSP,
   t: Node[Pair[List[Assign], List[List[ConflictSet]]]]
 ): Node[Pair[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]]] {
-  let f5: Fun2[CSP, Pair[List[Assign], List[List[ConflictSet]]], Pair[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]]] =
+  let f5 =
     new { apply2(csp, tp) =>
-      tp.case[List[Assign], List[List[ConflictSet]]] {
-        Tup(ls, tbl) => ls.case[Assign] {
+      tp.case {
+        Tup(ls, tbl) => ls.case {
           Nil => Tup(Tup(Nil, Unknown), tbl),
           Cons(a, as_) =>
             let table_entry: ConflictSet = at_index(value(a) - 1, lookup_head(tbl));
@@ -635,38 +633,37 @@ def lookup_cache(
     };
   lookup_map_tree(
     new { apply(x) =>
-      f5.apply2[CSP, Pair[List[Assign], List[List[ConflictSet]]], Pair[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]]]
-      (csp, x)
+      f5.apply2(csp, x)
     },
     t
   )
 }
 
 def to_pairs(ls: List[i64], varrr: i64): List[Pair[i64, i64]] {
-  ls.case[i64] {
+  ls.case {
     Nil => Nil,
     Cons(valll, t2) => Cons(Tup(varrr, valll), to_pairs(t2, varrr))
   }
 }
 
 def n_pairs(ls: List[i64], n: i64): List[List[Pair[i64, i64]]] {
-  ls.case[i64] {
+  ls.case {
     Nil => Nil,
     Cons(varrr, t1) => Cons(to_pairs(enum_from_to(1, n), varrr), n_pairs(t1, n))
   }
 }
 
 def fill_table(s: List[Assign], csp: CSP, tbl: List[List[ConflictSet]]): List[List[ConflictSet]] {
-  s.case[Assign] {
+  s.case {
     Nil => tbl,
     Cons(as, as_) => as.case { Assign(var_, val_) =>
       csp.case {
         CSP(vars, vals, rel) =>
-          let f4: Fun2[ConflictSet, Pair[i64, i64], ConflictSet] = new { apply2(cs, varval) =>
+          let f4 = new { apply2(cs, varval) =>
             varval.case[i64, i64] {
               Tup(varr, vall) => cs.case {
                 Known(vs) => cs,
-                Unknown => not(rel.apply2[Assign, Assign, Bool](Assign(var_, val_), Assign(varr, vall))).case {
+                Unknown => not(rel.apply2(Assign(var_, val_), Assign(varr, vall))).case {
                   True => Known(Cons(var_, Cons(varr, Nil))),
                   False => cs
                 }
@@ -679,20 +676,20 @@ def fill_table(s: List[Assign], csp: CSP, tbl: List[List[ConflictSet]]): List[Li
 }
 
 def cache_checks(csp: CSP, tbl: List[List[ConflictSet]], n: Node[List[Assign]]): Node[Pair[List[Assign], List[List[ConflictSet]]]] {
-  n.case[List[Assign]] {
+  n.case {
     Node(s, cs) => Node(Tup(s, tbl), checks_map(new { apply(x) => cache_checks(csp, fill_table(s, csp, tail(tbl)), x) }, cs))
   }
 }
 
 def to_unknown(ls: List[i64]): List[ConflictSet] {
-  ls.case[i64] {
+  ls.case {
     Nil => Nil,
     Cons(m, t2) => Cons(Unknown, to_unknown(t2))
   }
 }
 
 def n_unknown(ls: List[i64], n: i64): List[List[ConflictSet]] {
-  ls.case[i64] {
+  ls.case {
     Nil => Nil,
     Cons(n, t1) =>  Cons(to_unknown(enum_from_to(1, n)), n_unknown(t1, n))
   }
@@ -705,13 +702,13 @@ def empty_table(csp: CSP): List[List[ConflictSet]] {
 }
 
 def search_fst(p: Pair[List[Assign], ConflictSet]): List[Assign] {
-  p.case[List[Assign], ConflictSet] {
+  p.case {
     Tup(l, c) => l
   }
 }
 
 def search_snd(p: Pair[List[Assign], ConflictSet]): ConflictSet {
-  p.case[List[Assign], ConflictSet] {
+  p.case {
     Tup(l, c) => c
   }
 }
@@ -721,7 +718,7 @@ def search(labeler: Fun2[CSP, Node[List[Assign]], Node[Pair[List[Assign], Confli
     search_filter2(new { apply(x) => known_solution(search_snd(x)) },
       leaves(
         prune(new { apply(x) => known_conflict(search_snd(x)) },
-          labeler.apply2[CSP, Node[List[Assign]], Node[Pair[List[Assign], ConflictSet]]](csp, mk_tree(csp))))))
+          labeler.apply2(csp, mk_tree(csp))))))
 }
 
 def safe(as1: Assign, as2: Assign): Bool {
@@ -740,9 +737,9 @@ def queens(n: i64): CSP {
 }
 
 def bt(csp: CSP, t: Node[List[Assign]]): Node[Pair[List[Assign], ConflictSet]] {
-  let f3: Fun[List[Assign], Pair[List[Assign], ConflictSet]] =
+  let f3 =
     new { apply(s) =>
-      Tup(s, (earliest_inconsistency(csp, s).case[Pair[i64, i64]] {
+      Tup(s, (earliest_inconsistency(csp, s).case {
         Some(p) => p.case[i64, i64] {
           Tup(a, b) => Known(Cons(a, Cons(b, Nil)))
         },
@@ -753,7 +750,7 @@ def bt(csp: CSP, t: Node[List[Assign]]): Node[Pair[List[Assign], ConflictSet]] {
 }
 
 def bm_fst(x: Pair[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]]): Pair[List[Assign], ConflictSet] {
-  x.case[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]] {
+  x.case {
     Tup(p, ls) => p
   }
 }
@@ -763,9 +760,9 @@ def bm(csp: CSP, t: Node[List[Assign]]): Node[Pair[List[Assign], ConflictSet]] {
 }
 
 def bj(csp: CSP, t: Node[Pair[List[Assign], ConflictSet]]): Node[Pair[List[Assign], ConflictSet]] {
-  let f6: Fun2[Pair[List[Assign], ConflictSet], List[Node[Pair[List[Assign], ConflictSet]]], Node[Pair[List[Assign], ConflictSet]]] =
+  let f6 =
     new { apply2(tp2, chs) =>
-      tp2.case[List[Assign], ConflictSet] {
+      tp2.case {
         Tup(a, conf) => conf.case {
           Known(cs) => Node(Tup(a, Known(cs)), chs),
           Unknown =>  Node(Tup(a, Known(combine(bj_map(new { apply(x) => bj_label(x) }, chs), Nil))), chs)
@@ -780,9 +777,9 @@ def bjbt(csp: CSP, t: Node[List[Assign]]): Node[Pair[List[Assign], ConflictSet]]
 }
 
 def bj_(csp: CSP, t: Node[Pair[List[Assign], ConflictSet]]): Node[Pair[List[Assign], ConflictSet]] {
-  let f7: Fun2[Pair[List[Assign], ConflictSet], List[Node[Pair[List[Assign], ConflictSet]]], Node[Pair[List[Assign], ConflictSet]]] =
+  let f7 =
     new { apply2(tp2, chs) =>
-      tp2.case[List[Assign], ConflictSet] { Tup(a, conf) => conf.case {
+      tp2.case { Tup(a, conf) => conf.case {
         Known(cs) => Node(Tup(a, Known(cs)), chs),
         Unknown =>
           let cs_: ConflictSet = Known(combine(bj_map(new { apply(x) => bj_label(x) }, chs), Nil));
