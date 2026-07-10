@@ -658,8 +658,7 @@ def snd(p: Pair[List[Assign], ConflictSet]): ConflictSet {
 }
 
 def search(labeler: Fun2[CSP, Node[List[Assign]], Node[Pair[List[Assign], ConflictSet]]], csp: CSP): List[List[Assign]] {
-  let f = new { apply(x) => fst(x) };
-  map(f,
+  map(new { apply(x) => fst(x) },
     filter(new { apply(x) => known_solution(snd(x)) },
       leaves(
         prune(new { apply(x) => known_conflict(snd(x)) },
@@ -701,8 +700,7 @@ def fst(x: Pair[Pair[List[Assign], ConflictSet], List[List[ConflictSet]]]): Pair
 }
 
 def bm(csp: CSP, t: Node[List[Assign]]): Node[Pair[List[Assign], ConflictSet]] {
-  let f = new { apply(x) => fst(x) };
-  map_tree(f, lookup_cache(csp, cache_checks(csp, empty_table(csp), t)))
+  map_tree(new { apply(x) => fst(x) }, lookup_cache(csp, cache_checks(csp, empty_table(csp), t)))
 }
 
 def bj(csp: CSP, t: Node[Pair[List[Assign], ConflictSet]]): Node[Pair[List[Assign], ConflictSet]] {
