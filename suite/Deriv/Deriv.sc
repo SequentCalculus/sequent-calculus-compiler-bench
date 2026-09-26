@@ -1,7 +1,7 @@
-data List[A] { Nil, Cons(x: A, xs: List[A]) }
+data List[A+] { Nil, Cons(x: A, xs: List[A]) }
 data Unit { Unit }
 data Bool { True, False }
-codata Fun[A, B] { apply(x: A): B }
+codata Fun[A+, B+] { apply(x: A): B }
 
 data Expr {
   Add(sums: List[Expr]),

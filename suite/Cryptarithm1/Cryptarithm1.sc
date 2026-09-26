@@ -1,6 +1,6 @@
-data List[A] { Nil, Cons(a: A, as: List[A]) }
+data List[A+] { Nil, Cons(a: A, as: List[A]) }
 data Bool { True, False }
-codata Fun[A, B] { apply(a: A): B }
+codata Fun[A+, B+] { apply(a: A): B }
 
 def eq(i1: i64, i2: i64): Bool {
   if i1 == i2 {

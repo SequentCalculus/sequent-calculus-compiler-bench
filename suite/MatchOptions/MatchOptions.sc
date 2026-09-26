@@ -1,4 +1,4 @@
-data Option[A] { None, Some(x: A) }
+data Option[A+] { None, Some(x: A) }
 
 def attempt(i: i64): Option[i64] {
   if i == 0 {

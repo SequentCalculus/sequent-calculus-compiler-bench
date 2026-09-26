@@ -1,13 +1,21 @@
-data List[A] { Nil, Cons(a: A, as: List[A]) }
-data Pair[A, B] { Tup(a: A, b: B) }
-data Option[A] { None, Some(a: A) }
+data List[A+] { Nil, Cons(a: A, as: List[A]) }
+data Pair[A+, B+] { Tup(a: A, b: B) }
+data Option[A+] { None, Some(a: A) }
 data Bool { True, False }
-codata Fun[A, B] { apply(a: A): B }
-codata Fun2[A, B, C] { apply2(a: A, b: B): C }
+codata Fun[A+, B+] { apply(a: A): B }
+codata Fun2[A+, B+, C+] { apply2(a: A, b: B): C }
+// `Fun`/`List` specialized to a codata-typed (`Fun2`) element, used only by `test_map` below,
+// since `Fun`'s/`List`'s own `A` parameter is otherwise always instantiated with data types.
+codata FunOfFun2[A-, B+] { applyFun2(a: A): B }
+data ListOfFun2[A-] { NilFun2, ConsFun2(a: A, as: ListOfFun2[A]) }
+// `Fun` specialized to a curried function, used by
+// `foldl`/`nub_by`/`delete_by`/`union_by` below, since `Fun`'s own `B` parameter is otherwise
+// always instantiated with data types.
+codata FunToFun[A+, B-] { applyToFun(a: A): B }
 
 data Assign { Assign(varr: i64, value: i64) }
 data CSP { CSP(vars: i64, vals: i64, rel: Fun2[Assign, Assign, Bool]) }
-data Node[T] { Node(lab: T, children: List[Node[T]]) }
+data Node[T+] { Node(lab: T, children: List[Node[T]]) }
 data ConflictSet { Known(vs: List[i64]), Unknown }
 
 def abs(i: i64): i64 {
@@ -148,12 +156,12 @@ def bm_map(
 }
 
 def test_map(
-  f: Fun[Fun2[CSP, Node[List[Assign]], Node[Pair[List[Assign], ConflictSet]]], i64],
-  l: List[Fun2[CSP, Node[List[Assign]], Node[Pair[List[Assign], ConflictSet]]]]
+  f: FunOfFun2[Fun2[CSP, Node[List[Assign]], Node[Pair[List[Assign], ConflictSet]]], i64],
+  l: ListOfFun2[Fun2[CSP, Node[List[Assign]], Node[Pair[List[Assign], ConflictSet]]]]
 ): List[i64] {
   l.case[Fun2[CSP, Node[List[Assign]], Node[Pair[List[Assign], ConflictSet]]]]{
-    Nil => Nil,
-    Cons(p, ps) => Cons(f.apply[Fun2[CSP, Node[List[Assign]], Node[Pair[List[Assign], ConflictSet]]], i64](p), test_map(f, ps))
+    NilFun2 => Nil,
+    ConsFun2(p, ps) => Cons(f.applyFun2[Fun2[CSP, Node[List[Assign]], Node[Pair[List[Assign], ConflictSet]]], i64](p), test_map(f, ps))
   }
 }
 
@@ -348,10 +356,10 @@ def append(l1: List[i64], l2: List[i64]): List[i64] {
   }
 }
 
-def foldl(f: Fun[List[i64], Fun[i64, List[i64]]], a: List[i64], xs: List[i64]): List[i64] {
+def foldl(f: FunToFun[List[i64], Fun[i64, List[i64]]], a: List[i64], xs: List[i64]): List[i64] {
   xs.case[i64] {
     Nil => a,
-    Cons(h, t) => foldl(f, f.apply[List[i64], Fun[i64, List[i64]]](a).apply[i64, List[i64]](h), t)
+    Cons(h, t) => foldl(f, f.applyToFun[List[i64], Fun[i64, List[i64]]](a).apply[i64, List[i64]](h), t)
   }
 }
 
@@ -366,29 +374,29 @@ def not_elem(i: i64, ls: List[i64]): Bool {
   not(in_list(i, ls))
 }
 
-def nub_by(f: Fun[i64, Fun[i64, Bool]], ls: List[i64]): List[i64] {
+def nub_by(f: FunToFun[i64, Fun[i64, Bool]], ls: List[i64]): List[i64] {
   ls.case[i64] {
     Nil => Nil,
-    Cons(h, t) => Cons(h, nub_by(f, union_filter(new { apply(y) => not(f.apply[i64, Fun[i64, Bool]](h).apply[i64, Bool](y)) }, t)))
+    Cons(h, t) => Cons(h, nub_by(f, union_filter(new { apply(y) => not(f.applyToFun[i64, Fun[i64, Bool]](h).apply[i64, Bool](y)) }, t)))
   }
 }
 
-def delete_by(f: Fun[i64, Fun[i64, Bool]], x: i64, ys: List[i64]): List[i64] {
+def delete_by(f: FunToFun[i64, Fun[i64, Bool]], x: i64, ys: List[i64]): List[i64] {
   ys.case[i64] {
     Nil => Nil,
-    Cons(y, ys) => f.apply[i64, Fun[i64, Bool]](x).apply[i64, Bool](y).case {
+    Cons(y, ys) => f.applyToFun[i64, Fun[i64, Bool]](x).apply[i64, Bool](y).case {
       True => ys,
       False => Cons(y, delete_by(f, x, ys))
     }
   }
 }
 
-def union_by(f: Fun[i64, Fun[i64, Bool]], l1: List[i64], l2: List[i64]): List[i64] {
-  append(l1, foldl(new { apply(acc) => new { apply(y) => delete_by(f, y, acc) } }, nub_by(f, l2), l1))
+def union_by(f: FunToFun[i64, Fun[i64, Bool]], l1: List[i64], l2: List[i64]): List[i64] {
+  append(l1, foldl(new { applyToFun(acc) => new { apply(y) => delete_by(f, y, acc) } }, nub_by(f, l2), l1))
 }
 
 def union(l1: List[i64], l2: List[i64]): List[i64] {
-  union_by(new { apply(x) => new { apply(y) => eq(x, y) } }, l1, l2)
+  union_by(new { applyToFun(x) => new { apply(y) => eq(x, y) } }, l1, l2)
 }
 
 def bt_map_tree(f: Fun[List[Assign], Pair[List[Assign], ConflictSet]], n: Node[List[Assign]]): Node[Pair[List[Assign], ConflictSet]] {
@@ -808,13 +816,13 @@ def try_(n: i64, algorithm: Fun2[CSP, Node[List[Assign]], Node[Pair[List[Assign]
 }
 
 def test_constraints_nofib(n: i64): List[i64] {
-  test_map(new { apply(x) => try_(n, x) },
-    Cons(new { apply2(csp, n) => bt(csp, n) },
-      Cons(new { apply2(csp, n) => bm(csp, n) },
-        Cons(new { apply2(csp, n) => bjbt(csp, n) },
-          Cons(new { apply2(csp, n) => bjbt_(csp, n) },
-            Cons(new { apply2(csp, n) => fc(csp, n) },
-              Nil))))))
+  test_map(new { applyFun2(x) => try_(n, x) },
+    ConsFun2(new { apply2(csp, n) => bt(csp, n) },
+      ConsFun2(new { apply2(csp, n) => bm(csp, n) },
+        ConsFun2(new { apply2(csp, n) => bjbt(csp, n) },
+          ConsFun2(new { apply2(csp, n) => bjbt_(csp, n) },
+            ConsFun2(new { apply2(csp, n) => fc(csp, n) },
+              NilFun2))))))
 }
 
 def main_loop(iters: i64, n: i64): i64 {

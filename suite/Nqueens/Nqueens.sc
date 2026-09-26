@@ -1,4 +1,4 @@
-data List[A] { Nil, Cons(a: A, as: List[A]) }
+data List[A+] { Nil, Cons(a: A, as: List[A]) }
 data Bool { True, False }
 
 def neq_i(i1: i64, i2: i64): Bool {

@@ -1,4 +1,4 @@
-data List[A] { Nil, Cons(a: A, xs: List[A]) }
+data List[A+] { Nil, Cons(a: A, xs: List[A]) }
 
 def range(i: i64, n: i64): List[i64] {
   if i < n {

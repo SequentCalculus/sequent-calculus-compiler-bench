@@ -1,4 +1,4 @@
-codata Fun[A, B] { apply(a: A): B }
+codata Fun[A+, B+] { apply(a: A): B }
 
 def sum_loop(i: i64, tot: i64, stop: i64, f: Fun[i64, i64], k: cns i64): i64 {
   if stop < i {

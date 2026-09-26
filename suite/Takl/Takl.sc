@@ -1,4 +1,4 @@
-data List[A] { Nil, Cons(x: A, xs: List[A]) }
+data List[A+] { Nil, Cons(x: A, xs: List[A]) }
 data Bool { True, False }
 
 def not(b: Bool): Bool {

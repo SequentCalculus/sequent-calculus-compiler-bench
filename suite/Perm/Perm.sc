@@ -1,8 +1,8 @@
 data Unit { Unit }
 data Bool { True, False }
-data List[A] { Nil, Cons(a: A, as: List[A]) }
-data Pair[A, B] { Tup(a: A, b: B) }
-codata Fun[A, B] { apply(a: A): B }
+data List[A+] { Nil, Cons(a: A, as: List[A]) }
+data Pair[A+, B+] { Tup(a: A, b: B) }
+codata Fun[A+, B+] { apply(a: A): B }
 
 def factorial(n: i64): i64 {
   if n == 1 {

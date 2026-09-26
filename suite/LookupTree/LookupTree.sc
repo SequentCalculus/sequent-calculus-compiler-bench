@@ -1,4 +1,4 @@
-data Tree[A] { Leaf(x: A), Node(left: Tree[A], right: Tree[A]) }
+data Tree[A+] { Leaf(x: A), Node(left: Tree[A], right: Tree[A]) }
 
 def create(i: i64, n: i64): Tree[i64] {
   if i < n {

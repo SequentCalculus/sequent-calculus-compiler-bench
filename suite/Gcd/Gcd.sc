@@ -1,7 +1,7 @@
-data Triple[A, B, C] { Trip(a: A, b: B, c: C) }
-data Pair[A, B] { Pair(a: A, b: B) }
-data List[A] { Nil, Cons(a: A, as: List[A]) }
-codata Fun[A, B] { apply(a: A): B }
+data Triple[A+, B+, C+] { Trip(a: A, b: B, c: C) }
+data Pair[A+, B+] { Pair(a: A, b: B) }
+data List[A+] { Nil, Cons(a: A, as: List[A]) }
+codata Fun[A+, B+] { apply(a: A): B }
 
 def abs_int(i: i64): i64 {
   if i < 0 {

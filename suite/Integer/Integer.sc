@@ -1,7 +1,7 @@
-data List[A] { Nil, Cons(a: A, as: List[A]) }
+data List[A+] { Nil, Cons(a: A, as: List[A]) }
 data Bool { True, False }
-data Either[A, B] { Left(a: A), Right(b: B) }
-codata Fun2[A, B, C] { apply2(a: A, b: B): C }
+data Either[A+, B+] { Left(a: A), Right(b: B) }
+codata Fun2[A+, B+, C+] { apply2(a: A, b: B): C }
 
 def eq(i1: i64, i2: i64): Bool {
   if i1 == i2 {

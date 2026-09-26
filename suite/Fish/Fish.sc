@@ -1,8 +1,8 @@
 data Vec { Vec(x: i64, y: i64) }
 data Vec4 { Vec4(x: i64, y: i64, z: i64, w: i64) }
-data List[A] { Nil, Cons(a: A, as: List[A]) }
-codata Fun[A, B] { apply(a: A): B }
-codata Fun3[A, B, C, D] { apply3(a: A, b: B, c: C): D }
+data List[A+] { Nil, Cons(a: A, as: List[A]) }
+codata Fun[A+, B+] { apply(a: A): B }
+codata Fun3[A+, B+, C+, D+] { apply3(a: A, b: B, c: C): D }
 
 def vec_add(v1: Vec, v2: Vec): Vec {
   v1.case {

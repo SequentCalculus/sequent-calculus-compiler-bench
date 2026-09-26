@@ -1,10 +1,10 @@
 data Unit { Unit }
-data Pair[A, B] { Tup(fst: A, snd: B) }
-data List[A] { Nil, Cons(x: A, xs: List[A]) }
+data Pair[A+, B+] { Tup(fst: A, snd: B) }
+data List[A+] { Nil, Cons(x: A, xs: List[A]) }
 data Gen { Gen(coordslist: List[Pair[i64, i64]]) }
 data Bool { True, False }
-codata Fun[A, B] { apply(x: A): B }
-codata Fun2[A, B, C] { apply2(x: A, y: B): C }
+codata Fun[A+, B+] { apply(x: A): B }
+codata Fun2[A+, B+, C+] { apply2(x: A, y: B): C }
 
 // Boolean Functions
 
