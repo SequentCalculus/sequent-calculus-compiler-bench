@@ -1,5 +1,5 @@
-data List[A+] { Nil, Cons(a: A, as: List[A]) }
-codata Fun[A+, B+] { apply(a: A): B }
+data List[A] { Nil, Cons(a: A, as: List[A]) }
+codata Fun[A, B] { apply(a: A): B }
 
 def head(l:List[i64]) : i64 {
   l.case[i64]{

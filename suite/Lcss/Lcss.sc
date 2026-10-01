@@ -1,8 +1,8 @@
-data List[A+] { Nil, Cons(a: A, as: List[A]) }
-data Pair[A+, B+] { Pair(a: A, b: B) }
+data List[A] { Nil, Cons(a: A, as: List[A]) }
+data Pair[A, B] { Pair(a: A, b: B) }
 data Bool { True, False }
-data Option[A+] { None, Some(a: A) }
-codata Fun[A+, B+] { apply(a: A): B }
+data Option[A] { None, Some(a: A) }
+codata Fun[A, B] { apply(a: A): B }
 
 def int_max(i1: i64, i2: i64): i64 {
   if i1 < i2 {

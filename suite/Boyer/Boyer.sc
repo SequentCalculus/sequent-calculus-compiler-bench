@@ -1,8 +1,8 @@
-data List[A+] { Nil, Cons(a: A, as: List[A]) }
-data Pair[A+, B+] { Tup(a: A, b: B) }
+data List[A] { Nil, Cons(a: A, as: List[A]) }
+data Pair[A, B] { Tup(a: A, b: B) }
 data Bool { True, False }
 data Unit { Unit }
-codata Fun[A+, B+] { apply(a: A): B }
+codata Fun[A, B] { apply(a: A): B }
 
 data Id {
   A,

@@ -1,11 +1,11 @@
 data Bool { True, False }
 data Unit { Unit }
-data Option[A+] { None, Some(a: A) }
-data Pair[A+, B+] { Tup(a: A, b: B) }
-data List[A+] { Nil, Cons(a: A, as: List[A]) }
-codata Fun[A+, B+] { apply(a: A): B }
-codata Fun2[A+, B+, C+] { apply2(a: A, b: B): C }
-data RoseTree[A+] { Rose(a: A, as: List[RoseTree[A]]) }
+data Option[A] { None, Some(a: A) }
+data Pair[A, B] { Tup(a: A, b: B) }
+data List[A] { Nil, Cons(a: A, as: List[A]) }
+codata Fun[A, B] { apply(a: A): B }
+codata Fun2[A, B, C] { apply2(a: A, b: B): C }
+data RoseTree[A] { Rose(a: A, as: List[RoseTree[A]]) }
 data Player { X, O }
 
 // Tree functions

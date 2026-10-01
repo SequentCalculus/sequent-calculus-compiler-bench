@@ -1,4 +1,4 @@
-data List[A+] { Nil, Cons(x: A, xs: List[A]) }
+data List[A] { Nil, Cons(x: A, xs: List[A]) }
 
 def useless(i: i64, n: i64, b: List[i64]): i64 {
   if i < n {

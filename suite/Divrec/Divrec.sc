@@ -1,5 +1,5 @@
 data Unit { Unit }
-data List[A+] { Nil, Cons(x: A, xs: List[A]) }
+data List[A] { Nil, Cons(x: A, xs: List[A]) }
 
 def create_n(n: i64): List[Unit] {
   if n == 0 {

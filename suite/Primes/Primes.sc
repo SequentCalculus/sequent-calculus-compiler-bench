@@ -1,4 +1,4 @@
-data List[A+] { Nil, Cons(a: A, as: List[A]) }
+data List[A] { Nil, Cons(a: A, as: List[A]) }
 
 def len(l: List[i64]): i64 {
   l.case[i64] {

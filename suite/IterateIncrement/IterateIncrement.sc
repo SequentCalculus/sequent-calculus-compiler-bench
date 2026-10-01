@@ -1,4 +1,4 @@
-codata Fun[A+, B+] { apply(x: A): B }
+codata Fun[A, B] { apply(x: A): B }
 
 def iterate(i: i64, f: Fun[i64, i64], a: i64): i64 {
   if i == 0 {
