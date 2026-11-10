@@ -1,0 +1,5 @@
+args = []
+test_args = []
+expected = "0"
+runs = 10
+suite = "mono/nested"

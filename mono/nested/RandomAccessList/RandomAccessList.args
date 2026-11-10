@@ -1,0 +1,5 @@
+args = ["40", "100000"]
+test_args = ["1", "10"]
+expected = "55"
+runs = 10
+suite = "mono/nested"
